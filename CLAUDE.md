@@ -111,3 +111,20 @@ Para correr un paquete a mano: `source .infra/env` (después de
   patrones anclados como `^bash scripts/dev.sh`).
 - `gofmt -l` sin argumentos lee stdin y se cuelga: siempre pasarle rutas.
 - PostgreSQL no corre como root: `scripts/infra.sh` usa `runuser -u nobody`.
+- Colación: las instalaciones reales y el CI usan `en_US.UTF-8`, que ignora
+  la puntuación al ordenar. Los identificadores usan `COLLATE "C"` (D26) y
+  `scripts/infra.sh` crea la base de pruebas en `en_US.UTF-8` si el locale
+  existe (`locale-gen en_US.UTF-8`), para que los `ORDER BY` fallen aquí y
+  no solo en CI.
+- `make generate` (no `bin/tools/sqlc generate` a secas): agrega las
+  cabeceras de licencia al código generado.
+
+## Entorno de desarrollo de esta VM
+
+- cgroups v1: isolate funciona sin `--cg` (`CMS_SANDBOX_CGROUPS=0`); el
+  trabajo `sandbox` del CI corre con cgroups v2.
+- El puerto del proxy HTTPS cambia al reiniciarse la sesión: actualizar
+  `/etc/apt/apt.conf.d/99proxy` con `$HTTPS_PROXY` antes de usar apt.
+- CMS original de referencia (para comparar páginas y formatos) en el
+  scratchpad: `refcms-start.sh` / `refcms-stop.sh` (puertos 28888–28890,
+  base `refcms`, concurso `demo` importado de `testdata/contests/demo`).
