@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/pascal_fpc.py of CMS:
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: Pascal / fpc
+source_extensions: [.pas]
+# Not an extension: units of graders are named like graderlib.pas.
+header_extensions: [lib.pas]
+object_extensions: [.o]
+compilation:
+  commands:
+    # Only the main file: fpc finds the units it uses.
+    - [/usr/bin/fpc, "{eval:-dEVAL}", -O2, -XSs, "-o{executable}", "{main_source}"]
+  # fpc reads its configuration (unit paths) from /etc/fpc.cfg or from
+  # ~/.fpc.cfg; isolate mounts directories only, and mounting all of /etc
+  # would expose the configuration of CMS, so the file is copied.
+  files:
+    .fpc.cfg: /etc/fpc.cfg
+evaluation:
+  commands:
+    - ["./{executable}", "{args}"]

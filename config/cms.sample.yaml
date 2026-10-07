@@ -22,6 +22,11 @@ data_dir: /var/lib/cms
 # Initial timezone of the server. The administration can change it later on
 # the Server page; the value stored in the database then wins.
 timezone: UTC
+# Directory with more programming languages, one YAML file each (the format
+# of the built-in ones in config/languages). A file with the name of a
+# built-in language replaces it. Every service, judges included, must see
+# the same files. Empty: the built-in languages only.
+languages_dir: ""
 
 log:
   level: info    # debug, info, warn, error

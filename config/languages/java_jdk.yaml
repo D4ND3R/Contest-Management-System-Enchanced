@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/java_jdk.py of CMS:
+# Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: Java / JDK
+source_extensions: [.java]
+executable_extension: .jar
+requires_multithreading: true
+# The JVM reserves far more address space than it uses.
+large_address_space: true
+compilation:
+  commands:
+    - [/usr/bin/javac, "{sources}"]
+    # The shell expands *.class: javac writes a class file per inner class.
+    - [/bin/sh, -c, "jar cf {executable|quote} *.class"]
+  # The JDK configuration (conf/ of the JDK links there; javac and jar do
+  # not start without conf/security/java.security). Never all of /etc.
+  dirs: [/etc/java-*-openjdk]
+evaluation:
+  commands:
+    # {main} is the class with the entry point (the grader, or the
+    # submitted class).
+    - [/usr/bin/java, -Deval=true, -Xmx512M, -Xss64M, -cp, "{executable}", "{main}", "{args}"]
+  # Programs that use java.security (SecureRandom...) need it too.
+  dirs: [/etc/java-*-openjdk]

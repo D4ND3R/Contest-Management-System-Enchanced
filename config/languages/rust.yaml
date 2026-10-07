@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/rust.py of CMS:
+# Copyright © 2017 Dario Ostuni <dario.ostuni@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: Rust
+source_extensions: [.rs]
+compilation:
+  commands:
+    # Only the file with the main function: rustc finds the modules.
+    - [/usr/bin/rustc, -O, -o, "{executable}", "{main_source}"]
+evaluation:
+  commands:
+    - ["./{executable}", "{args}"]

@@ -48,6 +48,11 @@ type Config struct {
 	// Timezone is the initial server timezone. Once the administration
 	// changes it on the Server page the value stored in the database wins.
 	Timezone string `yaml:"timezone"`
+	// LanguagesDir holds language definitions (*.yaml) added to the
+	// built-in ones (config/languages); a definition with the name of a
+	// built-in language replaces it. Empty means only the built-in
+	// languages. Every service, judges included, must see the same files.
+	LanguagesDir string `yaml:"languages_dir"`
 
 	Log        Log        `yaml:"log"`
 	Database   Database   `yaml:"database"`

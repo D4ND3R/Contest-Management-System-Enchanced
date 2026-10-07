@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/csharp_mono.py of CMS:
+# Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: C# / Mono
+source_extensions: [.cs]
+executable_extension: .exe
+requires_multithreading: true
+# The Mono runtime reserves far more address space than it uses.
+large_address_space: true
+compilation:
+  commands:
+    - [/usr/bin/mcs, "-out:{executable}", -optimize+, "{sources}"]
+evaluation:
+  commands:
+    # Upstream passes no arguments to C# programs; this fork does, like
+    # for every other language (Communication tasks need them).
+    - [/usr/bin/mono, "{executable}", "{args}"]

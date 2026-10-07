@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/cpp14_gpp.py of CMS:
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2019 Andrey Vihrov <andrey.vihrov@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: C++14 / g++
+source_extensions: [.cpp, .cc, .cxx, .c++, .C]
+header_extensions: [.h]
+object_extensions: [.o]
+compilation:
+  commands:
+    - [/usr/bin/g++, "{eval:-DEVAL}", -std=gnu++14, -O2, -pipe, -static, -s, -o, "{executable}", "{sources}"]
+evaluation:
+  commands:
+    - ["./{executable}", "{args}"]

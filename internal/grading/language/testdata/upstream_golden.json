@@ -1,0 +1,2984 @@
+{
+ "C# / Mono": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:foo.exe",
+       "-optimize+",
+       "foo.cs"
+      ]
+     ],
+     "executable": "foo.exe",
+     "for_evaluation": true,
+     "sources": [
+      "foo.cs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:foo.exe",
+       "-optimize+",
+       "foo.cs"
+      ]
+     ],
+     "executable": "foo.exe",
+     "for_evaluation": false,
+     "sources": [
+      "foo.cs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:foo.exe",
+       "-optimize+",
+       "grader.cs",
+       "foo.cs"
+      ]
+     ],
+     "executable": "foo.exe",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cs",
+      "foo.cs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:foo.exe",
+       "-optimize+",
+       "grader.cs",
+       "foo.cs"
+      ]
+     ],
+     "executable": "foo.exe",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cs",
+      "foo.cs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:bar_foo.exe",
+       "-optimize+",
+       "grader.cs",
+       "foo.cs",
+       "bar.cs"
+      ]
+     ],
+     "executable": "bar_foo.exe",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cs",
+      "foo.cs",
+      "bar.cs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:bar_foo.exe",
+       "-optimize+",
+       "grader.cs",
+       "foo.cs",
+       "bar.cs"
+      ]
+     ],
+     "executable": "bar_foo.exe",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cs",
+      "foo.cs",
+      "bar.cs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:with space.exe",
+       "-optimize+",
+       "dir/grader.cs",
+       "dir/foo.cs"
+      ]
+     ],
+     "executable": "with space.exe",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.cs",
+      "dir/foo.cs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/mcs",
+       "-out:with space.exe",
+       "-optimize+",
+       "dir/grader.cs",
+       "dir/foo.cs"
+      ]
+     ],
+     "executable": "with space.exe",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.cs",
+      "dir/foo.cs"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "/usr/bin/mono",
+       "foo.exe"
+      ]
+     ],
+     "executable": "foo.exe",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "/usr/bin/mono",
+       "foo.exe"
+      ]
+     ],
+     "executable": "foo.exe",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "/usr/bin/mono",
+       "foo.exe"
+      ]
+     ],
+     "executable": "foo.exe",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": ".exe",
+  "header_extensions": [],
+  "object_extensions": [],
+  "requires_multithreading": true,
+  "source_extensions": [
+   ".cs"
+  ]
+ },
+ "C++11 / g++": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [
+   ".h"
+  ],
+  "object_extensions": [
+   ".o"
+  ],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".cpp",
+   ".cc",
+   ".cxx",
+   ".c++",
+   ".C"
+  ]
+ },
+ "C++14 / g++": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++14",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [
+   ".h"
+  ],
+  "object_extensions": [
+   ".o"
+  ],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".cpp",
+   ".cc",
+   ".cxx",
+   ".c++",
+   ".C"
+  ]
+ },
+ "C++17 / g++": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++17",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [
+   ".h"
+  ],
+  "object_extensions": [
+   ".o"
+  ],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".cpp",
+   ".cc",
+   ".cxx",
+   ".c++",
+   ".C"
+  ]
+ },
+ "C++20 / g++": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.cpp",
+       "foo.cpp"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.cpp",
+       "foo.cpp",
+       "bar.cpp"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.cpp",
+      "foo.cpp",
+      "bar.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-DEVAL",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/g++",
+       "-std=gnu++20",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.cpp",
+       "dir/foo.cpp"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.cpp",
+      "dir/foo.cpp"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [
+   ".h"
+  ],
+  "object_extensions": [
+   ".o"
+  ],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".cpp",
+   ".cc",
+   ".cxx",
+   ".c++",
+   ".C"
+  ]
+ },
+ "C11 / gcc": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-DEVAL",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.c",
+       "-lm"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.c"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "foo.c",
+       "-lm"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.c"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-DEVAL",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.c",
+       "foo.c",
+       "-lm"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.c",
+      "foo.c"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "foo",
+       "grader.c",
+       "foo.c",
+       "-lm"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.c",
+      "foo.c"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-DEVAL",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.c",
+       "foo.c",
+       "bar.c",
+       "-lm"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.c",
+      "foo.c",
+      "bar.c"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "bar_foo",
+       "grader.c",
+       "foo.c",
+       "bar.c",
+       "-lm"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.c",
+      "foo.c",
+      "bar.c"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-DEVAL",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.c",
+       "dir/foo.c",
+       "-lm"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.c",
+      "dir/foo.c"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/gcc",
+       "-std=gnu11",
+       "-O2",
+       "-pipe",
+       "-static",
+       "-s",
+       "-o",
+       "with space",
+       "dir/grader.c",
+       "dir/foo.c",
+       "-lm"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.c",
+      "dir/foo.c"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [
+   ".h"
+  ],
+  "object_extensions": [
+   ".o"
+  ],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".c"
+  ]
+ },
+ "Haskell / ghc": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "foo",
+       "foo.hs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.hs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "foo",
+       "foo.hs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.hs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/ln",
+       "-s",
+       "foo.hs",
+       "Foo.hs"
+      ],
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "foo",
+       "grader.hs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.hs",
+      "foo.hs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/ln",
+       "-s",
+       "foo.hs",
+       "Foo.hs"
+      ],
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "foo",
+       "grader.hs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.hs",
+      "foo.hs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/ln",
+       "-s",
+       "foo.hs",
+       "Foo.hs"
+      ],
+      [
+       "/bin/ln",
+       "-s",
+       "bar.hs",
+       "Bar.hs"
+      ],
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "bar_foo",
+       "grader.hs"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.hs",
+      "foo.hs",
+      "bar.hs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/ln",
+       "-s",
+       "foo.hs",
+       "Foo.hs"
+      ],
+      [
+       "/bin/ln",
+       "-s",
+       "bar.hs",
+       "Bar.hs"
+      ],
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "bar_foo",
+       "grader.hs"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.hs",
+      "foo.hs",
+      "bar.hs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/ln",
+       "-s",
+       "foo.hs",
+       "dir/Foo.hs"
+      ],
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "with space",
+       "dir/grader.hs"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.hs",
+      "dir/foo.hs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/ln",
+       "-s",
+       "foo.hs",
+       "dir/Foo.hs"
+      ],
+      [
+       "/usr/bin/ghc",
+       "-static",
+       "-O2",
+       "-Wall",
+       "-o",
+       "with space",
+       "dir/grader.hs"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.hs",
+      "dir/foo.hs"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [],
+  "object_extensions": [
+   ".o"
+  ],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".hs"
+  ]
+ },
+ "Java / JDK": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "foo.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf foo.jar *.class"
+      ]
+     ],
+     "executable": "foo.jar",
+     "for_evaluation": true,
+     "sources": [
+      "foo.java"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "foo.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf foo.jar *.class"
+      ]
+     ],
+     "executable": "foo.jar",
+     "for_evaluation": false,
+     "sources": [
+      "foo.java"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "grader.java",
+       "foo.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf foo.jar *.class"
+      ]
+     ],
+     "executable": "foo.jar",
+     "for_evaluation": true,
+     "sources": [
+      "grader.java",
+      "foo.java"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "grader.java",
+       "foo.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf foo.jar *.class"
+      ]
+     ],
+     "executable": "foo.jar",
+     "for_evaluation": false,
+     "sources": [
+      "grader.java",
+      "foo.java"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "grader.java",
+       "foo.java",
+       "bar.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf bar_foo.jar *.class"
+      ]
+     ],
+     "executable": "bar_foo.jar",
+     "for_evaluation": true,
+     "sources": [
+      "grader.java",
+      "foo.java",
+      "bar.java"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "grader.java",
+       "foo.java",
+       "bar.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf bar_foo.jar *.class"
+      ]
+     ],
+     "executable": "bar_foo.jar",
+     "for_evaluation": false,
+     "sources": [
+      "grader.java",
+      "foo.java",
+      "bar.java"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "dir/grader.java",
+       "dir/foo.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf 'with space.jar' *.class"
+      ]
+     ],
+     "executable": "with space.jar",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.java",
+      "dir/foo.java"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/javac",
+       "dir/grader.java",
+       "dir/foo.java"
+      ],
+      [
+       "/bin/sh",
+       "-c",
+       "jar cf 'with space.jar' *.class"
+      ]
+     ],
+     "executable": "with space.jar",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.java",
+      "dir/foo.java"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "/usr/bin/java",
+       "-Deval=true",
+       "-Xmx512M",
+       "-Xss64M",
+       "-cp",
+       "foo.jar",
+       null
+      ]
+     ],
+     "executable": "foo.jar",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "/usr/bin/java",
+       "-Deval=true",
+       "-Xmx512M",
+       "-Xss64M",
+       "-cp",
+       "foo.jar",
+       "grader"
+      ]
+     ],
+     "executable": "foo.jar",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "/usr/bin/java",
+       "-Deval=true",
+       "-Xmx512M",
+       "-Xss64M",
+       "-cp",
+       "foo.jar",
+       "Main",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo.jar",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": ".jar",
+  "header_extensions": [],
+  "object_extensions": [],
+  "requires_multithreading": true,
+  "source_extensions": [
+   ".java"
+  ]
+ },
+ "PHP": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/bin/true"
+      ]
+     ],
+     "executable": "foo.php",
+     "for_evaluation": true,
+     "sources": [
+      "foo.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/true"
+      ]
+     ],
+     "executable": "foo.php",
+     "for_evaluation": false,
+     "sources": [
+      "foo.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/cp",
+       "grader.php",
+       "foo.php"
+      ]
+     ],
+     "executable": "foo.php",
+     "for_evaluation": true,
+     "sources": [
+      "grader.php",
+      "foo.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/cp",
+       "grader.php",
+       "foo.php"
+      ]
+     ],
+     "executable": "foo.php",
+     "for_evaluation": false,
+     "sources": [
+      "grader.php",
+      "foo.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/cp",
+       "grader.php",
+       "bar_foo.php"
+      ]
+     ],
+     "executable": "bar_foo.php",
+     "for_evaluation": true,
+     "sources": [
+      "grader.php",
+      "foo.php",
+      "bar.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/cp",
+       "grader.php",
+       "bar_foo.php"
+      ]
+     ],
+     "executable": "bar_foo.php",
+     "for_evaluation": false,
+     "sources": [
+      "grader.php",
+      "foo.php",
+      "bar.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/cp",
+       "dir/grader.php",
+       "with space.php"
+      ]
+     ],
+     "executable": "with space.php",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.php",
+      "dir/foo.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/cp",
+       "dir/grader.php",
+       "with space.php"
+      ]
+     ],
+     "executable": "with space.php",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.php",
+      "dir/foo.php"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/bin/true"
+      ]
+     ],
+     "executable": "foo.php",
+     "for_evaluation": true,
+     "sources": [
+      "foo.php"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "/usr/bin/php",
+       "-d",
+       "memory_limit=-1",
+       "foo.php"
+      ]
+     ],
+     "executable": "foo.php",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "/usr/bin/php",
+       "-d",
+       "memory_limit=-1",
+       "foo.php"
+      ]
+     ],
+     "executable": "foo.php",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "/usr/bin/php",
+       "-d",
+       "memory_limit=-1",
+       "foo.php",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo.php",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": ".php",
+  "header_extensions": [],
+  "object_extensions": [],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".php"
+  ]
+ },
+ "Pascal / fpc": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-dEVAL",
+       "-O2",
+       "-XSs",
+       "-ofoo",
+       "foo.pas"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.pas"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-O2",
+       "-XSs",
+       "-ofoo",
+       "foo.pas"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.pas"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-dEVAL",
+       "-O2",
+       "-XSs",
+       "-ofoo",
+       "grader.pas"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.pas",
+      "foo.pas"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-O2",
+       "-XSs",
+       "-ofoo",
+       "grader.pas"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.pas",
+      "foo.pas"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-dEVAL",
+       "-O2",
+       "-XSs",
+       "-obar_foo",
+       "grader.pas"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.pas",
+      "foo.pas",
+      "bar.pas"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-O2",
+       "-XSs",
+       "-obar_foo",
+       "grader.pas"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.pas",
+      "foo.pas",
+      "bar.pas"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-dEVAL",
+       "-O2",
+       "-XSs",
+       "-owith space",
+       "dir/grader.pas"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.pas",
+      "dir/foo.pas"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/fpc",
+       "-O2",
+       "-XSs",
+       "-owith space",
+       "dir/grader.pas"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.pas",
+      "dir/foo.pas"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [
+   "lib.pas"
+  ],
+  "object_extensions": [
+   ".o"
+  ],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".pas"
+  ]
+ },
+ "Python 3 / CPython": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "foo.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "foo.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "grader.py",
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "grader.py",
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "bar_foo.pyz",
+       "__main__.pyc",
+       "foo.pyc",
+       "bar.pyc"
+      ]
+     ],
+     "executable": "bar_foo.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "grader.py",
+      "foo.py",
+      "bar.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "bar_foo.pyz",
+       "__main__.pyc",
+       "foo.pyc",
+       "bar.pyc"
+      ]
+     ],
+     "executable": "bar_foo.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "grader.py",
+      "foo.py",
+      "bar.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "with space.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "with space.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.py",
+      "dir/foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "with space.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "with space.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.py",
+      "dir/foo.py"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "foo.pyz"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "foo.pyz"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "/usr/bin/python3",
+       "foo.pyz",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": ".pyz",
+  "header_extensions": [],
+  "object_extensions": [],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".py"
+  ]
+ },
+ "Python 3 / PyPy": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "foo.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "foo.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "grader.py",
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "foo.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "grader.py",
+      "foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "bar_foo.pyz",
+       "__main__.pyc",
+       "foo.pyc",
+       "bar.pyc"
+      ]
+     ],
+     "executable": "bar_foo.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "grader.py",
+      "foo.py",
+      "bar.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "bar_foo.pyz",
+       "__main__.pyc",
+       "foo.pyc",
+       "bar.pyc"
+      ]
+     ],
+     "executable": "bar_foo.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "grader.py",
+      "foo.py",
+      "bar.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "with space.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "with space.pyz",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.py",
+      "dir/foo.py"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "-m",
+       "compileall",
+       "-b",
+       "."
+      ],
+      [
+       "/bin/mv",
+       "grader.pyc",
+       "__main__.pyc"
+      ],
+      [
+       "/usr/bin/zip",
+       "with space.pyz",
+       "__main__.pyc",
+       "foo.pyc"
+      ]
+     ],
+     "executable": "with space.pyz",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.py",
+      "dir/foo.py"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "foo.pyz"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "foo.pyz"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "/usr/bin/pypy3",
+       "foo.pyz",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo.pyz",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": ".pyz",
+  "header_extensions": [],
+  "object_extensions": [],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".py"
+  ]
+ },
+ "Rust": {
+  "cases": {
+   "compile": [
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "foo",
+       "foo.rs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "foo.rs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "foo",
+       "foo.rs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "foo.rs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "foo",
+       "grader.rs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.rs",
+      "foo.rs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "foo",
+       "grader.rs"
+      ]
+     ],
+     "executable": "foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.rs",
+      "foo.rs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "bar_foo",
+       "grader.rs"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": true,
+     "sources": [
+      "grader.rs",
+      "foo.rs",
+      "bar.rs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "bar_foo",
+       "grader.rs"
+      ]
+     ],
+     "executable": "bar_foo",
+     "for_evaluation": false,
+     "sources": [
+      "grader.rs",
+      "foo.rs",
+      "bar.rs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "with space",
+       "dir/grader.rs"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": true,
+     "sources": [
+      "dir/grader.rs",
+      "dir/foo.rs"
+     ]
+    },
+    {
+     "commands": [
+      [
+       "/usr/bin/rustc",
+       "-O",
+       "-o",
+       "with space",
+       "dir/grader.rs"
+      ]
+     ],
+     "executable": "with space",
+     "for_evaluation": false,
+     "sources": [
+      "dir/grader.rs",
+      "dir/foo.rs"
+     ]
+    }
+   ],
+   "evaluate": [
+    {
+     "args": null,
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": null
+    },
+    {
+     "args": [],
+     "commands": [
+      [
+       "./foo"
+      ]
+     ],
+     "executable": "foo",
+     "main": "grader"
+    },
+    {
+     "args": [
+      "a",
+      "b c"
+     ],
+     "commands": [
+      [
+       "./foo",
+       "a",
+       "b c"
+      ]
+     ],
+     "executable": "foo",
+     "main": "Main"
+    }
+   ]
+  },
+  "executable_extension": "",
+  "header_extensions": [],
+  "object_extensions": [],
+  "requires_multithreading": false,
+  "source_extensions": [
+   ".rs"
+  ]
+ }
+}

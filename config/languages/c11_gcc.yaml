@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/c11_gcc.py of CMS:
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: C11 / gcc
+source_extensions: [.c]
+header_extensions: [.h]
+object_extensions: [.o]
+compilation:
+  commands:
+    - [/usr/bin/gcc, "{eval:-DEVAL}", -std=gnu11, -O2, -pipe, -static, -s, -o, "{executable}", "{sources}", -lm]
+evaluation:
+  commands:
+    - ["./{executable}", "{args}"]

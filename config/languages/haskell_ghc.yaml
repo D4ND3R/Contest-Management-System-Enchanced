@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/haskell_ghc.py of CMS:
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: Haskell / ghc
+source_extensions: [.hs]
+object_extensions: [.o]
+compilation:
+  commands:
+    # Haskell module names are capitalized, so every source but the first
+    # gets a link with the capitalized name. The first source is the grader
+    # or the only source: nothing imports it.
+    - for_each: other_sources
+      command: [/bin/ln, -s, "{source|base}", "{source|capitalize}"]
+    - [/usr/bin/ghc, -static, -O2, -Wall, -o, "{executable}", "{main_source}"]
+  # The package database (/usr/lib/ghc/package.conf.d links there).
+  dirs: [/var/lib/ghc]
+evaluation:
+  commands:
+    - ["./{executable}", "{args}"]
+  # The GHC runtime starts a ticker thread.
+  processes: 2

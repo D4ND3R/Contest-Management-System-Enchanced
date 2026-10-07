@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Ported from cms/grading/languages/php.py of CMS:
+# Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# The format is described in internal/grading/language (doc.go).
+
+name: PHP
+source_extensions: [.php]
+executable_extension: .php
+# The executable is a copy of the main source (/bin/cp, or /bin/true when
+# they have the same name, like upstream).
+interpreted: true
+evaluation:
+  commands:
+    - [/usr/bin/php, -d, memory_limit=-1, "{executable}", "{args}"]

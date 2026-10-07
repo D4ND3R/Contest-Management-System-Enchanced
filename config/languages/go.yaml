@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Not in upstream CMS. The format is described in internal/grading/language
+# (doc.go).
+#
+# Compiling the standard library takes more CPU time than the compilation
+# limit, and the build cache of a box starts empty. Build it once on every
+# judging host (as root, again after every upgrade of Go):
+#
+#   CGO_ENABLED=0 GODEBUG=installgoroot=all \
+#     /usr/bin/go install -pkgdir=/var/lib/cms/go-std std
+#
+# Without it compilations still work but take about 10 s of CPU time.
+name: Go
+source_extensions: [.go]
+# The Go runtime starts several threads and reserves far more address
+# space than it uses.
+requires_multithreading: true
+large_address_space: true
+compilation:
+  commands:
+    - [/usr/bin/go, build, -pkgdir=/var/lib/cms/go-std, -o, "{executable}", "{sources}"]
+  dirs: [/var/lib/cms/go-std]
+  env:
+    - GOCACHE=/tmp/.cache/go-build
+    - GOPATH=/tmp/.go
+    - GOENV=off
+    - GOTOOLCHAIN=local
+    - CGO_ENABLED=0
+    # Use the packages of -pkgdir (Go >= 1.20 no longer does by default).
+    - GODEBUG=installgoroot=all
+  # The build cache locks its files.
+  file_locks: true
+evaluation:
+  commands:
+    - ["./{executable}", "{args}"]

@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Not in upstream CMS. The format is described in internal/grading/language
+# (doc.go).
+name: Kotlin / JDK
+source_extensions: [.kt]
+executable_extension: .jar
+requires_multithreading: true
+# The JVM reserves far more address space than it uses.
+large_address_space: true
+compilation:
+  commands:
+    # A jar with the Kotlin runtime, whose manifest names the class with
+    # the main function.
+    - [/usr/bin/kotlinc, "{sources}", -include-runtime, -d, "{executable}"]
+  dirs: [/etc/java-*-openjdk]
+  env:
+    # The JVM options of the kotlinc script (its default is -Xmx256M
+    # -Xms32M). The serial collector and the C1 compiler halve the CPU
+    # time of a compilation.
+    - JAVA_OPTS=-Xmx512M -Xms32M -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+evaluation:
+  commands:
+    - [/usr/bin/java, -Deval=true, -Xmx512M, -Xss64M, -jar, "{executable}", "{args}"]
+  dirs: [/etc/java-*-openjdk]

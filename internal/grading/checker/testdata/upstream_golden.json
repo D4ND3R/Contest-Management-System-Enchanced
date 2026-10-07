@@ -1,0 +1,2923 @@
+{
+ "white_diff": [
+  {
+   "output": "",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQ==",
+   "correct": "MQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YQ==",
+   "correct": "YQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "5L2g5aW9",
+   "correct": "5L2g5aW9",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MSAgIA==",
+   "correct": "MQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "ICAgMQ==",
+   "correct": "MQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MSAJCgsMDQ==",
+   "correct": "MQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQo=",
+   "correct": "MQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQoKCgo=",
+   "correct": "MQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQoKCgo=",
+   "correct": "MQo=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQoNDSAKICAKCg==",
+   "correct": "MSAgIAoNICA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MSBhc2QKCgo=",
+   "correct": "ICAgMQlhc2QgIAo=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MSAyCgoK",
+   "correct": "MSAyCg==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQkNMg==",
+   "correct": "MSAy",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MSAy",
+   "correct": "MSAyIAkKCwwN",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MSAy",
+   "correct": "MTI=",
+   "equal": false,
+   "admin_text": "Expected `12`, found `1 2` on line 1"
+  },
+  {
+   "output": "MSAyMw==",
+   "correct": "MTIgMw==",
+   "equal": false,
+   "admin_text": "Expected `12 3`, found `1 23` on line 1"
+  },
+  {
+   "output": "MQ==",
+   "correct": "MDE=",
+   "equal": false,
+   "admin_text": "Expected `01`, found `1` on line 1"
+  },
+  {
+   "output": "MS4w",
+   "correct": "MQ==",
+   "equal": false,
+   "admin_text": "Expected `1`, found `1.0` on line 1"
+  },
+  {
+   "output": "CjE=",
+   "correct": "MQ==",
+   "equal": false,
+   "admin_text": "Expected `1`, found `` on line 1"
+  },
+  {
+   "output": "MSAy",
+   "correct": "MQoy",
+   "equal": false,
+   "admin_text": "Expected `1`, found `1 2` on line 1"
+  },
+  {
+   "output": "MQoKMg==",
+   "correct": "MQoy",
+   "equal": false,
+   "admin_text": "Expected `2`, found `` on line 2"
+  },
+  {
+   "output": "MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMQ==",
+   "correct": "MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTA=",
+   "equal": false,
+   "admin_text": "Expected `1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111...`, found `1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111...` on line 1"
+  },
+  {
+   "output": "aGVsbG8Ad29ybGQ=",
+   "correct": "aGVsbG93b3JsZA==",
+   "equal": false,
+   "admin_text": "Expected `helloworld`, found `hello\\x00world` on line 1"
+  },
+  {
+   "output": "Mgo=",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "",
+   "correct": "Mgo=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "Cgo=",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4w6k=",
+   "correct": "eQ==",
+   "equal": false,
+   "admin_text": "Expected `y`, found `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\xc3...` on line 1"
+  },
+  {
+   "output": "YcMoYg==",
+   "correct": "YWI=",
+   "equal": false,
+   "admin_text": "Expected `ab`, found `a\\xc3(b` on line 1"
+  },
+  {
+   "output": "5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g5L2g",
+   "correct": "eg==",
+   "equal": false,
+   "admin_text": "Expected `z`, found `你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你\\xe4...` on line 1"
+  },
+  {
+   "output": "MSAyIDMKNCA1IDYK",
+   "correct": "MSAyIDMKNCA1IDcK",
+   "equal": false,
+   "admin_text": "Expected `4 5 7`, found `4 5 6` on line 2"
+  },
+  {
+   "output": "YSBi",
+   "correct": "YSAgYgoKICAK",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "ICAK",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YQ0KYg0K",
+   "correct": "YQpiCg==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YQ1i",
+   "correct": "YQpi",
+   "equal": false,
+   "admin_text": "Expected `a`, found `a b` on line 1"
+  },
+  {
+   "output": "C3g=",
+   "correct": "eA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "eAA=",
+   "correct": "eA==",
+   "equal": false,
+   "admin_text": "Expected `x`, found `x\\x00` on line 1"
+  },
+  {
+   "output": "DA==",
+   "correct": "DA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MTEgACA=",
+   "correct": "CmLDqSA=",
+   "equal": false,
+   "admin_text": "Expected ``, found `11 \\x00` on line 1"
+  },
+  {
+   "output": "MTEN/wv/DGEgDQ==",
+   "correct": "YQ==",
+   "equal": false,
+   "admin_text": "Expected `a`, found `11 \\xff \\xff a` on line 1"
+  },
+  {
+   "output": "YQwMCwBh//8gAGE=",
+   "correct": "DQAJ/wsx/zEM",
+   "equal": false,
+   "admin_text": "Expected `\\x00 \\xff 1\\xff1`, found `a \\x00a\\xff\\xff \\x00a` on line 1"
+  },
+  {
+   "output": "Yg0=",
+   "correct": "Yg3DqWJh",
+   "equal": false,
+   "admin_text": "Expected `b éba`, found `b` on line 1"
+  },
+  {
+   "output": "IDEKIA0JCwk=",
+   "correct": "YSAxCiAJDQkLCQ==",
+   "equal": false,
+   "admin_text": "Expected `a 1`, found `1` on line 1"
+  },
+  {
+   "output": "DWELw6liCgs=",
+   "correct": "DWELw6liCgs=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6k=",
+   "correct": "AA3DqQk=",
+   "equal": false,
+   "admin_text": "Expected `\\x00 é`, found `é` on line 1"
+  },
+  {
+   "output": "DDH/IAAK",
+   "correct": "DDH/IAAK",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6kJCv8L/2EJCw==",
+   "correct": "w6kAADHDqQ==",
+   "equal": false,
+   "admin_text": "Expected `é\\x00\\x001é`, found `é` on line 1"
+  },
+  {
+   "output": "YgA=",
+   "correct": "C2IACv8=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "CQz//wxhw6kA",
+   "correct": "w6kNIA0gDAli",
+   "equal": false,
+   "admin_text": "Expected `é b`, found `\\xff\\xff aé\\x00` on line 1"
+  },
+  {
+   "output": "CzEgYcOpw6kx",
+   "correct": "CzEgYcOpw6kx",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DSBi/woLYQ==",
+   "correct": "DSANYv8KC2E=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CwwNIAlhIMOpCQ==",
+   "correct": "CwwNIAlhIMOpCQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YQ0xw6kLCw1i",
+   "correct": "C2ENMcOpw6kLCw1i",
+   "equal": false,
+   "admin_text": "Expected `a 1éé b`, found `a 1é b` on line 1"
+  },
+  {
+   "output": "AA0KAMOpDA0JIAk=",
+   "correct": "Cf9hAA0=",
+   "equal": false,
+   "admin_text": "Expected `\\xffa\\x00`, found `\\x00` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "DDEL",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "Cg==",
+   "correct": "CQ0JCQliCcOp",
+   "equal": false,
+   "admin_text": "Expected `b é`, found `` on line 1"
+  },
+  {
+   "output": "DQxi",
+   "correct": "DQsMYiA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Ygs=",
+   "correct": "Ygs=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Yg1hAMOpw6nDqQogw6kA",
+   "correct": "Yg1hAMOpw6nDqQogw6kA",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "C8OpCmEJ/woKDA0g",
+   "correct": "CwvD/6kKYQn/CmEKDA0g",
+   "equal": false,
+   "admin_text": "Expected `\\xc3\\xff\\xa9`, found `é` on line 1"
+  },
+  {
+   "output": "IA3/Yg==",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "CgtiYgliMQ==",
+   "correct": "/woKC2JiCWIJMQ==",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `` on line 1"
+  },
+  {
+   "output": "IDEgCgkLDDEgDQA=",
+   "correct": "AGIgYgkLw6kx",
+   "equal": false,
+   "admin_text": "Expected `\\x00b b é1`, found `1` on line 1"
+  },
+  {
+   "output": "YmE=",
+   "correct": "YmFhMQw=",
+   "equal": false,
+   "admin_text": "Expected `baa1`, found `ba` on line 1"
+  },
+  {
+   "output": "Cw0xDQ0=",
+   "correct": "Cw0x/w0N/w==",
+   "equal": false,
+   "admin_text": "Expected `1\\xff \\xff`, found `1` on line 1"
+  },
+  {
+   "output": "IMOpMQ==",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "AAAxDA0gDSAMYcOp",
+   "correct": "AAAxDA0gDSAMYcOp",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6nDqWH/w6k=",
+   "correct": "w6kxCzHDqWH/w6k=",
+   "equal": false,
+   "admin_text": "Expected `é1 1éa\\xffé`, found `ééa\\xffé` on line 1"
+  },
+  {
+   "output": "DQ0x",
+   "correct": "IAAxCwsJC8Op",
+   "equal": false,
+   "admin_text": "Expected `\\x001 é`, found `1` on line 1"
+  },
+  {
+   "output": "CgwMDQwxDAkL",
+   "correct": "CwrDqWFhw6nDqWI=",
+   "equal": false,
+   "admin_text": "Expected `éaaééb`, found `1` on line 2"
+  },
+  {
+   "output": "/wwA",
+   "correct": "Mf8MADE=",
+   "equal": false,
+   "admin_text": "Expected `1\\xff \\x001`, found `\\xff \\x00` on line 1"
+  },
+  {
+   "output": "w6n/Ygv/AAsNAA==",
+   "correct": "w6n/Ygv/AAsNAA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CQwMYgkx",
+   "correct": "CQkMDGIJw6kAMQ==",
+   "equal": false,
+   "admin_text": "Expected `b é\\x001`, found `b 1` on line 1"
+  },
+  {
+   "output": "CQALDGI=",
+   "correct": "CQALCwwgYg==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "/8OpDDFiDWHDqWENYQ==",
+   "correct": "/8MNqSAMMWINYcOpYQ1h",
+   "equal": false,
+   "admin_text": "Expected `\\xff\\xc3 \\xa9 1b aéa a`, found `\\xffé 1b aéa a` on line 1"
+  },
+  {
+   "output": "Cg==",
+   "correct": "YQBhIA==",
+   "equal": false,
+   "admin_text": "Expected `a\\x00a`, found `` on line 1"
+  },
+  {
+   "output": "/w==",
+   "correct": "DGL/",
+   "equal": false,
+   "admin_text": "Expected `b\\xff`, found `\\xff` on line 1"
+  },
+  {
+   "output": "DQw=",
+   "correct": "DSAM",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQ==",
+   "correct": "w6kx",
+   "equal": false,
+   "admin_text": "Expected `é1`, found `1` on line 1"
+  },
+  {
+   "output": "ADEgCg3/CwwKCmE=",
+   "correct": "ADEgCg3/CwwKCmE=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AAr/CgkLDP8=",
+   "correct": "AAr/CgkLDP8=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MWL/CwoNDWIgIP8=",
+   "correct": "AAoJ",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `1b\\xff` on line 1"
+  },
+  {
+   "output": "YQz/DAvDqSD/Cg==",
+   "correct": "YQxi/wwLw/8JqSD/Cg==",
+   "equal": false,
+   "admin_text": "Expected `a b\\xff \\xc3\\xff \\xa9 \\xff`, found `a \\xff é \\xff` on line 1"
+  },
+  {
+   "output": "MSAL/wlh",
+   "correct": "CgkAYgkKIA0L/w==",
+   "equal": false,
+   "admin_text": "Expected ``, found `1 \\xff a` on line 1"
+  },
+  {
+   "output": "CQkLCzEgCQ0ACg==",
+   "correct": "CQkgICBiw6kM/w0=",
+   "equal": false,
+   "admin_text": "Expected `bé \\xff`, found `1 \\x00` on line 1"
+  },
+  {
+   "output": "YQsKDAsN",
+   "correct": "CgwAMQoAYsOpYQrDqQ==",
+   "equal": false,
+   "admin_text": "Expected ``, found `a` on line 1"
+  },
+  {
+   "output": "MSAADTFhAGE=",
+   "correct": "MSAADTFhAGE=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6liCw==",
+   "correct": "/2IM/woLDQthCQ==",
+   "equal": false,
+   "admin_text": "Expected `\\xffb \\xff`, found `éb` on line 1"
+  },
+  {
+   "output": "CWHDqQ==",
+   "correct": "CQBhw6k=",
+   "equal": false,
+   "admin_text": "Expected `\\x00aé`, found `aé` on line 1"
+  },
+  {
+   "output": "w6liCsOpCf8=",
+   "correct": "w6kxMSAAAA==",
+   "equal": false,
+   "admin_text": "Expected `é11 \\x00\\x00`, found `éb` on line 1"
+  },
+  {
+   "output": "Cw0=",
+   "correct": "C8MMqQsN",
+   "equal": false,
+   "admin_text": "Expected `\\xc3 \\xa9`, found `` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "MQA=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "CyD/AGIMDTE=",
+   "correct": "CyD/AGIMDTE=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "C2IJICAJ",
+   "correct": "AA0ACzFhDWIN",
+   "equal": false,
+   "admin_text": "Expected `\\x00 \\x00 1a b`, found `b` on line 1"
+  },
+  {
+   "output": "w6lhCwwgCjFhw6k=",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "DQv/AAAJMQoJDWI=",
+   "correct": "DQsJADE=",
+   "equal": false,
+   "admin_text": "Expected `\\x001`, found `\\xff\\x00\\x00 1` on line 1"
+  },
+  {
+   "output": "DTEK/yAL/wsNIGI=",
+   "correct": "CTENYgwJYiD/Cg==",
+   "equal": false,
+   "admin_text": "Expected `1 b b \\xff`, found `1` on line 1"
+  },
+  {
+   "output": "Cf8xYv8JCyBhYcOpYQ==",
+   "correct": "Cf8xYv8JCyBhYWHDqWE=",
+   "equal": false,
+   "admin_text": "Expected `\\xff1b\\xff aaaéa`, found `\\xff1b\\xff aaéa` on line 1"
+  },
+  {
+   "output": "YgAMYv8N",
+   "correct": "YgAMYv8N",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AArDqSAK",
+   "correct": "MQoJMTHDqQoJ",
+   "equal": false,
+   "admin_text": "Expected `1`, found `\\x00` on line 1"
+  },
+  {
+   "output": "MQsNCw==",
+   "correct": "MQwLDWLDqQs=",
+   "equal": false,
+   "admin_text": "Expected `1 bé`, found `1` on line 1"
+  },
+  {
+   "output": "AP8KMcOpIAtiYg==",
+   "correct": "CgoNIAoMCg0=",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x00\\xff` on line 1"
+  },
+  {
+   "output": "/yBiAAk=",
+   "correct": "Cv/DMakgYgAJ",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\xff b\\x00` on line 1"
+  },
+  {
+   "output": "/2IMDQkJ",
+   "correct": "/2IMDQkMCQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cv8NDA1iCQ==",
+   "correct": "MQoNDWFiYg==",
+   "equal": false,
+   "admin_text": "Expected `1`, found `` on line 1"
+  },
+  {
+   "output": "MQ1iw6lh",
+   "correct": "w6kMCTFhw6kJ",
+   "equal": false,
+   "admin_text": "Expected `é 1aé`, found `1 béa` on line 1"
+  },
+  {
+   "output": "w6kxCg0MCg==",
+   "correct": "w6lhMQoNCgwMCg==",
+   "equal": false,
+   "admin_text": "Expected `éa1`, found `é1` on line 1"
+  },
+  {
+   "output": "DQ==",
+   "correct": "DQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AAoAw6k=",
+   "correct": "AAoxAGLDqcOp",
+   "equal": false,
+   "admin_text": "Expected `1\\x00béé`, found `\\x00é` on line 2"
+  },
+  {
+   "output": "CyALCQ0KCjE=",
+   "correct": "MQogC8OpCmFhAArDqQ==",
+   "equal": false,
+   "admin_text": "Expected `1`, found `` on line 1"
+  },
+  {
+   "output": "DA3/IMOpCv8=",
+   "correct": "DA0K/yDDC6kKCf8=",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\xff é` on line 1"
+  },
+  {
+   "output": "w6kJYQ==",
+   "correct": "C8OpCWFh",
+   "equal": false,
+   "admin_text": "Expected `é aa`, found `é a` on line 1"
+  },
+  {
+   "output": "YgthMTEMAP/DqQth",
+   "correct": "DQ0Mw6n/w6kgAAn/",
+   "equal": false,
+   "admin_text": "Expected `é\\xffé \\x00 \\xff`, found `b a11 \\x00\\xffé a` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "CQ0Kw6kxIAkNCgw=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "IAwNDP9iCf8=",
+   "correct": "IDExDA0M/2IMCf8=",
+   "equal": false,
+   "admin_text": "Expected `11 \\xffb \\xff`, found `\\xffb \\xff` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "CzH/Cg==",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "DWEKw6liCWEgIGEgIA==",
+   "correct": "DMOpYQwA",
+   "equal": false,
+   "admin_text": "Expected `éa \\x00`, found `a` on line 1"
+  },
+  {
+   "output": "/wwMIAsLCv8=",
+   "correct": "AAAJYg==",
+   "equal": false,
+   "admin_text": "Expected `\\x00\\x00 b`, found `\\xff` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "/zH/",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "CgoJYQ==",
+   "correct": "MQoMIAoJYQ==",
+   "equal": false,
+   "admin_text": "Expected `1`, found `` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "w6nDqWE=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "",
+   "correct": "Cw0=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cw0A",
+   "correct": "w6lhCmIJMWFiAAs=",
+   "equal": false,
+   "admin_text": "Expected `éa`, found `\\x00` on line 1"
+  },
+  {
+   "output": "w6kMDAw=",
+   "correct": "DQ0KDA==",
+   "equal": false,
+   "admin_text": "Expected ``, found `é` on line 1"
+  },
+  {
+   "output": "CQ==",
+   "correct": "CTEgCgA=",
+   "equal": false,
+   "admin_text": "Expected `1`, found `` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DQoxC8OpCf9h",
+   "correct": "DQoxC8MNqQn/YQ==",
+   "equal": false,
+   "admin_text": "Expected `1 \\xc3 \\xa9 \\xffa`, found `1 é \\xffa` on line 2"
+  },
+  {
+   "output": "MQDDqQsxCTE=",
+   "correct": "MQAKw6kLMQkx",
+   "equal": false,
+   "admin_text": "Expected `1\\x00`, found `1\\x00é 1 1` on line 1"
+  },
+  {
+   "output": "DAxhYgkxIAsKYQ==",
+   "correct": "DAxhDGIACTEgCwph",
+   "equal": false,
+   "admin_text": "Expected `a b\\x00 1`, found `ab 1` on line 1"
+  },
+  {
+   "output": "CQthCwliIAA=",
+   "correct": "CQthCwliIAA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AAAJ",
+   "correct": "AAAJCQkM",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQ0JCSA=",
+   "correct": "MQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cv8MYgoLCmJhDQ==",
+   "correct": "Cv8MYgoLCmJhDQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CSAMYmJiC8Op/wog",
+   "correct": "CSAMYmJiC8Op/yAKIA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CgwLICALCwkK",
+   "correct": "IGExCWIxMWE=",
+   "equal": false,
+   "admin_text": "Expected `a1 b11a`, found `` on line 1"
+  },
+  {
+   "output": "MQ0=",
+   "correct": "Cw0JIADDqQALIArDqQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00é\\x00`, found `1` on line 1"
+  },
+  {
+   "output": "/wzDqQlh/w==",
+   "correct": "/wzDqcOpCWH/",
+   "equal": false,
+   "admin_text": "Expected `\\xff éé a\\xff`, found `\\xff é a\\xff` on line 1"
+  },
+  {
+   "output": "YcOpYcOpw6k=",
+   "correct": "YcOpYcMgqcOp",
+   "equal": false,
+   "admin_text": "Expected `aéa\\xc3 \\xa9é`, found `aéaéé` on line 1"
+  },
+  {
+   "output": "w6kJ",
+   "correct": "CsOpIAwMICBhIGI=",
+   "equal": false,
+   "admin_text": "Expected ``, found `é` on line 1"
+  },
+  {
+   "output": "w6kADQv//2IMCwliYg==",
+   "correct": "CQwNADEK",
+   "equal": false,
+   "admin_text": "Expected `\\x001`, found `é\\x00 \\xff\\xffb bb` on line 1"
+  },
+  {
+   "output": "CSAJw6kKMQwxIDE=",
+   "correct": "CSBiCcOpCmExDDEgMQ==",
+   "equal": false,
+   "admin_text": "Expected `b é`, found `é` on line 1"
+  },
+  {
+   "output": "w6kJ",
+   "correct": "w6kJ",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DWIxDAkLIAsACf9h",
+   "correct": "Cw==",
+   "equal": false,
+   "admin_text": "Expected ``, found `b1 \\x00 \\xffa` on line 1"
+  },
+  {
+   "output": "CjENIAo=",
+   "correct": "AAoMMQ0gYQo=",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `` on line 1"
+  },
+  {
+   "output": "CgoMYTFh",
+   "correct": "CgoKDAkMYTFh",
+   "equal": false,
+   "admin_text": "Expected ``, found `a1a` on line 3"
+  },
+  {
+   "output": "CwAJ",
+   "correct": "CQ==",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x00` on line 1"
+  },
+  {
+   "output": "CgsJCcOpYQ==",
+   "correct": "CgsLCQnDqWHDqQ==",
+   "equal": false,
+   "admin_text": "Expected `éaé`, found `éa` on line 2"
+  },
+  {
+   "output": "YgrDqQBiCg==",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "MQAACg0KMQoJDA==",
+   "correct": "MQAACg0Kw6kxCgoJDA==",
+   "equal": false,
+   "admin_text": "Expected `é1`, found `1` on line 3"
+  },
+  {
+   "output": "AAsNDQtiYmJiDApi",
+   "correct": "Cw==",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x00 bbbb` on line 1"
+  },
+  {
+   "output": "w6kL",
+   "correct": "w/+pIAs=",
+   "equal": false,
+   "admin_text": "Expected `\\xc3\\xff\\xa9`, found `é` on line 1"
+  },
+  {
+   "output": "CQkK",
+   "correct": "w6kJCQo=",
+   "equal": false,
+   "admin_text": "Expected `é`, found `` on line 1"
+  },
+  {
+   "output": "w6kKYgAxYmExCQ0=",
+   "correct": "/8OpCwpiADFiYTEJDQ==",
+   "equal": false,
+   "admin_text": "Expected `\\xffé`, found `é` on line 1"
+  },
+  {
+   "output": "CWFiDf8=",
+   "correct": "CWFiDf8KDQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6n//woxC2IxCww=",
+   "correct": "w6n//wrDqTEACwtiMQsM",
+   "equal": false,
+   "admin_text": "Expected `é1\\x00 b1`, found `1 b1` on line 2"
+  },
+  {
+   "output": "CQ==",
+   "correct": "Cv8JAA==",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "CwoM",
+   "correct": "MWIgYg3/YQ3/",
+   "equal": false,
+   "admin_text": "Expected `1b b \\xffa \\xff`, found `` on line 1"
+  },
+  {
+   "output": "IA0JYcOp/w==",
+   "correct": "w6k=",
+   "equal": false,
+   "admin_text": "Expected `é`, found `aé\\xff` on line 1"
+  },
+  {
+   "output": "IDHDqWEJDQ0JADE=",
+   "correct": "IDHDqWEJDSANCQAx",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "McOpDQsMMf//",
+   "correct": "McOp",
+   "equal": false,
+   "admin_text": "Expected `1é`, found `1é 1\\xff\\xff` on line 1"
+  },
+  {
+   "output": "w6kJCzExCQ==",
+   "correct": "McOpCQsxMWIJ",
+   "equal": false,
+   "admin_text": "Expected `1é 11b`, found `é 11` on line 1"
+  },
+  {
+   "output": "YmLDqSDDqQ==",
+   "correct": "C2JiYQwACQ==",
+   "equal": false,
+   "admin_text": "Expected `bba \\x00`, found `bbé é` on line 1"
+  },
+  {
+   "output": "w6kNw6k=",
+   "correct": "w6kNAMMgqQ==",
+   "equal": false,
+   "admin_text": "Expected `é \\x00\\xc3 \\xa9`, found `é é` on line 1"
+  },
+  {
+   "output": "ACAKDQ==",
+   "correct": "ACAKDQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CgAgCWE=",
+   "correct": "CgAgCWE=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DQlhMcOp//8x",
+   "correct": "C2IxCwsMCw==",
+   "equal": false,
+   "admin_text": "Expected `b1`, found `a1é\\xff\\xff1` on line 1"
+  },
+  {
+   "output": "YQkxCww=",
+   "correct": "YQkxIAALDA0=",
+   "equal": false,
+   "admin_text": "Expected `a 1 \\x00`, found `a 1` on line 1"
+  },
+  {
+   "output": "DDFhAP8K",
+   "correct": "DQw=",
+   "equal": false,
+   "admin_text": "Expected ``, found `1a\\x00\\xff` on line 1"
+  },
+  {
+   "output": "AA==",
+   "correct": "AGIN",
+   "equal": false,
+   "admin_text": "Expected `\\x00b`, found `\\x00` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "MQwg",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "DQAJ",
+   "correct": "MWJh",
+   "equal": false,
+   "admin_text": "Expected `1ba`, found `\\x00` on line 1"
+  },
+  {
+   "output": "IAxiC/8gAA==",
+   "correct": "YgsNICDDqWILCg==",
+   "equal": false,
+   "admin_text": "Expected `b éb`, found `b \\xff \\x00` on line 1"
+  },
+  {
+   "output": "CQA=",
+   "correct": "CSBhAAw=",
+   "equal": false,
+   "admin_text": "Expected `a\\x00`, found `\\x00` on line 1"
+  },
+  {
+   "output": "YQD/DGIg/w==",
+   "correct": "YQD/DGIgw6n/",
+   "equal": false,
+   "admin_text": "Expected `a\\x00\\xff b é\\xff`, found `a\\x00\\xff b \\xff` on line 1"
+  },
+  {
+   "output": "YQ==",
+   "correct": "/wAJYQAxw6nDqQti",
+   "equal": false,
+   "admin_text": "Expected `\\xff\\x00 a\\x001éé b`, found `a` on line 1"
+  },
+  {
+   "output": "YsOpIP8JDA0K/2IL",
+   "correct": "Yg3DqSD/CQwNCv9iCw==",
+   "equal": false,
+   "admin_text": "Expected `b é \\xff`, found `bé \\xff` on line 1"
+  },
+  {
+   "output": "CQlhMQsJAAn/DSAN",
+   "correct": "YQkJw6lhMQsJCQAJ/w0gDQ==",
+   "equal": false,
+   "admin_text": "Expected `a éa1 \\x00 \\xff`, found `a1 \\x00 \\xff` on line 1"
+  },
+  {
+   "output": "MQsxIAoK/wtiC///",
+   "correct": "MQsxIAoK/wtiC///",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DA==",
+   "correct": "DAs=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6kgYgnDqQkK",
+   "correct": "IP8gDQ==",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `é b é` on line 1"
+  },
+  {
+   "output": "DAwgw6kKIAoLMQ==",
+   "correct": "DAwgwyCpCiAKCzE=",
+   "equal": false,
+   "admin_text": "Expected `\\xc3 \\xa9`, found `é` on line 1"
+  },
+  {
+   "output": "DQti/2EMCWEMAMOpYg==",
+   "correct": "DQsAYv9hDAlhDADDMaliDQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00b\\xffa a \\x00\\xc31\\xa9b`, found `b\\xffa a \\x00éb` on line 1"
+  },
+  {
+   "output": "MQD/MWHDqQA=",
+   "correct": "CQoNYgAAAMOp/wo=",
+   "equal": false,
+   "admin_text": "Expected ``, found `1\\x00\\xff1aé\\x00` on line 1"
+  },
+  {
+   "output": "w6kxDcOpCv9iCwA=",
+   "correct": "w6kxDcOpCv9iCwA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CcOpYgkKIA0=",
+   "correct": "CQDDqWIJCiD/DQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00éb`, found `éb` on line 1"
+  },
+  {
+   "output": "DAwK/wk=",
+   "correct": "DAwK/wk=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AA0LIAA=",
+   "correct": "AA0LIAA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DQw=",
+   "correct": "DQ0xAAr/CQr/w6n/AA==",
+   "equal": false,
+   "admin_text": "Expected `1\\x00`, found `` on line 1"
+  },
+  {
+   "output": "/2Ixw6k=",
+   "correct": "/8OpCmIxw6k=",
+   "equal": false,
+   "admin_text": "Expected `\\xffé`, found `\\xffb1é` on line 1"
+  },
+  {
+   "output": "w6kgYgANw6kxDA==",
+   "correct": "IA3/",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `é b\\x00 é1` on line 1"
+  },
+  {
+   "output": "Cg==",
+   "correct": "YiAADQlhYQo=",
+   "equal": false,
+   "admin_text": "Expected `b \\x00 aa`, found `` on line 1"
+  },
+  {
+   "output": "/8OpCQ0KAMOp",
+   "correct": "Cf/DqQkNCjEAwwmp",
+   "equal": false,
+   "admin_text": "Expected `1\\x00\\xc3 \\xa9`, found `\\x00é` on line 2"
+  },
+  {
+   "output": "CWEJDQoJMTE=",
+   "correct": "CWEJDQoJMTE=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YQkM",
+   "correct": "YSAJYgw=",
+   "equal": false,
+   "admin_text": "Expected `a b`, found `a` on line 1"
+  },
+  {
+   "output": "Yf8ACw3DqQ0=",
+   "correct": "YQzDqf8MAAsNw6kN",
+   "equal": false,
+   "admin_text": "Expected `a é\\xff \\x00 é`, found `a\\xff\\x00 é` on line 1"
+  },
+  {
+   "output": "CWH/YQkNIA==",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "w6kAMQ==",
+   "correct": "w6kAMQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "YWIg",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "DGHDqcOpCg0JYWJh",
+   "correct": "CQk=",
+   "equal": false,
+   "admin_text": "Expected ``, found `aéé` on line 1"
+  },
+  {
+   "output": "/wphMQxhMTEgDAkx",
+   "correct": "Df8KYTEMYTExCSAMCTE=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YQsg",
+   "correct": "YQtiCQwg",
+   "equal": false,
+   "admin_text": "Expected `a b`, found `a` on line 1"
+  },
+  {
+   "output": "YQANMWEADA0LCw==",
+   "correct": "C2IJDA1hIGFiCQw=",
+   "equal": false,
+   "admin_text": "Expected `b a ab`, found `a\\x00 1a\\x00` on line 1"
+  },
+  {
+   "output": "MQlhMQo=",
+   "correct": "MQkJAGExCg==",
+   "equal": false,
+   "admin_text": "Expected `1 \\x00a1`, found `1 a1` on line 1"
+  },
+  {
+   "output": "Cg0KCwAJCwBhAMOpIA==",
+   "correct": "Cg0KDAsACQsAYQDDqSA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6nDqQliAAsK",
+   "correct": "CmExAMOpC2HDqQk=",
+   "equal": false,
+   "admin_text": "Expected ``, found `éé b\\x00` on line 1"
+  },
+  {
+   "output": "/w1hMWIgYf8JMQ0=",
+   "correct": "w6lhYQthCgliC8OpYQ==",
+   "equal": false,
+   "admin_text": "Expected `éaa a`, found `\\xff a1b a\\xff 1` on line 1"
+  },
+  {
+   "output": "/wo=",
+   "correct": "/wwJCsOpCw==",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "w6kKYQlhCQ==",
+   "correct": "DcOpAAphCWEJ",
+   "equal": false,
+   "admin_text": "Expected `é\\x00`, found `é` on line 1"
+  },
+  {
+   "output": "w6nDqWEN",
+   "correct": "w6nDqWH/DWE=",
+   "equal": false,
+   "admin_text": "Expected `ééa\\xff a`, found `ééa` on line 1"
+  },
+  {
+   "output": "DAD/DCA=",
+   "correct": "DAD/DAkgDQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQAgw6kJCwA=",
+   "correct": "MQAgCcOpCQsxAAA=",
+   "equal": false,
+   "admin_text": "Expected `1\\x00 é 1\\x00\\x00`, found `1\\x00 é \\x00` on line 1"
+  },
+  {
+   "output": "DDENCmENCmIxYmLDqQ==",
+   "correct": "DQ0LDAAKAGEgDQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `1` on line 1"
+  },
+  {
+   "output": "AGL/YgsM/2EJMTEK",
+   "correct": "YQBi/2ILDP9hCTExCg==",
+   "equal": false,
+   "admin_text": "Expected `a\\x00b\\xffb \\xffa 11`, found `\\x00b\\xffb \\xffa 11` on line 1"
+  },
+  {
+   "output": "AA==",
+   "correct": "CQr/Cw==",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x00` on line 1"
+  },
+  {
+   "output": "MQzDqWExYmH/Cg==",
+   "correct": "MQzD/6n/YTFiYf8K",
+   "equal": false,
+   "admin_text": "Expected `1 \\xc3\\xff\\xa9\\xffa1ba\\xff`, found `1 éa1ba\\xff` on line 1"
+  },
+  {
+   "output": "CQ0xCgsL",
+   "correct": "CQsxCmIMDABhCQw=",
+   "equal": false,
+   "admin_text": "Expected `b \\x00a`, found `` on line 2"
+  },
+  {
+   "output": "YWJhDP8Mw6kLCf8LDQ==",
+   "correct": "DCAL/w==",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `aba \\xff é \\xff` on line 1"
+  },
+  {
+   "output": "IAwJ/wAgCQ0KDQ==",
+   "correct": "Cg0gCyAN",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\xff\\x00` on line 1"
+  },
+  {
+   "output": "CsOpC2HDqQwg",
+   "correct": "/wti",
+   "equal": false,
+   "admin_text": "Expected `\\xff b`, found `` on line 1"
+  },
+  {
+   "output": "w6nDqWELCQ==",
+   "correct": "/8OpCgpiAA==",
+   "equal": false,
+   "admin_text": "Expected `\\xffé`, found `ééa` on line 1"
+  },
+  {
+   "output": "YWEJCsOpYQD//w==",
+   "correct": "YQsgYjH/IA==",
+   "equal": false,
+   "admin_text": "Expected `a b1\\xff`, found `aa` on line 1"
+  },
+  {
+   "output": "w6kLC2EL/wwNYgwL",
+   "correct": "w6kNCwthC/8MDWJiDAs=",
+   "equal": false,
+   "admin_text": "Expected `é a \\xff bb`, found `é a \\xff b` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "IGIACzENIAs=",
+   "correct": "IGIACzENIAs=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CgBhADEL",
+   "correct": "/ws=",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `` on line 1"
+  },
+  {
+   "output": "IAk=",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MWIA",
+   "correct": "MWIAMQ==",
+   "equal": false,
+   "admin_text": "Expected `1b\\x001`, found `1b\\x00` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "CSAN",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6n/DMOpDGI=",
+   "correct": "w6n/DGHDC6kJDGI=",
+   "equal": false,
+   "admin_text": "Expected `é\\xff a\\xc3 \\xa9 b`, found `é\\xff é b` on line 1"
+  },
+  {
+   "output": "/8OpAGI=",
+   "correct": "/8OpAGI=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DQo=",
+   "correct": "DQo=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cgw=",
+   "correct": "DQz/DP8J//8N/wwJ",
+   "equal": false,
+   "admin_text": "Expected `\\xff \\xff \\xff\\xff \\xff`, found `` on line 1"
+  },
+  {
+   "output": "YQwxCcOpCgxi",
+   "correct": "CgALIGLDqQAADAzDqQ==",
+   "equal": false,
+   "admin_text": "Expected ``, found `a 1 é` on line 1"
+  },
+  {
+   "output": "DQoNCmJhDAwNw6kM",
+   "correct": "CwwMCwsx",
+   "equal": false,
+   "admin_text": "Expected `1`, found `` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "DcOpCgkxw6kMw6kK/w==",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "CQo=",
+   "correct": "DGEx",
+   "equal": false,
+   "admin_text": "Expected `a1`, found `` on line 1"
+  },
+  {
+   "output": "CgkJCWExYv8JCjEg",
+   "correct": "CgkxCQlhMWL/CQoxIA==",
+   "equal": false,
+   "admin_text": "Expected `1 a1b\\xff`, found `a1b\\xff` on line 2"
+  },
+  {
+   "output": "DA==",
+   "correct": "CgsLCwkN",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cg==",
+   "correct": "Cv8=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "DDENYiBhDQw=",
+   "correct": "IAA=",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `1 b a` on line 1"
+  },
+  {
+   "output": "w6n//2FiDP8LMWIL/w==",
+   "correct": "w6n//2FiDP8LMWIL/w==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Yg0ADcOpAGEgMQ0=",
+   "correct": "YmIxDQANDMOpAGEgMQ0=",
+   "equal": false,
+   "admin_text": "Expected `bb1 \\x00 é\\x00a 1`, found `b \\x00 é\\x00a 1` on line 1"
+  },
+  {
+   "output": "Cv8gAAA=",
+   "correct": "Cv8gAAA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "C2EM",
+   "correct": "C2EMIA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "C2IgYg==",
+   "correct": "AMOpDA==",
+   "equal": false,
+   "admin_text": "Expected `\\x00é`, found `b b` on line 1"
+  },
+  {
+   "output": "YTEMCg==",
+   "correct": "YTExDAo=",
+   "equal": false,
+   "admin_text": "Expected `a11`, found `a1` on line 1"
+  },
+  {
+   "output": "/zEA",
+   "correct": "/zEA",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CgwMMQsKCQwA/2E=",
+   "correct": "CTEgDQnDqf8=",
+   "equal": false,
+   "admin_text": "Expected `1 é\\xff`, found `` on line 1"
+  },
+  {
+   "output": "Cg0xDSA=",
+   "correct": "MWFiCg0Mw6kKAAoLYQ==",
+   "equal": false,
+   "admin_text": "Expected `1ab`, found `` on line 1"
+  },
+  {
+   "output": "CgrDqWExYiD/MSA=",
+   "correct": "DQ0=",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "DQoJMQkJDA0=",
+   "correct": "AA0KCTEJ/wkADA0=",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `` on line 1"
+  },
+  {
+   "output": "w6kMCQwMIA==",
+   "correct": "DQ==",
+   "equal": false,
+   "admin_text": "Expected ``, found `é` on line 1"
+  },
+  {
+   "output": "Cw==",
+   "correct": "/wphYmILDDHDqWFiw6k=",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `` on line 1"
+  },
+  {
+   "output": "Cg0g/yA=",
+   "correct": "Cg1iw6kg/yA=",
+   "equal": false,
+   "admin_text": "Expected `bé \\xff`, found `\\xff` on line 2"
+  },
+  {
+   "output": "",
+   "correct": "w6nDqQ3/MWIADA==",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "ADELC2EAMSAg/w0=",
+   "correct": "Cg==",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x001 a\\x001 \\xff` on line 1"
+  },
+  {
+   "output": "DQk=",
+   "correct": "DQk=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CwAJCw==",
+   "correct": "DGIKAMOpDA==",
+   "equal": false,
+   "admin_text": "Expected `b`, found `\\x00` on line 1"
+  },
+  {
+   "output": "IDEJw6lhCQo=",
+   "correct": "IDEJw2KpYQkK",
+   "equal": false,
+   "admin_text": "Expected `1 \\xc3b\\xa9a`, found `1 éa` on line 1"
+  },
+  {
+   "output": "IAwJ/wwK",
+   "correct": "DSAMCf8MCg==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cwo=",
+   "correct": "YQsK",
+   "equal": false,
+   "admin_text": "Expected `a`, found `` on line 1"
+  },
+  {
+   "output": "C/8MCTHDqQAJ",
+   "correct": "/wkKDCA=",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `\\xff 1é\\x00` on line 1"
+  },
+  {
+   "output": "AAsxIA3/",
+   "correct": "AAsxIA3/",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQz/CwzDqQ==",
+   "correct": "ADEM/wsKDMOp",
+   "equal": false,
+   "admin_text": "Expected `\\x001 \\xff`, found `1 \\xff é` on line 1"
+  },
+  {
+   "output": "MQAx",
+   "correct": "CQsAAAwJ/woAYQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00\\x00 \\xff`, found `1\\x001` on line 1"
+  },
+  {
+   "output": "YWEL",
+   "correct": "YWEL",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Mf8JCmFhDAALw6kL",
+   "correct": "CQpiDQoMDAk=",
+   "equal": false,
+   "admin_text": "Expected ``, found `1\\xff` on line 1"
+  },
+  {
+   "output": "CjEx",
+   "correct": "CgrDqTEx",
+   "equal": false,
+   "admin_text": "Expected ``, found `11` on line 2"
+  },
+  {
+   "output": "DQ3/YjH//8OpDQ==",
+   "correct": "DQ3/YjH//8OpDQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cv9iDAvDqWL/AAw=",
+   "correct": "Cv8MYgwLw6li/wAKDA==",
+   "equal": false,
+   "admin_text": "Expected `\\xff b éb\\xff\\x00`, found `\\xffb éb\\xff\\x00` on line 2"
+  },
+  {
+   "output": "IAkxDA1hYSAMDAz/",
+   "correct": "IAkxDA1hDGEgDAwM/w==",
+   "equal": false,
+   "admin_text": "Expected `1 a a \\xff`, found `1 aa \\xff` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "DQwMMf/DqTEJIAkK",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "/wkgAGEMDQr/IMOp",
+   "correct": "/wkgYQBhDA0KMf8gw6k=",
+   "equal": false,
+   "admin_text": "Expected `\\xff a\\x00a`, found `\\xff \\x00a` on line 1"
+  },
+  {
+   "output": "DMOpICAx/2FiCQ==",
+   "correct": "w6kgYQwAYg==",
+   "equal": false,
+   "admin_text": "Expected `é a \\x00b`, found `é 1\\xffab` on line 1"
+  },
+  {
+   "output": "YiAA",
+   "correct": "DAk=",
+   "equal": false,
+   "admin_text": "Expected ``, found `b \\x00` on line 1"
+  },
+  {
+   "output": "IA3DqQkMDWIK",
+   "correct": "IA0Kw6kJ/wwNYgo=",
+   "equal": false,
+   "admin_text": "Expected ``, found `é b` on line 1"
+  },
+  {
+   "output": "Yv8JMQkK",
+   "correct": "Yv/DqQnDqTEJMQo=",
+   "equal": false,
+   "admin_text": "Expected `b\\xffé é1 1`, found `b\\xff 1` on line 1"
+  },
+  {
+   "output": "w6k=",
+   "correct": "wyBiqQ==",
+   "equal": false,
+   "admin_text": "Expected `\\xc3 b\\xa9`, found `é` on line 1"
+  },
+  {
+   "output": "YgphYiAgCwD/CQ1i",
+   "correct": "/w==",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `b` on line 1"
+  },
+  {
+   "output": "C/8LAP8NYmIA",
+   "correct": "C/8LAAwA/w1iYgA=",
+   "equal": false,
+   "admin_text": "Expected `\\xff \\x00 \\x00\\xff bb\\x00`, found `\\xff \\x00\\xff bb\\x00` on line 1"
+  },
+  {
+   "output": "YQ0LADE=",
+   "correct": "/2ENCwANMQw=",
+   "equal": false,
+   "admin_text": "Expected `\\xffa \\x00 1`, found `a \\x001` on line 1"
+  },
+  {
+   "output": "DWJiDWILDMOpYQk=",
+   "correct": "DDFh/yAL",
+   "equal": false,
+   "admin_text": "Expected `1a\\xff`, found `bb b éa` on line 1"
+  },
+  {
+   "output": "MWIxCcOpCzEgCwwACw==",
+   "correct": "DTFiMQnDqQsxCSALDAAL",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CjEMYmExDQoN",
+   "correct": "YgzDqQoNAAv/DQk=",
+   "equal": false,
+   "admin_text": "Expected `b é`, found `` on line 1"
+  },
+  {
+   "output": "IA==",
+   "correct": "CyAK",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cw==",
+   "correct": "YgkgCw==",
+   "equal": false,
+   "admin_text": "Expected `b`, found `` on line 1"
+  },
+  {
+   "output": "YWIAIDE=",
+   "correct": "C2EMDTENDMOp",
+   "equal": false,
+   "admin_text": "Expected `a 1 é`, found `ab\\x00 1` on line 1"
+  },
+  {
+   "output": "Ygr/AGL/w6kKCw==",
+   "correct": "AGEgDSAxAAthAA==",
+   "equal": false,
+   "admin_text": "Expected `\\x00a 1\\x00 a\\x00`, found `b` on line 1"
+  },
+  {
+   "output": "DA==",
+   "correct": "DCA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YjEACQAACSALMQ==",
+   "correct": "YjEACTEAAAkgCwsxDA==",
+   "equal": false,
+   "admin_text": "Expected `b1\\x00 1\\x00\\x00 1`, found `b1\\x00 \\x00\\x00 1` on line 1"
+  },
+  {
+   "output": "w6n/YQkN/yA=",
+   "correct": "w6n/YQkN/yA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DQ1h//9iCw0LYQ==",
+   "correct": "CQxiYgBiDQs=",
+   "equal": false,
+   "admin_text": "Expected `bb\\x00b`, found `a\\xff\\xffb a` on line 1"
+  },
+  {
+   "output": "CgkgCQ3/",
+   "correct": "AAA=",
+   "equal": false,
+   "admin_text": "Expected `\\x00\\x00`, found `` on line 1"
+  },
+  {
+   "output": "DSAAYmE=",
+   "correct": "YSBiMQs=",
+   "equal": false,
+   "admin_text": "Expected `a b1`, found `\\x00ba` on line 1"
+  },
+  {
+   "output": "CQANw6kgCwwx",
+   "correct": "C8Op/2EA/2Ex",
+   "equal": false,
+   "admin_text": "Expected `é\\xffa\\x00\\xffa1`, found `\\x00 é 1` on line 1"
+  },
+  {
+   "output": "IDFhCjEMAAkKYgwM",
+   "correct": "DSAxCmEKYTEMAAkKYgwM",
+   "equal": false,
+   "admin_text": "Expected `1`, found `1a` on line 1"
+  },
+  {
+   "output": "/wtiCQ==",
+   "correct": "AP8JYjExMcOpMWE=",
+   "equal": false,
+   "admin_text": "Expected `\\x00\\xff b111é1a`, found `\\xff b` on line 1"
+  },
+  {
+   "output": "DCAMCcOpYWENw6nDqQ==",
+   "correct": "DGEgDAoLCcOpYWENw6nDqQ==",
+   "equal": false,
+   "admin_text": "Expected `a`, found `éaa éé` on line 1"
+  },
+  {
+   "output": "w6kNw6n/Cg==",
+   "correct": "w6kNw6n/CjE=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "",
+   "correct": "MQ3/YjEKYf8g",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "DA==",
+   "correct": "DP8=",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `` on line 1"
+  },
+  {
+   "output": "/yAJYv8NMQoMAA==",
+   "correct": "MQthDMOpDMOpCg==",
+   "equal": false,
+   "admin_text": "Expected `1 a é é`, found `\\xff b\\xff 1` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "YjH/",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "Yf8=",
+   "correct": "Yf8=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DTEgMQz/AA==",
+   "correct": "DA0xIDEM/wA=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CQk=",
+   "correct": "MQBiADEJYSAg/zFh",
+   "equal": false,
+   "admin_text": "Expected `1\\x00b\\x001 a \\xff1a`, found `` on line 1"
+  },
+  {
+   "output": "CTExIAAKCwANCQwN",
+   "correct": "ACAJICANYg==",
+   "equal": false,
+   "admin_text": "Expected `\\x00 b`, found `11 \\x00` on line 1"
+  },
+  {
+   "output": "YgAJ",
+   "correct": "AP/DqQlh/8Op/w0NYgk=",
+   "equal": false,
+   "admin_text": "Expected `\\x00\\xffé a\\xffé\\xff b`, found `b\\x00` on line 1"
+  },
+  {
+   "output": "AP8K",
+   "correct": "AP8K",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "DQsJDAsKCgr/",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "C8OpCwALAA1i",
+   "correct": "IA==",
+   "equal": false,
+   "admin_text": "Expected ``, found `é \\x00 \\x00 b` on line 1"
+  },
+  {
+   "output": "CjEg/zEM",
+   "correct": "w6kgYmENDDE=",
+   "equal": false,
+   "admin_text": "Expected `é ba 1`, found `` on line 1"
+  },
+  {
+   "output": "////CjE=",
+   "correct": "AP//w6n/YQox",
+   "equal": false,
+   "admin_text": "Expected `\\x00\\xff\\xffé\\xffa`, found `\\xff\\xff\\xff` on line 1"
+  },
+  {
+   "output": "Cg==",
+   "correct": "Cw==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "C8Op/zELCwsMC2E=",
+   "correct": "C8Op/zELIAsLDAth",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "IA3DqQkg",
+   "correct": "McOpCw0gMQoK",
+   "equal": false,
+   "admin_text": "Expected `1é 1`, found `é` on line 1"
+  },
+  {
+   "output": "/yD/Yg==",
+   "correct": "Mf8gw6n/Yg==",
+   "equal": false,
+   "admin_text": "Expected `1\\xff é\\xffb`, found `\\xff \\xffb` on line 1"
+  },
+  {
+   "output": "Yv//YgsKCWEK",
+   "correct": "/8OpDQBhDWHDqWI=",
+   "equal": false,
+   "admin_text": "Expected `\\xffé \\x00a aéb`, found `b\\xff\\xffb` on line 1"
+  },
+  {
+   "output": "CgnDqQAx",
+   "correct": "CQr/CcOpADE=",
+   "equal": false,
+   "admin_text": "Expected `\\xff é\\x001`, found `é\\x001` on line 2"
+  },
+  {
+   "output": "MQ==",
+   "correct": "MWLDqQ==",
+   "equal": false,
+   "admin_text": "Expected `1bé`, found `1` on line 1"
+  },
+  {
+   "output": "CsOpCw0xMf8LIA==",
+   "correct": "CsOpCw0xADH/CyA=",
+   "equal": false,
+   "admin_text": "Expected `é 1\\x001\\xff`, found `é 11\\xff` on line 2"
+  },
+  {
+   "output": "AAsxIAoNAAoM",
+   "correct": "AAsxIAoNAAoMYQ==",
+   "equal": false,
+   "admin_text": "Expected `a`, found `` on line 3"
+  },
+  {
+   "output": "CwsgDA==",
+   "correct": "YQoK/8OpYg==",
+   "equal": false,
+   "admin_text": "Expected `a`, found `` on line 1"
+  },
+  {
+   "output": "w6lhYSD/DTEAAA==",
+   "correct": "w6lhYWEMIP8NMQ0AAA==",
+   "equal": false,
+   "admin_text": "Expected `éaaa \\xff 1 \\x00\\x00`, found `éaa \\xff 1\\x00\\x00` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "CWHDqQwMDAwJ",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "",
+   "correct": "IA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6kKIGFhIP8gCf8N",
+   "correct": "MQ==",
+   "equal": false,
+   "admin_text": "Expected `1`, found `é` on line 1"
+  },
+  {
+   "output": "CWE=",
+   "correct": "DQrDqWFi",
+   "equal": false,
+   "admin_text": "Expected ``, found `a` on line 1"
+  },
+  {
+   "output": "DQ0LIAsx",
+   "correct": "DQ0LACAKCzEx",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `1` on line 1"
+  },
+  {
+   "output": "DTHDqQAMDAAAYcOpDQ==",
+   "correct": "DTHDqQsADDEMAAAAYcOpDQ==",
+   "equal": false,
+   "admin_text": "Expected `1é \\x00 1 \\x00\\x00\\x00aé`, found `1é\\x00 \\x00\\x00aé` on line 1"
+  },
+  {
+   "output": "YgBh",
+   "correct": "IAwM",
+   "equal": false,
+   "admin_text": "Expected ``, found `b\\x00a` on line 1"
+  },
+  {
+   "output": "w6kAYgoMCv8g",
+   "correct": "DSD/MWI=",
+   "equal": false,
+   "admin_text": "Expected `\\xff1b`, found `é\\x00b` on line 1"
+  },
+  {
+   "output": "YcOpMf8=",
+   "correct": "YcNhqTH/",
+   "equal": false,
+   "admin_text": "Expected `a\\xc3a\\xa91\\xff`, found `aé1\\xff` on line 1"
+  },
+  {
+   "output": "DAwxYjE=",
+   "correct": "YQwMCzFiMQ==",
+   "equal": false,
+   "admin_text": "Expected `a 1b1`, found `1b1` on line 1"
+  },
+  {
+   "output": "YgoACgogDAkMYQBh",
+   "correct": "CgliDQz/CgwgCg0=",
+   "equal": false,
+   "admin_text": "Expected ``, found `b` on line 1"
+  },
+  {
+   "output": "Yv8MDCDDqQs=",
+   "correct": "Yv9iDAwgw6kL",
+   "equal": false,
+   "admin_text": "Expected `b\\xffb é`, found `b\\xff é` on line 1"
+  },
+  {
+   "output": "MQkACsOpYQ==",
+   "correct": "Ygwx",
+   "equal": false,
+   "admin_text": "Expected `b 1`, found `1 \\x00` on line 1"
+  },
+  {
+   "output": "YQoA",
+   "correct": "YTEKCQAM",
+   "equal": false,
+   "admin_text": "Expected `a1`, found `a` on line 1"
+  },
+  {
+   "output": "w6n/McOp",
+   "correct": "w6n/McOp",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AP8=",
+   "correct": "CTEx/wAJMQoAAGL/",
+   "equal": false,
+   "admin_text": "Expected `11\\xff\\x00 1`, found `\\x00\\xff` on line 1"
+  },
+  {
+   "output": "/woNDP8gYf8=",
+   "correct": "AGIK",
+   "equal": false,
+   "admin_text": "Expected `\\x00b`, found `\\xff` on line 1"
+  },
+  {
+   "output": "MQsJCzE=",
+   "correct": "ADELCQsx",
+   "equal": false,
+   "admin_text": "Expected `\\x001 1`, found `1 1` on line 1"
+  },
+  {
+   "output": "AAkx",
+   "correct": "CQAg",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `\\x00 1` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "YQth",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "DA==",
+   "correct": "CwAM",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `` on line 1"
+  },
+  {
+   "output": "C8OpYgoAYQBi",
+   "correct": "C8OpYgpiAAthAAxi",
+   "equal": false,
+   "admin_text": "Expected `b\\x00 a\\x00 b`, found `\\x00a\\x00b` on line 2"
+  },
+  {
+   "output": "CWExAP8xDQ0=",
+   "correct": "C2IN",
+   "equal": false,
+   "admin_text": "Expected `b`, found `a1\\x00\\xff1` on line 1"
+  },
+  {
+   "output": "AA==",
+   "correct": "CjHDqf8LAAAxw6kMDQ==",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x00` on line 1"
+  },
+  {
+   "output": "YgDDqQoxIAALYQ==",
+   "correct": "DGJiCwsgDQ==",
+   "equal": false,
+   "admin_text": "Expected `bb`, found `b\\x00é` on line 1"
+  },
+  {
+   "output": "YWJiYSBiYv8gCmIg",
+   "correct": "YWJiYSBiYv8gCmIg",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AMOpDAAxCQwMYg==",
+   "correct": "CsOp",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x00é \\x001 b` on line 1"
+  },
+  {
+   "output": "CQ0AYgsgCwk=",
+   "correct": "CQ0AYgsgCwk=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "/wn/w6nDqWL/Cgw=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "MQ3DqQ==",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "MQnDqQoACv8=",
+   "correct": "DMOpCgoLMSALAAALCQ==",
+   "equal": false,
+   "admin_text": "Expected `é`, found `1 é` on line 1"
+  },
+  {
+   "output": "DP8L/wo=",
+   "correct": "MWEACgxiIA==",
+   "equal": false,
+   "admin_text": "Expected `1a\\x00`, found `\\xff \\xff` on line 1"
+  },
+  {
+   "output": "DWEACsOpYv8AYgoA",
+   "correct": "MQoA/zELCsOpCQ0=",
+   "equal": false,
+   "admin_text": "Expected `1`, found `a\\x00` on line 1"
+  },
+  {
+   "output": "AGEgCyAxDAsK/wkN",
+   "correct": "AGEgC2IgMQwLCv8JDQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00a b 1`, found `\\x00a 1` on line 1"
+  },
+  {
+   "output": "AAvDqWEA/w0x",
+   "correct": "AAvDqWEA/w0x",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6lhCWILMWH/AMOpYTE=",
+   "correct": "Df9iCg0=",
+   "equal": false,
+   "admin_text": "Expected `\\xffb`, found `éa b 1a\\xff\\x00éa1` on line 1"
+  },
+  {
+   "output": "YWFiYmFiCgA=",
+   "correct": "YjE=",
+   "equal": false,
+   "admin_text": "Expected `b1`, found `aabbab` on line 1"
+  },
+  {
+   "output": "DQwACwo=",
+   "correct": "/wv/CwkM",
+   "equal": false,
+   "admin_text": "Expected `\\xff \\xff`, found `\\x00` on line 1"
+  },
+  {
+   "output": "/8OpMQkKYf8NMQ==",
+   "correct": "/8NhqTEJCmH/DTHDqQ==",
+   "equal": false,
+   "admin_text": "Expected `\\xff\\xc3a\\xa91`, found `\\xffé1` on line 1"
+  },
+  {
+   "output": "YWJh/w==",
+   "correct": "AA==",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `aba\\xff` on line 1"
+  },
+  {
+   "output": "w6kgCg0xDQkKCwwL",
+   "correct": "w6kgCg0xDQkJCgsMDAs=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "AAv/DQ0xw6kLIMOp",
+   "correct": "AAv/DQ0xw6kLIMOp",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "CsOp",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "",
+   "correct": "Cwkg/w0M",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "YsOpw6kK",
+   "correct": "YQ==",
+   "equal": false,
+   "admin_text": "Expected `a`, found `béé` on line 1"
+  },
+  {
+   "output": "AAsNIAsLw6n/DQ==",
+   "correct": "MSDDqSBiDAthCg==",
+   "equal": false,
+   "admin_text": "Expected `1 é b a`, found `\\x00 é\\xff` on line 1"
+  },
+  {
+   "output": "YmIMDDFi/w0MAAwx",
+   "correct": "Cgk=",
+   "equal": false,
+   "admin_text": "Expected ``, found `bb 1b\\xff \\x00 1` on line 1"
+  },
+  {
+   "output": "MQzDqQzDqf9h",
+   "correct": "DP8A///DqcOpCQAMCg==",
+   "equal": false,
+   "admin_text": "Expected `\\xff\\x00\\xff\\xfféé \\x00`, found `1 é é\\xffa` on line 1"
+  },
+  {
+   "output": "IMOpC8OpCg==",
+   "correct": "IDHDqQvDDalhCg==",
+   "equal": false,
+   "admin_text": "Expected `1é \\xc3 \\xa9a`, found `é é` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "IMOpMQ==",
+   "correct": "AAoMMQogCg==",
+   "equal": false,
+   "admin_text": "Expected `\\x00`, found `é1` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "Cwti",
+   "correct": "CwsLDGLDqQ==",
+   "equal": false,
+   "admin_text": "Expected `bé`, found `b` on line 1"
+  },
+  {
+   "output": "w6kKCg==",
+   "correct": "w2HDqakKCg==",
+   "equal": false,
+   "admin_text": "Expected `\\xc3aé\\xa9`, found `é` on line 1"
+  },
+  {
+   "output": "CQsMw6liw6k=",
+   "correct": "/woNDQtiDQphIA==",
+   "equal": false,
+   "admin_text": "Expected `\\xff`, found `ébé` on line 1"
+  },
+  {
+   "output": "AAD/MQ==",
+   "correct": "Cg==",
+   "equal": false,
+   "admin_text": "Expected ``, found `\\x00\\x00\\xff1` on line 1"
+  },
+  {
+   "output": "AAzDqTENDDFhCww=",
+   "correct": "AAzDqTENDDFhCwz/",
+   "equal": false,
+   "admin_text": "Expected `\\x00 é1 1a \\xff`, found `\\x00 é1 1a` on line 1"
+  },
+  {
+   "output": "CQ==",
+   "correct": "MWHDqQw=",
+   "equal": false,
+   "admin_text": "Expected `1aé`, found `` on line 1"
+  },
+  {
+   "output": "w6lhYgpi",
+   "correct": "w6lhDWIKYg==",
+   "equal": false,
+   "admin_text": "Expected `éa b`, found `éab` on line 1"
+  },
+  {
+   "output": "YSDDqQ0M/wo=",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "YQkxDQsJIGENIA==",
+   "correct": "YWJiCwAg",
+   "equal": false,
+   "admin_text": "Expected `abb \\x00`, found `a 1 a` on line 1"
+  },
+  {
+   "output": "DDEg",
+   "correct": "DDEg",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MQ==",
+   "correct": "AGENDMOpDQwgYv//",
+   "equal": false,
+   "admin_text": "Expected `\\x00a é b\\xff\\xff`, found `1` on line 1"
+  },
+  {
+   "output": "ICAJw6liC2ILIA==",
+   "correct": "ICAJw6liC2ILIA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YiAxMTExYQv//2Ig",
+   "correct": "YiAxMTExYQv//2Ig",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "AABiMQli",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "Cgox",
+   "correct": "YQthCgox",
+   "equal": false,
+   "admin_text": "Expected `a a`, found `` on line 1"
+  },
+  {
+   "output": "w6kLIApiDQsK/wwL",
+   "correct": "Cw==",
+   "equal": false,
+   "admin_text": "Expected ``, found `é` on line 1"
+  },
+  {
+   "output": "Cw==",
+   "correct": "C2L/AAoAYgkN",
+   "equal": false,
+   "admin_text": "Expected `b\\xff\\x00`, found `` on line 1"
+  },
+  {
+   "output": "CjH/C2I=",
+   "correct": "CjH/w6kLC2I=",
+   "equal": false,
+   "admin_text": "Expected `1\\xffé b`, found `1\\xff b` on line 2"
+  },
+  {
+   "output": "CmEACgAJC2Fh",
+   "correct": "YWFhCgkNIAsg",
+   "equal": false,
+   "admin_text": "Expected `aaa`, found `` on line 1"
+  },
+  {
+   "output": "McOpCwALMWIAYWEgAA==",
+   "correct": "McOpCwALCTFiCgBhYSAAYg==",
+   "equal": false,
+   "admin_text": "Expected `1é \\x00 1b`, found `1é \\x00 1b\\x00aa \\x00` on line 1"
+  },
+  {
+   "output": "DQwxMQ==",
+   "correct": "",
+   "equal": false,
+   "admin_text": "Contestant output too long"
+  },
+  {
+   "output": "CgAMDSAx/ws=",
+   "correct": "CgAMDSAgMf8L",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "YTEKMQ0gYjE=",
+   "correct": "CjEMCwkL",
+   "equal": false,
+   "admin_text": "Expected ``, found `a1` on line 1"
+  },
+  {
+   "output": "CmE=",
+   "correct": "DAv/MSDDqQ0JYTEMYg==",
+   "equal": false,
+   "admin_text": "Expected `\\xff1 é a1 b`, found `` on line 1"
+  },
+  {
+   "output": "YgwxCSA=",
+   "correct": "YgwMMQkgDQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "IGEKIDEN/yA=",
+   "correct": "CQ0KMQ==",
+   "equal": false,
+   "admin_text": "Expected ``, found `a` on line 1"
+  },
+  {
+   "output": "w6liDAAgICANDSAgDA==",
+   "correct": "w6liDAAgICANDSAgDA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "w6kx",
+   "correct": "/8MLYqkx",
+   "equal": false,
+   "admin_text": "Expected `\\xff\\xc3 b\\xa91`, found `é1` on line 1"
+  },
+  {
+   "output": "YgwJDA==",
+   "correct": "YgwJDA==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CzH/DP8KYQw=",
+   "correct": "Cwo=",
+   "equal": false,
+   "admin_text": "Expected ``, found `1\\xff \\xff` on line 1"
+  },
+  {
+   "output": "Cgxh",
+   "correct": "CgxhCw==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "IABiDDFiMSAxCQ==",
+   "correct": "IABiDDFiMSAxCQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "MTExCgs=",
+   "correct": "MTH/AAr/MQz/DQ==",
+   "equal": false,
+   "admin_text": "Expected `11\\xff\\x00`, found `111` on line 1"
+  },
+  {
+   "output": "MQ==",
+   "correct": "//8xw6k=",
+   "equal": false,
+   "admin_text": "Expected `\\xff\\xff1é`, found `1` on line 1"
+  },
+  {
+   "output": "CQ==",
+   "correct": "ACDDqf//DQALCwoKDQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00 é\\xff\\xff \\x00`, found `` on line 1"
+  },
+  {
+   "output": "/2INC2Jh",
+   "correct": "/2INC2Jh",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "",
+   "correct": "CWEMYQ0N",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "C2FhDWExCg==",
+   "correct": "CQvDqQkKDQAKCgsAMQ==",
+   "equal": false,
+   "admin_text": "Expected `é`, found `aa a1` on line 1"
+  },
+  {
+   "output": "YQANYQsACyD/IA0=",
+   "correct": "YQAAIA1hCwALIP8gDQ==",
+   "equal": false,
+   "admin_text": "Expected `a\\x00\\x00 a \\x00 \\xff`, found `a\\x00 a \\x00 \\xff` on line 1"
+  },
+  {
+   "output": "/ww=",
+   "correct": "/wxhDDE=",
+   "equal": false,
+   "admin_text": "Expected `\\xff a 1`, found `\\xff` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "IDEAYWJiw6k=",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "/w==",
+   "correct": "CWILCw3DqQ==",
+   "equal": false,
+   "admin_text": "Expected `b é`, found `\\xff` on line 1"
+  },
+  {
+   "output": "/8OpCQoL",
+   "correct": "/8OpCQ==",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "CgzDqQDDqQsgDAr//w0=",
+   "correct": "CgzDqQDDqQ0LCTEgDAr//w0=",
+   "equal": false,
+   "admin_text": "Expected `é\\x00é 1`, found `é\\x00é` on line 2"
+  },
+  {
+   "output": "ADEJMQAADQ==",
+   "correct": "w6kJIApiYWINCQ==",
+   "equal": false,
+   "admin_text": "Expected `é`, found `\\x001 1\\x00\\x00` on line 1"
+  },
+  {
+   "output": "MSAJIA==",
+   "correct": "MWIgIAkgIA==",
+   "equal": false,
+   "admin_text": "Expected `1b`, found `1` on line 1"
+  },
+  {
+   "output": "",
+   "correct": "Yg==",
+   "equal": false,
+   "admin_text": "Contestant output too short"
+  },
+  {
+   "output": "DA0MIABiCws=",
+   "correct": "DA0MIABiCzEJCw==",
+   "equal": false,
+   "admin_text": "Expected `\\x00b 1`, found `\\x00b` on line 1"
+  },
+  {
+   "output": "IAwMCw==",
+   "correct": "MSAMDAsL",
+   "equal": false,
+   "admin_text": "Expected `1`, found `` on line 1"
+  },
+  {
+   "output": "CQ==",
+   "correct": "/2ILYWE=",
+   "equal": false,
+   "admin_text": "Expected `\\xffb aa`, found `` on line 1"
+  },
+  {
+   "output": "DQ1i",
+   "correct": "AGExDSAJYQ==",
+   "equal": false,
+   "admin_text": "Expected `\\x00a1 a`, found `b` on line 1"
+  },
+  {
+   "output": "IAAxIA==",
+   "correct": "CSAAMSD/",
+   "equal": false,
+   "admin_text": "Expected `\\x001 \\xff`, found `\\x001` on line 1"
+  },
+  {
+   "output": "CQz/DDH//w==",
+   "correct": "/2IA",
+   "equal": false,
+   "admin_text": "Expected `\\xffb\\x00`, found `\\xff 1\\xff\\xff` on line 1"
+  },
+  {
+   "output": "Cw==",
+   "correct": "MQAxMQwxMWJi",
+   "equal": false,
+   "admin_text": "Expected `1\\x0011 11bb`, found `` on line 1"
+  },
+  {
+   "output": "DAw=",
+   "correct": "DAw=",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "DAv/AAsMAGFh",
+   "correct": "YQo=",
+   "equal": false,
+   "admin_text": "Expected `a`, found `\\xff\\x00 \\x00aa` on line 1"
+  },
+  {
+   "output": "CwliYgAJAAo=",
+   "correct": "CzEKIGE=",
+   "equal": false,
+   "admin_text": "Expected `1`, found `bb\\x00 \\x00` on line 1"
+  },
+  {
+   "output": "CzEMAAoAIA==",
+   "correct": "CQ==",
+   "equal": false,
+   "admin_text": "Expected ``, found `1 \\x00` on line 1"
+  },
+  {
+   "output": "CzEJMcOp",
+   "correct": "CzEJMcOp",
+   "equal": true,
+   "admin_text": null
+  },
+  {
+   "output": "IGEgYcOpICDDqcOpIGHDqcOpIMOpIMOpw6kgYcOpYcOpICAgw6lhYWHDqcOpw6kgw6nDqcOpICBhIMOpIMOpYcOpw6lhw6nDqcOpw6kgIMOpYWEgYWHDqSBhYSDDqcOpIGHDqWFhw6lhw6kgYSDDqWFhYWEgw6nDqSBhYWEgYSDDqcOpICDDqSDDqSDDqQ==",
+   "correct": "IGEgYcOpICDDqcOpIGHDqcOpIMOpIMOpw6kgYcOpYcOpICAgw6lhYWHDqcOpw6kgw6nDqcOpICBhIMOpIMOpYcOpw6lhw6nDqcOpw6kgIMOpYWEgYWHDqSBhYSDDqcOpIGHDqWFhw6lhw6kgYSDDqWFhYWEgw6nDqSBhYWEgYSDDqcOpICDDqSDDqSDDeg==",
+   "equal": false,
+   "admin_text": "Expected `a aé éé aéé é éé aéaé éaaaééé ééé a é éaééaéééé éaa aaé aa éé aéaaéa\\xc3...`, found `a aé éé aéé é éé aéaé éaaaééé ééé a é éaééaéééé éaa aaé aa éé aéaaéa\\xc3...` on line 1"
+  },
+  {
+   "output": "YWHDqcOpYcOpIGEgYcOpICDDqcOpw6kgIGHDqSDDqcOpw6kgw6nDqWFhYWFhYcOpw6nDqWEgw6lhYWEgIMOpw6nDqSDDqWFhYcOpw6nDqWHDqcOpw6nDqWEgICBhIMOpw6nDqSDDqWEgYSBhICBhYSBhIGFhYWFhYcOpICA=",
+   "correct": "YWHDqcOpYcOpIGEgYcOpICDDqcOpw6kgIGHDqSDDqcOpw6kgw6nDqWFhYWFhYcOpw6nDqWEgw6lhYWEgIMOpw6nDqSDDqWFhYcOpw6nDqWHDqcOpw6nDqWEgICBhIMOpw6nDqSDDqWEgYSBhICBhYSBhIGFhYWFhYcOpIHo=",
+   "equal": false,
+   "admin_text": "Expected `aaééaé a aé ééé aé ééé ééaaaaaaéééa éaaa ééé éaaaéééaééééa a ééé éa ...`, found `aaééaé a aé ééé aé ééé ééaaaaaaéééa éaaa ééé éaaaéééaééééa a ééé éa ...` on line 1"
+  },
+  {
+   "output": "w6kgIMOpw6kgICBhICDDqWFhIGFhYcOpIMOpYSBhYSAgICAgYWHDqWHDqSBhIGFhw6nDqcOpw6lhw6lhYSDDqWHDqWEgIMOpYSAgYcOpw6nDqcOpw6nDqWFhw6nDqWHDqWFhIMOpYWHDqWFhIMOpICDDqWHDqcOpICBhw6kgIMOpYcOpIGFhIMOpw6lhw6lhYWHDqSBhw6kgYSAgICBhYQ==",
+   "correct": "w6kgIMOpw6kgICBhICDDqWFhIGFhYcOpIMOpYSBhYSAgICAgYWHDqWHDqSBhIGFhw6nDqcOpw6lhw6lhYSDDqWHDqWEgIMOpYSAgYcOpw6nDqcOpw6nDqWFhw6nDqWHDqWFhIMOpYWHDqWFhIMOpICDDqWHDqcOpICBhw6kgIMOpYcOpIGFhIMOpw6lhw6lhYWHDqSBhw6kgYSAgICBheg==",
+   "equal": false,
+   "admin_text": "Expected `é éé a éaa aaaé éa aa aaéaé a aaééééaéaa éaéa éa aééééééaaééaéaa éaaéaa \\xc3...`, found `é éé a éaa aaaé éa aa aaéaé a aaééééaéaa éaéa éa aééééééaaééaéaa éaaéaa \\xc3...` on line 1"
+  },
+  {
+   "output": "w6lhYWFhIGHDqcOpw6nDqWEgYSBhIGFhIMOpICDDqSDDqWEgw6kgw6nDqcOpYSDDqcOpYcOpw6lhw6nDqWEgYSDDqSBhICAgw6kgw6lhIGEgYSDDqcOpw6kgYSBhICDDqWFhw6nDqWFhYcOpIGFhYcOpYcOpYcOpICBhw6lhIGEgw6kgw6kgYSAgYcOpYcOpYSAgIGEgYSAgw6nDqWFhYSAgIMOpw6nDqQ==",
+   "correct": "w6lhYWFhIGHDqcOpw6nDqWEgYSBhIGFhIMOpICDDqSDDqWEgw6kgw6nDqcOpYSDDqcOpYcOpw6lhw6nDqWEgYSDDqSBhICAgw6kgw6lhIGEgYSDDqcOpw6kgYSBhICDDqWFhw6nDqWFhYcOpIGFhYcOpYcOpYcOpICBhw6lhIGEgw6kgw6kgYSAgYcOpYcOpYSAgIGEgYSAgw6nDqWFhYSAgIMOpw6nDeg==",
+   "equal": false,
+   "admin_text": "Expected `éaaaa aééééa a a aa é é éa é éééa ééaééaééa a é a é éa a a ééé a a éaaééa...`, found `éaaaa aééééa a a aa é é éa é éééa ééaééaééa a é a é éa a a ééé a a éaaééa...` on line 1"
+  },
+  {
+   "output": "YcOpIMOpYSAgIGFhYWEgIGFhYWFhw6lhw6kgw6kgw6kgICDDqWEgYcOpw6nDqSAgIGFhIGFhw6nDqSAgw6lhw6kgw6lhYWEgICDDqSBhYWHDqSAgw6kgw6nDqWFhYcOpw6nDqSBhIMOpICDDqcOpIMOpIGFhw6nDqSAgIGHDqWFhIGHDqWFhYWFhICAgICBhICDDqWFh",
+   "correct": "YcOpIMOpYSAgIGFhYWEgIGFhYWFhw6lhw6kgw6kgw6kgICDDqWEgYcOpw6nDqSAgIGFhIGFhw6nDqSAgw6lhw6kgw6lhYWEgICDDqSBhYWHDqSAgw6kgw6nDqWFhYcOpw6nDqSBhIMOpICDDqcOpIMOpIGFhw6nDqSAgIGHDqWFhIGHDqWFhYWFhICAgICBhICDDqWF6",
+   "equal": false,
+   "admin_text": "Expected `aé éa aaaa aaaaaéaé é é éa aééé aa aaéé éaé éaaa é aaaé é ééaaaééé a é éé ...`, found `aé éa aaaa aaaaaéaé é é éa aééé aa aaéé éaé éaaa é aaaé é ééaaaééé a é éé ...` on line 1"
+  },
+  {
+   "output": "w6kgIMOpIMOpIMOpYcOpYWHDqcOpw6kgw6lhw6nDqSBhIGEgYSDDqWEgYcOpw6lhw6lhw6nDqSBhIGHDqSBhw6kgw6lhYSDDqcOpw6kgIGFhIGHDqcOpYcOpw6lhw6kgYWEgw6lhIMOpYWHDqSDDqcOpICAgYWEgIMOpw6lhICA=",
+   "correct": "w6kgIMOpIMOpIMOpYcOpYWHDqcOpw6kgw6lhw6nDqSBhIGEgYSDDqWEgYcOpw6lhw6lhw6nDqSBhIGHDqSBhw6kgw6lhYSDDqcOpw6kgIGFhIGHDqcOpYcOpw6lhw6kgYWEgw6lhIMOpYWHDqSDDqcOpICAgYWEgIMOpw6lhIHo=",
+   "equal": false,
+   "admin_text": "Expected `é é é éaéaaééé éaéé a a a éa aééaéaéé a aé aé éaa ééé aa aééaééaé aa éa...`, found `é é é éaéaaééé éaéé a a a éa aééaéaéé a aé aé éaa ééé aa aééaééaé aa éa...` on line 1"
+  },
+  {
+   "output": "YSAgw6lhw6nDqWHDqWFhIGEgYcOpIMOpIMOpYWHDqWFhICBhYcOpYcOpw6kgIMOpYWHDqWHDqWFhIGHDqWHDqcOpYSDDqSDDqWEgw6kgICDDqSDDqSAgYSBhw6kgw6nDqcOpYSAgYcOpw6lhw6lhICAgIGFhYWHDqWHDqWFhYWE=",
+   "correct": "YSAgw6lhw6nDqWHDqWFhIGEgYcOpIMOpIMOpYWHDqWFhICBhYcOpYcOpw6kgIMOpYWHDqWHDqWFhIGHDqWHDqcOpYSDDqSDDqWEgw6kgICDDqSDDqSAgYSBhw6kgw6nDqcOpYSAgYcOpw6lhw6lhICAgIGFhYWHDqWHDqWFhYXo=",
+   "equal": false,
+   "admin_text": "Expected `a éaééaéaa a aé é éaaéaa aaéaéé éaaéaéaa aéaééa é éa é é é a aé éééa aéé...`, found `a éaééaéaa a aé é éaaéaa aaéaéé éaaéaéaa aéaééa é éa é é é a aé éééa aéé...` on line 1"
+  },
+  {
+   "output": "IGHDqcOpYSAgICAgYSAgYSAgYWFhw6kgYSBhw6kgIMOpw6lhYcOpICAgw6lhYWEgYWEgw6nDqWEgICDDqWFhYSBhw6lhw6nDqWEgIGEgIMOpIGHDqcOpYWFhw6nDqcOpIGHDqWFhw6kgYWEgYSAgIGE=",
+   "correct": "IGHDqcOpYSAgICAgYSAgYSAgYWFhw6kgYSBhw6kgIMOpw6lhYcOpICAgw6lhYWEgYWEgw6nDqWEgICDDqWFhYSBhw6lhw6nDqWEgIGEgIMOpIGHDqcOpYWFhw6nDqcOpIGHDqWFhw6kgYWEgYSAgIHo=",
+   "equal": false,
+   "admin_text": "Expected `aééa a a aaaé a aé ééaaé éaaa aa ééa éaaa aéaééa a é aééaaaééé aéaaé aa a z`, found `aééa a a aaaé a aé ééaaé éaaa aa ééa éaaa aéaééa a é aééaaaééé aéaaé aa a a` on line 1"
+  },
+  {
+   "output": "w6lhw6nDqWHDqWEgYSBhYcOpYcOpw6kgw6nDqSDDqSBhw6nDqcOpIMOpYSBhw6nDqWEgICBhICBhw6kgYcOpIMOpIMOpw6lhIMOpIMOpw6lhw6lhw6nDqcOpYcOpw6lhYSBhICDDqWHDqSAgw6kgIMOpw6kgICBhIGFhYSBhYcOpYSAgICDDqWHDqcOpICAgIMOpYWHDqSDDqcOpw6kgIGHDqcOpw6lhYQ==",
+   "correct": "w6lhw6nDqWHDqWEgYSBhYcOpYcOpw6kgw6nDqSDDqSBhw6nDqcOpIMOpYSBhw6nDqWEgICBhICBhw6kgYcOpIMOpIMOpw6lhIMOpIMOpw6lhw6lhw6nDqcOpYcOpw6lhYSBhICDDqWHDqSAgw6kgIMOpw6kgICBhIGFhYSBhYcOpYSAgICDDqWHDqcOpICAgIMOpYWHDqSDDqcOpw6kgIGHDqcOpw6lheg==",
+   "equal": false,
+   "admin_text": "Expected `éaééaéa a aaéaéé éé é aééé éa aééa a aé aé é ééa é ééaéaéééaééaa a éa...`, found `éaééaéa a aaéaéé éé é aééé éa aééa a aé aé é ééa é ééaéaéééaééaa a éa...` on line 1"
+  },
+  {
+   "output": "w6lhIGHDqSAgIGEgYWHDqcOpIGFhIMOpYcOpw6lhICBhw6nDqcOpIMOpYcOpYWFhw6kgICAgw6nDqWEgw6lhw6lhw6kgYcOpYcOpYcOpYSDDqcOpw6kgICAgw6lhYWFhICAgw6nDqWFhYSAgYWFhIMOpw6lhIMOpw6lhICAgYWFhYSAgICAgw6nDqSDDqcOpw6kgIMOpIMOpw6nDqcOp",
+   "correct": "w6lhIGHDqSAgIGEgYWHDqcOpIGFhIMOpYcOpw6lhICBhw6nDqcOpIMOpYcOpYWFhw6kgICAgw6nDqWEgw6lhw6lhw6kgYcOpYcOpYcOpYSDDqcOpw6kgICAgw6lhYWFhICAgw6nDqWFhYSAgYWFhIMOpw6lhIMOpw6lhICAgYWFhYSAgICAgw6nDqSDDqcOpw6kgIMOpIMOpw6nDqcN6",
+   "equal": false,
+   "admin_text": "Expected `éa aé a aaéé aa éaééa aééé éaéaaaé ééa éaéaé aéaéaéa ééé éaaaa ééaaa aaa ...`, found `éa aé a aaéé aa éaééa aééé éaéaaaé ééa éaéaé aéaéaéa ééé éaaaa ééaaa aaa ...` on line 1"
+  },
+  {
+   "output": "YSBhICAgYcOpw6nDqWEgw6kgYSDDqWHDqWHDqcOpw6nDqcOpIMOpICBhIMOpw6kgw6kgYSAgw6lhw6nDqSBhICAgIGEgICDDqWEgw6nDqSBhIGHDqSBhYcOpIMOpIGEgIMOpIMOpIMOpw6kgICDDqSDDqcOpYSDDqSDDqWEgw6lhw6lhIGEg",
+   "correct": "YSBhICAgYcOpw6nDqWEgw6kgYSDDqWHDqWHDqcOpw6nDqcOpIMOpICBhIMOpw6kgw6kgYSAgw6lhw6nDqSBhICAgIGEgICDDqWEgw6nDqSBhIGHDqSBhYcOpIMOpIGEgIMOpIMOpIMOpw6kgICDDqSDDqcOpYSDDqSDDqWEgw6lhw6lhIGF6",
+   "equal": false,
+   "admin_text": "Expected `a a aéééa é a éaéaééééé é a éé é a éaéé a a éa éé a aé aaé é a é é éé é...`, found `a a aéééa é a éaéaééééé é a éé é a éaéé a a éa éé a aé aaé é a é é éé é...` on line 1"
+  },
+  {
+   "output": "YcOpYcOpIGHDqcOpw6kgw6lhw6kgYWHDqSDDqcOpIGFhw6lhw6nDqWFhYWFhYWEgICBhw6nDqcOpYSAgIMOpICAgIMOpw6lhw6lhw6nDqSDDqSDDqWFhw6lhICAgIMOpw6kgYWFhYcOpYSDDqSAgw6nDqcOpYcOpYSBhYSAgYWFhIMOpIGHDqSAgw6lhw6lhw6nDqQ==",
+   "correct": "YcOpYcOpIGHDqcOpw6kgw6lhw6kgYWHDqSDDqcOpIGFhw6lhw6nDqWFhYWFhYWEgICBhw6nDqcOpYSAgIMOpICAgIMOpw6lhw6lhw6nDqSDDqSDDqWFhw6lhICAgIMOpw6kgYWFhYcOpYSDDqSAgw6nDqcOpYcOpYSBhYSAgYWFhIMOpIGHDqSAgw6lhw6lhw6nDeg==",
+   "equal": false,
+   "admin_text": "Expected `aéaé aééé éaé aaé éé aaéaééaaaaaaa aéééa é ééaéaéé é éaaéa éé aaaaéa é ...`, found `aéaé aééé éaé aaé éé aaéaééaaaaaaa aéééa é ééaéaéé é éaaéa éé aaaaéa é ...` on line 1"
+  },
+  {
+   "output": "IMOpIGHDqcOpIMOpICDDqWFhIGHDqcOpw6kgYcOpYSAgICBhYcOpw6kgIGEgYWFhYSBhYSAgw6nDqSAgYWFhYWFhw6nDqWEgYSDDqcOpYWFhIMOpw6nDqSAgIGFhYWHDqcOpYSBhICAgIMOpYcOpICAgw6lhIMOpYSBhIGFhYcOpIGFhYSAgw6lhYWEgw6nDqSAgYcOp",
+   "correct": "IMOpIGHDqcOpIMOpICDDqWFhIGHDqcOpw6kgYcOpYSAgICBhYcOpw6kgIGEgYWFhYSBhYSAgw6nDqSAgYWFhYWFhw6nDqWEgYSDDqcOpYWFhIMOpw6nDqSAgIGFhYWHDqcOpYSBhICAgIMOpYcOpICAgw6lhIMOpYSBhIGFhYcOpIGFhYSAgw6lhYWEgw6nDqSAgYcN6",
+   "equal": false,
+   "admin_text": "Expected `é aéé é éaa aééé aéa aaéé a aaaa aa éé aaaaaaééa a ééaaa ééé aaaaééa a éaé \\xc3...`, found `é aéé é éaa aééé aéa aaéé a aaaa aa éé aaaaaaééa a ééaaa ééé aaaaééa a éaé \\xc3...` on line 1"
+  },
+  {
+   "output": "w6kgYcOpYcOpYSBhw6lhIGHDqSDDqcOpw6kgw6nDqSDDqSDDqSBhw6lhw6kgIGFhIMOpICBhw6kgYSBhYSBhIMOpYcOpYSBhIMOpYSAgYSDDqcOpYSAgw6nDqWFhw6nDqcOpIMOpw6nDqWEgYcOpw6nDqcOpw6nDqSBhIMOpw6lhw6nDqcOpIMOpYWFhYWHDqWEgYcOpw6kgw6lhIGEgYWEgw6kg",
+   "correct": "w6kgYcOpYcOpYSBhw6lhIGHDqSDDqcOpw6kgw6nDqSDDqSDDqSBhw6lhw6kgIGFhIMOpICBhw6kgYSBhYSBhIMOpYcOpYSBhIMOpYSAgYSDDqcOpYSAgw6nDqWFhw6nDqcOpIMOpw6nDqWEgYcOpw6nDqcOpw6nDqSBhIMOpw6lhw6nDqcOpIMOpYWFhYWHDqWEgYcOpw6kgw6lhIGEgYWEgw6l6",
+   "equal": false,
+   "admin_text": "Expected `é aéaéa aéa aé ééé éé é é aéaé aa é aé a aa a éaéa a éa a ééa ééaaééé éé...`, found `é aéaéa aéa aé ééé éé é é aéaé aa é aé a aa a éaéa a éa a ééa ééaaééé éé...` on line 1"
+  },
+  {
+   "output": "IMOpICAgIGHDqWFhYSBhw6lhYWFhYWFhYcOpw6nDqcOpIMOpw6nDqWEgYWFhYWHDqcOpYcOpIGEgw6lhw6lhIGFhIGEgYSDDqWEgYcOpw6nDqcOpw6kgw6kgIMOpYWEgICDDqSDDqcOpIMOpw6kgw6lhw6lhIGEgYWHDqWHDqcOpw6kgIGEgYWFhICAgYSDDqSBhICAgw6nDqcOpIMOpICAgw6lh",
+   "correct": "IMOpICAgIGHDqWFhYSBhw6lhYWFhYWFhYcOpw6nDqcOpIMOpw6nDqWEgYWFhYWHDqcOpYcOpIGEgw6lhw6lhIGFhIGEgYSDDqWEgYcOpw6nDqcOpw6kgw6kgIMOpYWEgICDDqSDDqcOpIMOpw6kgw6lhw6lhIGEgYWHDqWHDqcOpw6kgIGEgYWFhICAgYSDDqSBhICAgw6nDqcOpIMOpICAgw6l6",
+   "equal": false,
+   "admin_text": "Expected `é aéaaa aéaaaaaaaaéééé éééa aaaaaééaé a éaéa aa a a éa aééééé é éaa é éé \\xc3...`, found `é aéaaa aéaaaaaaaaéééé éééa aaaaaééaé a éaéa aa a a éa aééééé é éaa é éé \\xc3...` on line 1"
+  },
+  {
+   "output": "YWFhw6nDqcOpw6lhYcOpw6nDqSDDqWEgICBhIGEgIMOpIMOpYcOpw6kgw6kgICBhIMOpw6kgw6nDqWHDqSAgYSAgIMOpYWEgw6kgIGFhw6lhIMOpw6kgw6nDqcOpw6nDqSDDqSBhICDDqcOpIGFhIGHDqcOpw6lhIGEgIGEgIMOpYcOpYSDDqcOpIGE=",
+   "correct": "YWFhw6nDqcOpw6lhYcOpw6nDqSDDqWEgICBhIGEgIMOpIMOpYcOpw6kgw6kgICBhIMOpw6kgw6nDqWHDqSAgYSAgIMOpYWEgw6kgIGFhw6lhIMOpw6kgw6nDqcOpw6nDqSDDqSBhICDDqcOpIGFhIGHDqcOpw6lhIGEgIGEgIMOpYcOpYSDDqcOpIHo=",
+   "equal": false,
+   "admin_text": "Expected `aaaééééaaééé éa a a é éaéé é a éé ééaé a éaa é aaéa éé ééééé é a éé a...`, found `aaaééééaaééé éa a a é éaéé é a éé ééaé a éaa é aaéa éé ééééé é a éé a...` on line 1"
+  },
+  {
+   "output": "w6lhIGFhIGFhw6lhw6nDqcOpYSDDqcOpIGEgYWEgYcOpYWHDqcOpICAgw6nDqSBhw6nDqcOpw6nDqcOpYcOpICDDqcOpw6lhw6nDqcOpIMOpYSAgw6nDqWHDqWEgYcOpw6lhIMOpYcOpIGFhYSAgw6kgIMOpICDDqSBhw6kgICA=",
+   "correct": "w6lhIGFhIGFhw6lhw6nDqcOpYSDDqcOpIGEgYWEgYcOpYWHDqcOpICAgw6nDqSBhw6nDqcOpw6nDqcOpYcOpICDDqcOpw6lhw6nDqcOpIMOpYSAgw6nDqWHDqWEgYcOpw6lhIMOpYcOpIGFhYSAgw6kgIMOpICDDqSBhw6kgIHo=",
+   "equal": false,
+   "admin_text": "Expected `éa aa aaéaéééa éé a aa aéaaéé éé aééééééaé éééaééé éa ééaéa aééa éa\\xc3...`, found `éa aa aaéaéééa éé a aa aéaaéé éé aééééééaé éééaééé éa ééaéa aééa éa\\xc3...` on line 1"
+  },
+  {
+   "output": "IMOpIMOpYcOpw6lhw6kgIGHDqSDDqcOpICAgYcOpw6nDqcOpw6kgw6lhYcOpICDDqcOpYWEgYSDDqcOpYWHDqSAgYSBhw6lhIGHDqcOpYSBhw6kgw6kgw6lhYcOpw6kgIMOpIMOpw6kgYWHDqcOpIMOpYcOpw6lhIGHDqSAgw6kgICBhICBhYcOpw6kgICBhYcOpIMOpw6kgIMOpYcOp",
+   "correct": "IMOpIMOpYcOpw6lhw6kgIGHDqSDDqcOpICAgYcOpw6nDqcOpw6kgw6lhYcOpICDDqcOpYWEgYSDDqcOpYWHDqSAgYSBhw6lhIGHDqcOpYSBhw6kgw6kgw6lhYcOpw6kgIMOpIMOpw6kgYWHDqcOpIMOpYcOpw6lhIGHDqSAgw6kgICBhICBhYcOpw6kgICBhYcOpIMOpw6kgIMOpYcN6",
+   "equal": false,
+   "admin_text": "Expected `é éaééaé aé éé aééééé éaaé ééaa a ééaaé a aéa aééa aé é éaaéé é éé aa...`, found `é éaééaé aé éé aééééé éaaé ééaa a ééaaé a aéa aééa aé é éaaéé é éé aa...` on line 1"
+  },
+  {
+   "output": "YWFhIGFhw6kgIGFhIGEgw6lhw6kgYSAgYWEgw6lhIMOpIMOpIGFhw6kgw6lhICDDqcOpIMOpIGHDqSBhYSAgIGEgw6lhYcOpw6kgICAgw6nDqWHDqcOpIGEgw6lhYWHDqcOpYSBhIMOpICAgIMOpIGEgICBhIMOpw6lhYcOpYWFhw6nDqWEgw6nDqSAgYWEgw6nDqWE=",
+   "correct": "YWFhIGFhw6kgIGFhIGEgw6lhw6kgYSAgYWEgw6lhIMOpIMOpIGFhw6kgw6lhICDDqcOpIMOpIGHDqSBhYSAgIGEgw6lhYcOpw6kgICAgw6nDqWHDqcOpIGEgw6lhYWHDqcOpYSBhIMOpICAgIMOpIGEgICBhIMOpw6lhYcOpYWFhw6nDqWEgw6nDqSAgYWEgw6nDqXo=",
+   "equal": false,
+   "admin_text": "Expected `aaa aaé aa a éaé a aa éa é é aaé éa éé é aé aa a éaaéé ééaéé a éaaaééa a é é...`, found `aaa aaé aa a éaé a aa éa é é aaé éa éé é aé aa a éaaéé ééaéé a éaaaééa a é é...` on line 1"
+  },
+  {
+   "output": "IGFhIMOpYcOpw6nDqcOpw6kgYWEgIMOpIMOpYcOpYSAgw6lhICDDqcOpIGFhYWEgw6kgYcOpYSAgIGEgw6nDqSAgICBhw6kgIGFhIGHDqSDDqcOpw6lhYcOpICAgw6nDqcOpIGFhw6kgICBhYcOpYWEgYWHDqWHDqSBhYcOpw6kgIGFhw6kgw6nDqWEgw6lhIA==",
+   "correct": "IGFhIMOpYcOpw6nDqcOpw6kgYWEgIMOpIMOpYcOpYSAgw6lhICDDqcOpIGFhYWEgw6kgYcOpYSAgIGEgw6nDqSAgICBhw6kgIGFhIGHDqSDDqcOpw6lhYcOpICAgw6nDqcOpIGFhw6kgICBhYcOpYWEgYWHDqWHDqSBhYcOpw6kgIGFhw6kgw6nDqWEgw6lheg==",
+   "equal": false,
+   "admin_text": "Expected `aa éaééééé aa é éaéa éa éé aaaa é aéa a éé aé aa aé éééaaé ééé aaé aaéaa ...`, found `aa éaééééé aa é éaéa éa éé aaaa é aéa a éé aé aa aé éééaaé ééé aaé aaéaa ...` on line 1"
+  }
+ ],
+ "manager_output": [
+  {
+   "stdout": "MC40NQo=",
+   "stderr": "5L2g5aW9Lgo=",
+   "outcome": 0.45,
+   "text": [
+    "你好."
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MC40NQo=",
+   "stderr": "VGV4dCB0byByZXR1cm4uCkFETUlOX01FU1NBR0U6IGFkbWlu",
+   "outcome": 0.45,
+   "text": [
+    "Text to return."
+   ],
+   "admin_text": "admin"
+  },
+  {
+   "stdout": "MC40NQpOb3RoaW5nCg==",
+   "stderr": "VGV4dCB0byByZXR1cm4uCnRvIHNlZSBoZXJl",
+   "outcome": 0.45,
+   "text": [
+    "Text to return."
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MC40NQ==",
+   "stderr": "VGV4dCB0byByZXR1cm4u",
+   "outcome": 0.45,
+   "text": [
+    "Text to return."
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "ICAgMC40NQkgCmlnbm9yZWQ=",
+   "stderr": "CSAgVGV4dCB0byByZXR1cm4uDQo=",
+   "outcome": 0.45,
+   "text": [
+    "Text to return."
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MC40NQo=",
+   "stderr": "dHJhbnNsYXRlOnN1Y2Nlc3MK",
+   "outcome": 0.45,
+   "text": [
+    "Output is correct"
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MQo=",
+   "stderr": "dHJhbnNsYXRlOnBhcnRpYWw=",
+   "outcome": 1.0,
+   "text": [
+    "Output is partially correct"
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MAo=",
+   "stderr": "dHJhbnNsYXRlOiB3cm9uZyAK",
+   "outcome": 0.0,
+   "text": [
+    "Output isn't correct"
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MAo=",
+   "stderr": "dHJhbnNsYXRlOm90aGVyCg==",
+   "outcome": 0.0,
+   "text": [
+    "translate:other"
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "bm90IGEgZmxvYXQK",
+   "stderr": "VGV4dCB0byByZXR1cm4uCg==",
+   "error": "Outcome is not a float."
+  },
+  {
+   "stdout": "MC40NQ==",
+   "stderr": "wyg=",
+   "error": "Cannot decode the text."
+  },
+  {
+   "stdout": "wyg=",
+   "stderr": "eA==",
+   "error": "Cannot decode the outcome."
+  },
+  {
+   "stdout": "MC41DQ==",
+   "stderr": "NTAlIGRvbmUNQURNSU5fTUVTU0FHRTogMTAlIGxlZnQNCkFETUlOX01FU1NBR0U6ICBtb3JlIApub2lzZQ==",
+   "outcome": 0.5,
+   "text": [
+    "50%% done"
+   ],
+   "admin_text": "10%% left more"
+  },
+  {
+   "stdout": "MWUtMwo=",
+   "stderr": "dGFiCWhlcmUK",
+   "outcome": 0.001,
+   "text": [
+    "tab\there"
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MC41Cg==",
+   "stderr": "YmFkB2NoYXIK",
+   "error": "Invalid character in outcome: 0x07"
+  },
+  {
+   "stdout": "MC41Cg==",
+   "stderr": "wr9Db3JyZWN0bz8K",
+   "error": "Invalid character in outcome: 0xbf"
+  },
+  {
+   "stdout": "MC41Cg==",
+   "stderr": "HHRyaW1tZWQdCg==",
+   "outcome": 0.5,
+   "text": [
+    "trimmed"
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MC41Cg==",
+   "stderr": "b2sKQURNSU5fTUVTU0FHRTogYmFkAQo=",
+   "error": "Invalid character in outcome: 0x01"
+  },
+  {
+   "stdout": "",
+   "stderr": "dGV4dA==",
+   "error": "Outcome is not a float."
+  },
+  {
+   "stdout": "CjAuNQ==",
+   "stderr": "dGV4dA==",
+   "error": "Outcome is not a float."
+  },
+  {
+   "stdout": "IC0wIA==",
+   "stderr": "",
+   "outcome": -0.0,
+   "text": [
+    ""
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MC41Cg==",
+   "stderr": "",
+   "outcome": 0.5,
+   "text": [
+    ""
+   ],
+   "admin_text": null
+  },
+  {
+   "stdout": "MC41Cg==",
+   "stderr": "CkFETUlOX01FU1NBR0U6IG9ubHkgYWRtaW4K",
+   "outcome": 0.5,
+   "text": [
+    ""
+   ],
+   "admin_text": "only admin"
+  }
+ ]
+}
