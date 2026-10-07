@@ -186,13 +186,24 @@ type Worker struct {
 	// Concurrency is the number of jobs run in parallel. Use at most one
 	// per physical core reserved for judging.
 	Concurrency int `yaml:"concurrency"`
-	// BoxIDBase is the first isolate box id used by this worker.
+	// BoxIDBase is the first isolate box id used by this worker and
+	// BoxCount the number of ids it may use: [BoxIDBase, BoxIDBase+BoxCount).
+	// Workers on the same machine need disjoint ranges (`cms ctl
+	// verify-host` checks it). A job uses one box at a time, except
+	// Communication tasks (one per process plus the manager).
 	BoxIDBase int `yaml:"box_id_base"`
+	BoxCount  int `yaml:"box_count"`
 	// WorkDir holds sandboxes and compiled files. It is converted to an
 	// absolute path at startup because isolate rejects relative --dir.
 	WorkDir     string `yaml:"work_dir"`
 	IsolatePath string `yaml:"isolate_path"`
-	KeepSandbox bool   `yaml:"keep_sandbox"`
+	// KeepSandbox leaves the box directories on disk after each job (for
+	// debugging; they are never deleted automatically).
+	KeepSandbox bool `yaml:"keep_sandbox"`
+	// Seccomp runs contestant programs (evaluations and user tests, never
+	// compilers, checkers or managers) under a seccomp filter that kills
+	// them with the "Security violation" verdict on forbidden system calls.
+	Seccomp bool `yaml:"seccomp"`
 }
 
 // Monitor configures the health/metrics aggregator (CMS Checker,
@@ -203,6 +214,13 @@ type Monitor struct {
 
 // Sandbox holds the limits that are not part of a task (CMS [sandbox]).
 type Sandbox struct {
+	// Cgroups runs isolate with --cg (cgroups v2): memory limits cover the
+	// whole process tree, memory use is measured and "Memory limit
+	// exceeded" is detected. false is only for development machines
+	// without cgroups v2: memory is limited per process as address space
+	// (--mem) and exceeding it looks like a runtime error.
+	Cgroups bool `yaml:"cgroups"`
+	// MaxFileSizeKiB bounds every file a sandboxed program writes.
 	MaxFileSizeKiB int64        `yaml:"max_file_size_kib"`
 	Compilation    SandboxLimit `yaml:"compilation"`
 	Trusted        SandboxLimit `yaml:"trusted"`
@@ -255,11 +273,14 @@ func Default() *Config {
 		Worker: Worker{
 			OpsListen:   "127.0.0.1:9192",
 			Concurrency: 1,
+			BoxCount:    100,
 			WorkDir:     "/var/lib/cms/worker",
 			IsolatePath: "isolate",
+			Seccomp:     true,
 		},
 		Monitor: Monitor{Listen: "127.0.0.1:9193"},
 		Sandbox: Sandbox{
+			Cgroups:        true,
 			MaxFileSizeKiB: 1 << 20,
 			Compilation:    SandboxLimit{MaxProcesses: 1000, MaxTimeSec: 10, MaxMemoryKiB: 512 << 10},
 			Trusted:        SandboxLimit{MaxProcesses: 1000, MaxTimeSec: 10, MaxMemoryKiB: 4 << 20},
@@ -348,6 +369,7 @@ func (c *Config) Validate() error {
 	if c.Worker.Concurrency < 1 {
 		errs = append(errs, errors.New("worker.concurrency must be at least 1"))
 	}
+	errs = append(errs, c.validateSandbox()...)
 	for name, addr := range map[string]string{
 		"contest_web.listen":     c.ContestWeb.Listen,
 		"contest_web.ops_listen": c.ContestWeb.OpsListen,
@@ -403,6 +425,37 @@ func (s *Storage) validate() []error {
 	// The local backend is never cached (see blob.Open).
 	if s.Backend != "local" && s.CacheSizeMB > 0 && s.CacheDir == "" {
 		errs = append(errs, errors.New("storage.cache_dir must be set when storage.cache_size_mb is not 0"))
+	}
+	return errs
+}
+
+// maxBoxID bounds box ids: isolate accepts at most 65536 boxes with its
+// default configuration (`cms ctl verify-host` checks the real limit).
+const maxBoxID = 1 << 16
+
+func (c *Config) validateSandbox() []error {
+	var errs []error
+	w := &c.Worker
+	if w.BoxIDBase < 0 {
+		errs = append(errs, errors.New("worker.box_id_base must not be negative"))
+	}
+	if w.BoxCount < 1 {
+		errs = append(errs, errors.New("worker.box_count must be at least 1"))
+	} else if w.BoxCount < w.Concurrency {
+		errs = append(errs, fmt.Errorf("worker.box_count (%d) must be at least worker.concurrency (%d): "+
+			"every job needs its own box", w.BoxCount, w.Concurrency))
+	}
+	if w.BoxIDBase >= 0 && w.BoxCount >= 1 && w.BoxIDBase+w.BoxCount > maxBoxID {
+		errs = append(errs, fmt.Errorf("worker.box_id_base + worker.box_count must not exceed %d", maxBoxID))
+	}
+	if w.WorkDir == "" {
+		errs = append(errs, errors.New("worker.work_dir must be set"))
+	}
+	if w.IsolatePath == "" {
+		errs = append(errs, errors.New("worker.isolate_path must be set"))
+	}
+	if c.Sandbox.MaxFileSizeKiB < 1 {
+		errs = append(errs, errors.New("sandbox.max_file_size_kib must be at least 1"))
 	}
 	return errs
 }

@@ -79,6 +79,23 @@ contest_web:
 	}
 }
 
+func TestSandboxSettings(t *testing.T) {
+	cfg := Default()
+	if !cfg.Sandbox.Cgroups || !cfg.Worker.Seccomp || cfg.Worker.BoxCount != 100 {
+		t.Errorf("defaults: cgroups %v, seccomp %v, box_count %d", cfg.Sandbox.Cgroups, cfg.Worker.Seccomp, cfg.Worker.BoxCount)
+	}
+	// The sandbox tests switch cgroups off with CMS_SANDBOX_CGROUPS=0.
+	cfg, _, err := load(writeFile(t, ""), env(map[string]string{
+		"CMS_SANDBOX_CGROUPS": "0", "CMS_WORKER_SECCOMP": "false", "CMS_WORKER_BOX_COUNT": "8",
+	}), os.ReadFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Sandbox.Cgroups || cfg.Worker.Seccomp || cfg.Worker.BoxCount != 8 {
+		t.Errorf("overrides: cgroups %v, seccomp %v, box_count %d", cfg.Sandbox.Cgroups, cfg.Worker.Seccomp, cfg.Worker.BoxCount)
+	}
+}
+
 func TestEnvFileVariant(t *testing.T) {
 	secret := filepath.Join(t.TempDir(), "secret")
 	if err := os.WriteFile(secret, []byte("ffeeddccbbaa99887766554433221100\n"), 0o600); err != nil {
@@ -137,6 +154,13 @@ func TestValidation(t *testing.T) {
 		"storage:\n  local:\n    path: \"\"":                               "storage.local.path",
 		"contest_web:\n  listen: nonsense":                                 "contest_web.listen",
 		"worker:\n  concurrency: 0":                                        "worker.concurrency",
+		"worker:\n  box_count: 0":                                          "worker.box_count must be at least 1",
+		"worker:\n  concurrency: 4\n  box_count: 2":                        "worker.box_count (2) must be at least worker.concurrency (4)",
+		"worker:\n  box_id_base: -1":                                       "worker.box_id_base",
+		"worker:\n  box_id_base: 65500":                                    "must not exceed 65536",
+		"worker:\n  work_dir: \"\"":                                        "worker.work_dir",
+		"worker:\n  isolate_path: \"\"":                                    "worker.isolate_path",
+		"sandbox:\n  max_file_size_kib: 0":                                 "sandbox.max_file_size_kib",
 		"contest_web:\n  cookie_duration: 3 d":                             "invalid duration",
 	}
 	for yml, want := range cases {

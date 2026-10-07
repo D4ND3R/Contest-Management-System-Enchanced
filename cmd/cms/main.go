@@ -29,10 +29,16 @@ import (
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/dispatcher"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/monitor"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/rankingweb"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/sandbox"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/worker"
 )
 
 func main() {
+	// `cms sandbox-exec` is the seccomp launcher the sandbox puts in front
+	// of contestant programs. It is hidden from the help and must start
+	// as fast as possible: it runs before anything else and never returns.
+	sandbox.MaybeRunLauncher()
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	code := run(ctx, os.Args, os.Stdout, os.Stderr)
 	stop()

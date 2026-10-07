@@ -108,17 +108,31 @@ worker:
   name: ""
   # Jobs run in parallel: at most one per physical core reserved for judging.
   concurrency: 1
+  # isolate box ids [box_id_base, box_id_base + box_count). Workers on the
+  # same machine need disjoint ranges (`cms ctl verify-host` checks it).
+  # Communication tasks use one box per process plus one for the manager.
   box_id_base: 0
+  box_count: 100
   # Converted to an absolute path at startup (isolate rejects relative dirs).
   work_dir: /var/lib/cms/worker
   isolate_path: isolate
+  # Keep the box directories after each job (debugging only).
   keep_sandbox: false
+  # Run contestant programs under a seccomp filter: forbidden system calls
+  # (ptrace, mount, unshare, network sockets...) give "Security violation".
+  # Compilers, checkers and managers never run under it.
+  seccomp: true
 
 monitor:
   listen: 127.0.0.1:9193
 
 sandbox:
-  # Largest file a solution may write.
+  # isolate with cgroups v2 (--cg): memory limits for the whole process
+  # tree and "Memory limit exceeded" detection. false is ONLY for
+  # development machines without cgroups v2 (memory limited per process
+  # as address space, exceeding it looks like a runtime error).
+  cgroups: true
+  # Largest file a sandboxed program may write.
   max_file_size_kib: 1048576
   compilation:
     max_processes: 1000

@@ -91,8 +91,25 @@ jobs:
           sudo isolate-check-environment --execute || true
           # isolate is setuid and only executable by root and the isolate group.
           sudo isolate --version
-      - name: make test-sandbox
+      - name: install the compilers of the supported languages
+        run: |
+          set -ex
+          sudo apt-get install -y --no-install-recommends \
+            g++ gcc python3 pypy3 default-jdk-headless fp-compiler ghc mono-mcs mono-runtime \
+            rustc golang-go php-cli kotlin
+      - name: cgroups v2 (isolate --cg)
+        run: |
+          set -ex
+          test -f /sys/fs/cgroup/cgroup.controllers
+          cat /sys/fs/cgroup/cgroup.controllers
+          cat "$(cat /run/isolate/cgroup)/cgroup.controllers"
+      - name: make test-sandbox (cgroups on)
         run: |
           go mod download
           sudo env "PATH=$PATH" "GOCACHE=$(go env GOCACHE)" "GOMODCACHE=$(go env GOMODCACHE)" \
-            "GOTOOLCHAIN=$(go env GOVERSION)" make test-sandbox
+            "GOTOOLCHAIN=$(go env GOVERSION)" CMS_SANDBOX_CGROUPS=1 make test-sandbox
+      - name: cms ctl verify-host
+        run: |
+          make build
+          # The runner has SMT and swap: only the report matters here.
+          sudo env CMS_WORKER_WORK_DIR=/tmp/cms-worker bin/cms ctl verify-host || true

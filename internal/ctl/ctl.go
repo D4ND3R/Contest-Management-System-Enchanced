@@ -43,6 +43,7 @@ dispatcher (storage.backend: remote). It is derived from secret_key, so the
 judges never need the secret_key itself.`,
 				Run: blobToken,
 			},
+			verifyHostCommand(),
 			{
 				Name:  "gen-secret",
 				Short: "print a new random secret_key",

@@ -35,10 +35,15 @@ test: ## run every test against disposable PostgreSQL and Valkey
 test-short: ## unit tests only (no PostgreSQL/Valkey: those tests are skipped)
 	$(GO) test $(GOFLAGS) ./...
 
+# Packages with sandbox-tagged tests (those that exist yet).
+SANDBOX_PKGS := $(foreach d,sandbox grading worker,$(if $(wildcard internal/$(d)),./internal/$(d)/...))
+
 .PHONY: test-sandbox
-test-sandbox: ## sandbox tests (root, isolate >= 2.0, cgroups v2)
+test-sandbox: ## as root: isolate, malicious battery, example solutions (CMS_SANDBOX_CGROUPS=0 without cgroups v2)
 	@if [[ "$$(id -u)" != "0" ]]; then echo "make test-sandbox must run as root (isolate)"; exit 1; fi
-	$(GO) test $(GOFLAGS) -tags sandbox -count=1 -v ./internal/sandbox/... ./internal/worker/...
+	@echo "CMS_SANDBOX_CGROUPS=$${CMS_SANDBOX_CGROUPS:-1}"
+	CMS_SANDBOX_CGROUPS="$${CMS_SANDBOX_CGROUPS:-1}" \
+		$(GO) test $(GOFLAGS) -tags sandbox -count=1 -timeout 30m -v $(SANDBOX_PKGS)
 
 .PHONY: bench
 bench: ## benchmarks of the hot paths
