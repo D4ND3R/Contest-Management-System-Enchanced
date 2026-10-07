@@ -1,0 +1,121 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Development stack: `make dev` (scripts/dev-compose.sh) builds bin/cms,
+# generates .dev/compose.env with a secret_key once, and runs this file.
+# Configuration goes through CMS_* variables, like in production.
+name: cms-dev
+
+x-cms: &cms
+  image: cms:dev
+  build:
+    context: ..
+    dockerfile: deploy/docker/Dockerfile
+  restart: unless-stopped
+  environment: &cms-env
+    CMS_SECRET_KEY: ${CMS_SECRET_KEY:?run make dev, which generates it}
+    CMS_DATABASE_URL: postgres://cms:cms@postgres:5432/cms?sslmode=disable
+    CMS_REDIS_URL: redis://valkey:6379/0
+    CMS_LOG_FORMAT: json
+    CMS_LOG_LEVEL: debug
+    CMS_DATA_DIR: /tmp/cms
+    CMS_STORAGE_LOCAL_PATH: /tmp/cms/blobs
+    CMS_STORAGE_CACHE_DIR: /tmp/cms/cache
+    CMS_RANKING_WEB_DATA_DIR: /tmp/cms/ranking
+    CMS_WORKER_WORK_DIR: /tmp/cms/worker
+    CMS_CONTEST_WEB_LISTEN: 0.0.0.0:8888
+    CMS_ADMIN_WEB_LISTEN: 0.0.0.0:8889
+    CMS_RANKING_WEB_LISTEN: 0.0.0.0:8890
+    CMS_CONTEST_WEB_OPS_LISTEN: 0.0.0.0:9188
+    CMS_ADMIN_WEB_OPS_LISTEN: 0.0.0.0:9189
+    CMS_RANKING_WEB_OPS_LISTEN: 0.0.0.0:9190
+    CMS_DISPATCHER_OPS_LISTEN: 0.0.0.0:9191
+    CMS_WORKER_OPS_LISTEN: 0.0.0.0:9192
+    CMS_MONITOR_LISTEN: 0.0.0.0:9193
+  depends_on: &cms-deps
+    postgres:
+      condition: service_healthy
+    valkey:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: cms
+      POSTGRES_PASSWORD: cms
+      POSTGRES_DB: cms
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "cms"]
+      interval: 2s
+      retries: 30
+
+  valkey:
+    image: valkey/valkey:8
+    command: ["valkey-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    <<: *cms
+    restart: "no"
+    command: ["migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  contest-web:
+    <<: *cms
+    command: ["contest-web"]
+    ports: ["127.0.0.1:8888:8888"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9188/healthz"]
+      interval: 5s
+
+  admin-web:
+    <<: *cms
+    command: ["admin-web"]
+    ports: ["127.0.0.1:8889:8889"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9189/healthz"]
+      interval: 5s
+
+  ranking-web:
+    <<: *cms
+    command: ["ranking-web"]
+    ports: ["127.0.0.1:8890:8890"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9190/healthz"]
+      interval: 5s
+
+  dispatcher:
+    <<: *cms
+    command: ["dispatcher"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9191/healthz"]
+      interval: 5s
+
+  # Placeholder until F2: the judging image (isolate, compilers) replaces it.
+  worker:
+    <<: *cms
+    command: ["worker"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9192/healthz"]
+      interval: 5s
+
+  monitor:
+    <<: *cms
+    command: ["monitor"]
+    ports: ["127.0.0.1:9193:9193"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9193/healthz"]
+      interval: 5s
+
+volumes:
+  pgdata:

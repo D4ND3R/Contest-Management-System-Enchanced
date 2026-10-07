@@ -1,0 +1,110 @@
+# Configuration of a CMS installation. Every service reads the same file.
+#
+# Every setting can be overridden with an environment variable named CMS_
+# plus its path in upper case with "_" between levels, for example
+# database.url -> CMS_DATABASE_URL, contest_web.listen -> CMS_CONTEST_WEB_LISTEN.
+# NAME_FILE (e.g. CMS_SECRET_KEY_FILE) reads the value from a file.
+#
+# The values below are the defaults. The installer writes /etc/cms/cms.yaml
+# only if it does not exist yet.
+
+# Shared secret: signs cookies and CSRF tokens and derives the keys of the
+# secret scoreboard links. Hexadecimal, at least 16 bytes, and THE SAME in
+# every service of the installation. Generate it once with `cms ctl gen-secret`.
+secret_key: ""
+# Repository linked from the footer of every site (AGPL). Empty means the
+# upstream repository of this fork; change it if you run modified code.
+source_url: ""
+# Local state: blobs (when storage.backend is local), backups, ...
+data_dir: /var/lib/cms
+# Initial timezone of the server. The administration can change it later on
+# the Server page; the value stored in the database then wins.
+timezone: UTC
+
+log:
+  level: info    # debug, info, warn, error
+  format: json   # json (production) or text (development)
+
+database:
+  url: postgres://cms@localhost:5432/cms?sslmode=disable
+  max_conns: 20
+
+redis:
+  # Valkey or Redis >= 7. Job queues use Streams, live events use pub/sub.
+  url: redis://localhost:6379/0
+  key_prefix: "cms:"
+
+storage:
+  backend: local   # local or s3
+  local:
+    path: /var/lib/cms/blobs
+  s3:
+    endpoint: ""
+    region: ""
+    bucket: ""
+    prefix: ""
+    access_key: ""
+    secret_key: ""
+    use_ssl: true
+  # LRU cache of blobs on workers and web servers.
+  cache_dir: /var/cache/cms/blobs
+  cache_size_mb: 2048
+
+contest_web:
+  listen: 127.0.0.1:8888
+  # Metrics, detailed health and pprof. Keep it on localhost.
+  ops_listen: 127.0.0.1:9188
+  # Serve a single contest (by name). Empty: contest list at "/".
+  contest: ""
+  # Reverse proxies in front of the site (to read X-Forwarded-For).
+  num_proxies: 0
+  cookie_duration: 3h0m0s
+  max_submission_length: 100000
+  max_input_length: 5000000
+  # Lets administrators impersonate users through the API. Empty disables it.
+  admin_token: ""
+  docs_path: /usr/share/cms/docs
+
+admin_web:
+  listen: 127.0.0.1:8889
+  ops_listen: 127.0.0.1:9189
+  num_proxies: 0
+  cookie_duration: 10h0m0s
+
+ranking_web:
+  listen: 127.0.0.1:8890
+  ops_listen: 127.0.0.1:9190
+  num_proxies: 0
+  # Scoreboard state pushed by the dispatcher (no database access needed).
+  data_dir: /var/lib/cms/ranking
+
+dispatcher:
+  ops_listen: 127.0.0.1:9191
+
+worker:
+  ops_listen: 127.0.0.1:9192
+  # Name shown on the judges page. Empty: the hostname.
+  name: ""
+  # Jobs run in parallel: at most one per physical core reserved for judging.
+  concurrency: 1
+  box_id_base: 0
+  # Converted to an absolute path at startup (isolate rejects relative dirs).
+  work_dir: /var/lib/cms/worker
+  isolate_path: isolate
+  keep_sandbox: false
+
+monitor:
+  listen: 127.0.0.1:9193
+
+sandbox:
+  # Largest file a solution may write.
+  max_file_size_kib: 1048576
+  compilation:
+    max_processes: 1000
+    max_time_sec: 10
+    max_memory_kib: 524288
+  # Checkers, managers and generators.
+  trusted:
+    max_processes: 1000
+    max_time_sec: 10
+    max_memory_kib: 4194304

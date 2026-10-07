@@ -1,0 +1,67 @@
+# Avance
+
+Una sección por fase: lo hecho, las pruebas que lo cubren y lo pendiente.
+
+---
+
+## F0 — Cimientos (hecha)
+
+### Hecho
+
+- Repositorio Go (`github.com/d4nd3r/contest-management-system-enchanced`,
+  Go 1.26+, toolchain 1.27.1) con `LICENSE.txt` (AGPL-3.0) y `AUTHORS.txt`
+  del original más el aviso del fork; cabecera SPDX en cada archivo Go.
+- Documentos: SPEC.md (inventario real del upstream en el commit `1914a5a`,
+  esquema 49, y requisitos del MVP con criterios de aceptación),
+  CLAUDE.md, DECISIONS.md (D1–D17), AUDIT.md, este archivo.
+- Binario único `cms` con `contest-web`, `admin-web`, `ranking-web`,
+  `dispatcher`, `worker`, `monitor`, `ctl`, `migrate`, `version` y
+  `healthcheck`; alias `cmsctl`. Los servicios son esqueletos: conectan a sus
+  dependencias (con reintentos y verificación del esquema), exponen
+  `/healthz`, `/metrics`, pprof y, las webs, `/source` (AGPL) con CSP y
+  cabeceras de seguridad, y se apagan limpio con SIGTERM.
+- Configuración `cms.yaml` + `CMS_*` + `CMS_*_FILE`; `cms ctl config
+  check|show|env`, `cms ctl gen-secret`; `config/cms.sample.yaml`.
+- Logs JSON (`log/slog`) con el nombre del servicio; registro Prometheus con
+  `cms_build_info` y métricas HTTP por ruta (patrón, sin cardinalidad alta).
+- Migraciones embebidas con checksum, lock entre procesos y rechazo de
+  esquemas desfasados; primera migración: `server_settings`.
+- `scripts/infra.sh` (PostgreSQL 16 y Valkey/Redis nativos o Docker),
+  `testutil.DB/EmptyDB/Redis`, `make test`, `make lint`, `make generate`,
+  `make bench`, `make test-sandbox`.
+- `make dev` (Compose: PostgreSQL, Valkey, migrate y los seis servicios con
+  healthchecks) y `make dev-native` (`scripts/dev.sh` con PIDs).
+- i18n: parser `.po`, formas plurales de gettext, catálogos con fallback
+  (`es_CL` → `es` → inglés), negociación de `Accept-Language`,
+  `Format("%(x)s")`; las **25 traducciones de CMS** portadas; extractor de
+  cadenas (`make generate`); dominio `admin` con español obligatorio.
+- CI (`.github/workflows/ci.yml`): lint + `make generate` sin diferencias +
+  compilación cruzada amd64/arm64; test con PostgreSQL y Valkey de servicio;
+  sandbox con isolate del repositorio apt oficial.
+- Documentación: `docs/es` y `docs/en` (índice, configuración, desarrollo).
+
+### Pruebas
+
+| Área | Pruebas |
+|---|---|
+| Configuración | `internal/config`: archivo + entorno, `_FILE`, ruta por `CMS_CONFIG`, claves desconocidas, validaciones, nombres de variables únicos, redacción de secretos, `cms.sample.yaml` = valores por defecto |
+| HTTP | `internal/httpx`: métricas por patrón de ruta, IP real tras N proxies, nonce CSP, límite de cuerpo, recover, `/source`, endpoints de operaciones, apagado con un stream SSE abierto |
+| Observabilidad | `internal/obs`: logs JSON, `cms_build_info`, health checks con timeout y sin detalles en público |
+| Migraciones | `internal/db`: desde cero e idempotente, migradores concurrentes aplican una vez, migración editada rechazada, base más nueva rechazada, índices con comentario, aislamiento entre bases |
+| Valkey | `internal/kv`: prefijos aislados, Streams disponibles, borrado por prefijo |
+| i18n | `internal/i18n`: formas plurales (ru, ar, sl…), `.po` (multilínea, contexto, plurales, fuzzy, obsoletos), `Format`, negociación; `extract`: Go y plantillas; `locale`: los 26 catálogos cargan, español del admin completo, `.pot` al día |
+| Binario | `cmd/cms`: uso y alias, webs sin `secret_key` no arrancan, **prueba de humo** (migrate + los seis servicios contra PostgreSQL y Valkey reales: `/healthz`, `/metrics`, `/source`, CSP, `healthcheck`, apagado limpio), **el worker no depende de la BD** |
+| Sandbox | `internal/sandbox` (tag `sandbox`): isolate ≥ 2.0 usable y rechaza `--dir` relativo |
+
+Verificado en esta VM: `make lint`, `make test` (con `-race`), `make
+dev-native` (seis servicios sanos, apagado limpio) y `make dev` (ocho
+contenedores *healthy*).
+
+### Pendiente / no verificado
+
+- El trabajo **sandbox** del CI no se pudo correr aquí: esta VM tiene
+  cgroups v1 (isolate 2 necesita v2). Se verifica en GitHub Actions.
+- La revisión de campo con navegador no aplica en F0 (aún no hay páginas).
+- sqlc se incorpora en F1 junto con las primeras consultas.
+- `cms.pot` (dominio del concursante) se regenerará desde nuestras
+  plantillas en F5; hoy es el del original.

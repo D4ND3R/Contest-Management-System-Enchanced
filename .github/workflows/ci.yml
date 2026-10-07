@@ -1,0 +1,85 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: make lint (gofmt, go vet, license headers)
+        run: make lint
+      - name: translation templates are up to date
+        run: |
+          make generate
+          git diff --exit-code -- locale/
+      - name: cross-compile (amd64, arm64)
+        run: |
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /dev/null ./cmd/cms
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o /dev/null ./cmd/cms
+
+  test:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 2s --health-retries 30
+      valkey:
+        image: valkey/valkey:8
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "valkey-cli ping" --health-interval 2s --health-retries 30
+    env:
+      CMS_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
+      CMS_TEST_REDIS_URL: redis://127.0.0.1:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: make test (race detector, real PostgreSQL and Valkey)
+        run: make test
+
+  sandbox:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: install isolate
+        run: |
+          set -ex
+          codename=$(. /etc/os-release; echo "$VERSION_CODENAME")
+          sudo install -d -m 0755 /etc/apt/keyrings
+          curl -fsSL https://www.ucw.cz/isolate/debian/signing-key.asc | sudo tee /etc/apt/keyrings/isolate.asc >/dev/null
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ ${codename}-isolate main" \
+            | sudo tee /etc/apt/sources.list.d/isolate.list
+          sudo apt-get update
+          sudo apt-get install -y isolate
+          sudo systemctl start isolate.service
+          sudo isolate-check-environment --execute || true
+          isolate --version
+      - name: make test-sandbox
+        run: |
+          go mod download
+          sudo env "PATH=$PATH" "GOCACHE=$(go env GOCACHE)" "GOMODCACHE=$(go env GOMODCACHE)" \
+            "GOTOOLCHAIN=$(go env GOVERSION)" make test-sandbox

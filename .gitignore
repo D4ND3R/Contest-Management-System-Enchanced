@@ -1,0 +1,7 @@
+/bin/
+/dist/
+/.infra/
+/.dev/
+/coverage.out
+*.test
+*.prof
