@@ -111,7 +111,12 @@ native_up() {
             mkdir -p "$DIR/pg" "$DIR/pgrun"
             [[ "$(id -u)" == "0" ]] && chown nobody "$DIR/pg" "$DIR/pgrun"
             chmod 700 "$DIR/pg"
-            as_pg_user "$pgbin/initdb" -D "$DIR/pg" -U postgres -A trust -E UTF8 --no-locale >/dev/null
+            # The linguistic collation of real installations (and of CI, en_US.utf8)
+            # when the locale exists, so tests catch ORDER BY that assume byte
+            # order; otherwise the C locale.
+            local loc=C.UTF-8
+            if locale -a 2>/dev/null | grep -qi '^en_US\.utf-\?8$'; then loc=en_US.UTF-8; fi
+            as_pg_user "$pgbin/initdb" -D "$DIR/pg" -U postgres -A trust -E UTF8 --locale="$loc" >/dev/null
         fi
         log "starting PostgreSQL on 127.0.0.1:$PG_PORT"
         # Durability is useless for disposable test data; speed matters.

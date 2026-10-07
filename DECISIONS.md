@@ -279,3 +279,16 @@ planes de consulta.
 (`config.DeriveKey`, con longitudes prefijadas para que propósitos y
 contextos distintos nunca coincidan), que imprime `cms ctl blob-token`.
 Cada servicio usa su propia caché (`cache_dir/<servicio>`) con un lock.
+
+## D26 — Identificadores ordenados por código de carácter
+
+**Decisión.** Las columnas de identificadores (nombres de concursos, tareas
+y grupos, usuarios, códigos de equipo, codenames de casos, nombres de
+archivo, idiomas de enunciados, claves de ajustes) usan `COLLATE "C"`
+(migración 0003). `scripts/infra.sh` crea la base de pruebas con
+`en_US.UTF-8` cuando existe, como el CI y las instalaciones reales.
+
+**Por qué.** CMS ordena en Python por código de carácter; una colación
+lingüística (en_US ignora la puntuación) ordenaba `aaa.h` antes que
+`aaa.%l` y hacía que los listados dependieran del idioma del servidor. Lo
+detectó el CI, cuyo PostgreSQL usa en_US.
