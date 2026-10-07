@@ -17,7 +17,7 @@ Actualizada al cerrar F0.
 | R0.5 Binario único + `cmsctl` | `cmd/cms`, `internal/cli`, `internal/ctl` | `cmd/cms` `TestUsageAndAlias` | hecho |
 | R0.6 Migraciones | `internal/db/migrate.go`, `internal/db/migrations/` | `internal/db/migrate_test.go` | hecho |
 | R0.7 Infra de pruebas | `scripts/infra.sh`, `internal/testutil` | `TestDatabasesAreIsolated`, `TestKeyPrefixAndIsolation` | hecho |
-| R0.8 CI | `.github/workflows/ci.yml` | GitHub Actions | parcial: lint y test verificados localmente; el trabajo sandbox **requiere hardware** (cgroups v2), se verifica en Actions |
+| R0.8 CI | `.github/workflows/ci.yml` | GitHub Actions (run 37567326965: lint, test y sandbox en verde; sandbox con isolate 2.7 y cgroups v2) | hecho |
 | R0.9 `make dev`, `make dev-native` | `deploy/`, `scripts/dev*.sh` | verificado a mano (contenedores y procesos sanos) | hecho |
 | R0.10 i18n desde el día 1 | `internal/i18n`, `locale/`, `cmd/i18n-extract` | `internal/i18n/...`, `locale/locale_test.go` | hecho |
 

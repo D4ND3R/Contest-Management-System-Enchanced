@@ -55,12 +55,15 @@ Una sección por fase: lo hecho, las pruebas que lo cubren y lo pendiente.
 
 Verificado en esta VM: `make lint`, `make test` (con `-race`), `make
 dev-native` (seis servicios sanos, apagado limpio) y `make dev` (ocho
-contenedores *healthy*).
+contenedores *healthy*). Verificado en GitHub Actions (run 37567326965):
+lint, test y sandbox en verde; `TestIsolateIsUsable` corrió contra isolate
+2.7 con cgroups v2.
 
 ### Pendiente / no verificado
 
-- El trabajo **sandbox** del CI no se pudo correr aquí: esta VM tiene
-  cgroups v1 (isolate 2 necesita v2). Se verifica en GitHub Actions.
+- Esta VM tiene cgroups v1, así que las pruebas de sandbox solo corren en
+  CI (o en una máquina con cgroups v2); en F2 eso incluye la batería
+  maliciosa.
 - La revisión de campo con navegador no aplica en F0 (aún no hay páginas).
 - sqlc se incorpora en F1 junto con las primeras consultas.
 - `cms.pot` (dominio del concursante) se regenerará desde nuestras
