@@ -16,6 +16,7 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
@@ -45,6 +46,7 @@ jobs:
 
   test:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16
@@ -71,12 +73,14 @@ jobs:
 
   sandbox:
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: install isolate
+        timeout-minutes: 10
         run: |
           set -ex
           codename=$(. /etc/os-release; echo "$VERSION_CODENAME")
@@ -92,6 +96,7 @@ jobs:
           # isolate is setuid and only executable by root and the isolate group.
           sudo isolate --version
       - name: install the compilers of the supported languages
+        timeout-minutes: 15
         run: |
           set -ex
           sudo apt-get install -y --no-install-recommends \
