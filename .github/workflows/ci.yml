@@ -17,8 +17,8 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: make lint (gofmt, go vet, license headers)
@@ -51,8 +51,8 @@ jobs:
       CMS_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
       CMS_TEST_REDIS_URL: redis://127.0.0.1:6379/0
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: make test (race detector, real PostgreSQL and Valkey)
@@ -61,8 +61,8 @@ jobs:
   sandbox:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: install isolate
@@ -76,8 +76,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y isolate
           sudo systemctl start isolate.service
+          # Tune the runner like a judging host; warnings are not fatal here.
           sudo isolate-check-environment --execute || true
-          isolate --version
+          # isolate is setuid and only executable by root and the isolate group.
+          sudo isolate --version
       - name: make test-sandbox
         run: |
           go mod download
