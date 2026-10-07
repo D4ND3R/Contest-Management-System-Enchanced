@@ -4,7 +4,8 @@
 // Package testutil gives tests real, isolated infrastructure:
 //
 //   - DB(t) returns a pool on a fresh database cloned from a migrated
-//     template, dropped when the test ends;
+//     template, dropped when the test ends; CountingDB(t) adds a
+//     db.QueryCounter to it;
 //   - Redis(t) returns a client whose keys live under a unique prefix,
 //     deleted when the test ends.
 //
@@ -171,6 +172,36 @@ func DB(t testing.TB) *pgxpool.Pool {
 		dropDatabase(t, name)
 	})
 	return pool
+}
+
+// DBWithConfig is DB with a pool whose configuration (the one db.Open
+// builds) configure may change first, e.g. to install pgx tracers.
+func DBWithConfig(t testing.TB, configure func(*pgxpool.Config)) *pgxpool.Pool {
+	t.Helper()
+	base := DB(t)
+	cfg := base.Config()
+	// The database stays until DB's cleanup drops it; only its pool goes.
+	base.Close()
+	configure(cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Cleanups run last-in first-out: this pool closes before the
+	// database is dropped.
+	t.Cleanup(pool.Close)
+	return pool
+}
+
+// CountingDB is DB with a db.QueryCounter on every connection, for tests
+// that prove a page runs a bounded number of queries (no N+1).
+func CountingDB(t testing.TB) (*pgxpool.Pool, *db.QueryCounter) {
+	t.Helper()
+	qc := new(db.QueryCounter)
+	pool := DBWithConfig(t, qc.Install)
+	return pool, qc
 }
 
 // EmptyDB returns a pool on a new database with no migrations applied,

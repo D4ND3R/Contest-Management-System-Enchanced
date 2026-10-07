@@ -123,14 +123,21 @@ func TestUnknownKeyIsAnError(t *testing.T) {
 
 func TestValidation(t *testing.T) {
 	cases := map[string]string{
-		"secret_key: zz":                       "hexadecimal",
-		"secret_key: \"0011\"":                 "at least 16",
-		"timezone: Mars/Olympus":               "timezone",
-		"log:\n  level: loud":                  "log.level",
-		"storage:\n  backend: tape":            "storage.backend",
-		"contest_web:\n  listen: nonsense":     "contest_web.listen",
-		"worker:\n  concurrency: 0":            "worker.concurrency",
-		"contest_web:\n  cookie_duration: 3 d": "invalid duration",
+		"secret_key: zz":              "hexadecimal",
+		"secret_key: \"0011\"":        "at least 16",
+		"timezone: Mars/Olympus":      "timezone",
+		"log:\n  level: loud":         "log.level",
+		"storage:\n  backend: tape":   "storage.backend",
+		"storage:\n  backend: remote": "storage.remote.url must be set",
+		"storage:\n  backend: remote\n  remote:\n    url: http://dispatcher:8891":                 "storage.remote.token must be set",
+		"storage:\n  backend: remote\n  remote:\n    url: http://dispatcher:8891\n    token: abc": "storage.remote.token must be 64",
+		"storage:\n  backend: s3":                                          "storage.s3.bucket must be set",
+		"storage:\n  cache_size_mb: -1":                                    "storage.cache_size_mb",
+		"storage:\n  backend: s3\n  s3:\n    bucket: b\n  cache_dir: \"\"": "storage.cache_dir",
+		"storage:\n  local:\n    path: \"\"":                               "storage.local.path",
+		"contest_web:\n  listen: nonsense":                                 "contest_web.listen",
+		"worker:\n  concurrency: 0":                                        "worker.concurrency",
+		"contest_web:\n  cookie_duration: 3 d":                             "invalid duration",
 	}
 	for yml, want := range cases {
 		_, _, err := load(writeFile(t, yml), env(nil), os.ReadFile)
@@ -140,6 +147,53 @@ func TestValidation(t *testing.T) {
 	}
 	if _, _, err := load(writeFile(t, ""), env(map[string]string{"CMS_WORKER_CONCURRENCY": "many"}), os.ReadFile); err == nil {
 		t.Error("bad integer in env accepted")
+	}
+}
+
+func TestStorageBackends(t *testing.T) {
+	token := strings.Repeat("0f", 32)
+	// A judge on another machine: no secret_key, only the blob token.
+	cfg, _, err := load(writeFile(t, "storage:\n  backend: remote\n"), env(map[string]string{
+		"CMS_STORAGE_REMOTE_URL":   "http://10.0.0.1:8891",
+		"CMS_STORAGE_REMOTE_TOKEN": token,
+	}), os.ReadFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Storage.Backend != "remote" || cfg.Storage.Remote.URL != "http://10.0.0.1:8891" ||
+		cfg.Storage.Remote.Token != token || cfg.SecretKey != "" {
+		t.Errorf("storage: %+v", cfg.Storage)
+	}
+	for _, bad := range []string{"10.0.0.1:8891", "ftp://host/", "http://", "://x"} {
+		_, _, err := load(writeFile(t, "storage:\n  backend: remote\n"), env(map[string]string{
+			"CMS_STORAGE_REMOTE_URL":   bad,
+			"CMS_STORAGE_REMOTE_TOKEN": token,
+		}), os.ReadFile)
+		if err == nil || !strings.Contains(err.Error(), "storage.remote.url") {
+			t.Errorf("remote url %q: got %v", bad, err)
+		}
+	}
+	for _, bad := range []string{strings.ToUpper(token), token[:62], token + "00", strings.Repeat("zz", 32)} {
+		_, _, err := load(writeFile(t, "storage:\n  backend: remote\n"), env(map[string]string{
+			"CMS_STORAGE_REMOTE_URL":   "http://10.0.0.1:8891",
+			"CMS_STORAGE_REMOTE_TOKEN": bad,
+		}), os.ReadFile)
+		if err == nil || !strings.Contains(err.Error(), "storage.remote.token") {
+			t.Errorf("remote token %q: got %v", bad, err)
+		}
+	}
+	if _, _, err := load(writeFile(t, "storage:\n  backend: s3\n  s3:\n    bucket: cms\n"), env(nil), os.ReadFile); err != nil {
+		t.Errorf("s3 with a bucket: %v", err)
+	}
+	// Without a cache (disabled, or the local backend) the directory is
+	// irrelevant.
+	for _, yml := range []string{
+		"storage:\n  backend: s3\n  s3:\n    bucket: b\n  cache_size_mb: 0\n  cache_dir: \"\"\n",
+		"storage:\n  backend: local\n  cache_dir: \"\"\n",
+	} {
+		if _, _, err := load(writeFile(t, yml), env(nil), os.ReadFile); err != nil {
+			t.Errorf("%q: %v", yml, err)
+		}
 	}
 }
 
@@ -176,12 +230,13 @@ func TestRedacted(t *testing.T) {
 	c.Database.URL = "postgres://cms:hunter2@db:5432/cms"
 	c.Redis.URL = "redis://:tok3n@kv:6379/0"
 	c.Storage.S3.SecretKey = "s3cr3t"
+	c.Storage.Remote.Token = strings.Repeat("5b", 32)
 	r := c.Redacted()
 	out, err := yaml.Marshal(r)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, leak := range []string{"hunter2", "tok3n", "s3cr3t", "8899aabb"} {
+	for _, leak := range []string{"hunter2", "tok3n", "s3cr3t", "8899aabb", "5b5b5b"} {
 		if strings.Contains(string(out), leak) {
 			t.Errorf("redacted output leaks %q:\n%s", leak, out)
 		}

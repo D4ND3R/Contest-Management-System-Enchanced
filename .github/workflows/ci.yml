@@ -23,10 +23,21 @@ jobs:
           go-version-file: go.mod
       - name: make lint (gofmt, go vet, license headers)
         run: make lint
-      - name: translation templates are up to date
+      - name: cache the code generators (bin/tools)
+        uses: actions/cache@v4
+        with:
+          path: bin/tools
+          key: tools-${{ runner.os }}-${{ hashFiles('Makefile') }}
+      - name: generated code is up to date (sqlc, sqlc vet, translation templates)
         run: |
           make generate
-          git diff --exit-code -- locale/
+          git diff --exit-code
+          untracked="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$untracked" ]]; then
+            echo "make generate created files that are not committed:"
+            echo "$untracked"
+            exit 1
+          fi
       - name: cross-compile (amd64, arm64)
         run: |
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /dev/null ./cmd/cms

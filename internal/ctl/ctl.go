@@ -15,6 +15,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/blob"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/cli"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/config"
 )
@@ -33,6 +34,14 @@ func Command() *cli.Command {
 					{Name: "show", Short: "print the effective configuration (secrets hidden)", Run: configShow},
 					{Name: "env", Short: "list the CMS_* environment variables", Run: configEnv},
 				},
+			},
+			{
+				Name:  "blob-token",
+				Short: "print the token judges on other machines use for the blob server",
+				Long: `Prints storage.remote.token for judges that reach the blob server of the
+dispatcher (storage.backend: remote). It is derived from secret_key, so the
+judges never need the secret_key itself.`,
+				Run: blobToken,
 			},
 			{
 				Name:  "gen-secret",
@@ -112,6 +121,21 @@ func NewSecret() string {
 		panic(err) // crypto/rand never fails on supported platforms
 	}
 	return hex.EncodeToString(b[:])
+}
+
+func blobToken(_ context.Context, env *cli.Env, args []string) error {
+	if err := noArgs(args); err != nil {
+		return err
+	}
+	cfg, _, err := config.Load(env.ConfigPath)
+	if err != nil {
+		return err
+	}
+	if err := cfg.RequireSecretKey(); err != nil {
+		return err
+	}
+	fmt.Fprintln(env.Stdout, blob.Token(cfg.SecretKeyBytes()))
+	return nil
 }
 
 func genSecret(_ context.Context, env *cli.Env, args []string) error {

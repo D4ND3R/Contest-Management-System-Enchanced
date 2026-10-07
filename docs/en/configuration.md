@@ -39,6 +39,22 @@ refuse to start without it. Generate it **once** per installation:
 cms ctl gen-secret
 ```
 
+## File storage
+
+Statements, test cases, submissions and executables are stored outside the
+database, named by the SHA-256 of their content (`storage.backend`):
+
+- `local`: a directory of the machine (`storage.local.path`);
+- `s3`: an S3-compatible bucket (AWS, MinIO, Garage…);
+- `remote`: the blob server of the dispatcher, for judges on other machines,
+  which never connect to the database. They need `storage.remote.url` and
+  `storage.remote.token`; get the token on the server with
+  `cms ctl blob-token`. It is derived from `secret_key`, so judges never hold
+  the secret key.
+
+With `s3` and `remote` every service keeps an on-disk cache
+(`storage.cache_dir/<service>`, up to `storage.cache_size_mb`).
+
 ## Checking the configuration
 
 ```sh

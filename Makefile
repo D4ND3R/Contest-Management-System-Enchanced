@@ -53,8 +53,28 @@ lint: ## gofmt + go vet + license headers
 	$(GO) vet -tags sandbox ./...
 	scripts/check-headers.sh
 
+# Code generators, pinned and installed in bin/tools (not committed).
+TOOLS_DIR    := $(CURDIR)/bin/tools
+SQLC_VERSION := v1.31.1
+SQLC         := $(TOOLS_DIR)/sqlc
+# Header of the generated Go files (scripts/check-headers.sh).
+GO_HEADER    := // SPDX-License-Identifier: AGPL-3.0-or-later\n// Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors\n\n
+
+.PHONY: tools
+tools: ## install the pinned code generators in bin/tools (sqlc)
+	@if [[ ! -x "$(SQLC)" || "$$("$(SQLC)" version 2>/dev/null)" != "$(SQLC_VERSION)" ]]; then \
+		echo "installing sqlc $(SQLC_VERSION) in bin/tools"; \
+		GOBIN="$(TOOLS_DIR)" $(GO) install github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION); \
+	fi
+
 .PHONY: generate
-generate: ## regenerate code and translation templates (sqlc, .pot)
+generate: tools ## regenerate code and translation templates (sqlc, .pot)
+	rm -f internal/store/q/*.go
+	"$(SQLC)" generate
+	"$(SQLC)" vet
+	@for f in internal/store/q/*.go; do \
+		{ printf '$(GO_HEADER)'; cat "$$f"; } > "$$f.tmp" && mv "$$f.tmp" "$$f"; \
+	done
 	$(GO) generate ./...
 
 .PHONY: infra-up infra-down

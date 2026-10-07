@@ -68,3 +68,41 @@ lint, test y sandbox en verde; `TestIsolateIsUsable` corrió contra isolate
 - sqlc se incorpora en F1 junto con las primeras consultas.
 - `cms.pot` (dominio del concursante) se regenerará desde nuestras
   plantillas en F5; hoy es el del original.
+
+---
+
+## F1 — Datos (hecha)
+
+### Hecho
+
+- `internal/db/migrations/0002_cms_model.sql`: las 26 tablas de CMS (esquema
+  49) con los mismos nombres de tablas, columnas y restricciones, más
+  `audit_log` y `admins.permission_tasks` (rol de preparador). Dominios y
+  enums como CHECK (D18), digests SHA-256 (D19), FK del dataset activo que
+  no borra datos (D20), índices justificados.
+- `internal/blob`: backends local, S3 (minio-go) y remoto (servidor HTTP
+  para jueces de otras máquinas con token derivado, D25), caché LRU en disco
+  con singleflight y lock por servicio; todo se verifica contra su digest.
+- sqlc v1.31.1 (`make tools`, `make generate`): 189 consultas en
+  `internal/store/queries`, código en `internal/store/q`; `internal/store`
+  con transacciones con reintento, `ListSubmissions` con filtros y keyset,
+  escrituras de resultados idempotentes (D21, D23), páginas acotadas (D24).
+- `db.QueryCounter` y `testutil.CountingDB` para probar que no hay N+1.
+- `cms ctl blob-token`; configuración `storage.remote.{url,token}`.
+
+### Pruebas
+
+| Área | Pruebas |
+|---|---|
+| Esquema | `internal/db/schema_test.go`: columnas, claves, UNIQUE, FK con sus acciones, 69 CHECK, índices de CMS, valores por defecto, 110 filas inválidas por SQLSTATE y restricción, 15 cascadas, grafo completo |
+| Consultas | `internal/store`: cada consulta corre (la suite falla si una nunca se ejecuta), 16 listas con exactamente 1 consulta para N = 1 y N = 20, idempotencia ante reentregas, reintento de transacciones serializables, planes de las páginas del admin, benchmark con 45 000 envíos |
+| Blobs | `internal/blob`: suite común para todos los backends, corrupción detectada, digests inválidos y path traversal, concurrencia con `-race`, caché (LRU, reinicio, singleflight, lock, un solo hash), servidor remoto (401/403/422/413, cupos de subida), S3 con bucket inexistente, benchmarks |
+
+`make lint` y `make test` en verde.
+
+### Pendiente
+
+- Contador de generación de `submission_results` para descartar resultados
+  tardíos en SQL (F4, D23).
+- Recolector de blobs sin referencias (con período de gracia): F9 junto con
+  los respaldos.

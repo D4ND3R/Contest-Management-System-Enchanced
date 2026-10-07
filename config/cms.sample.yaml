@@ -8,9 +8,11 @@
 # The values below are the defaults. The installer writes /etc/cms/cms.yaml
 # only if it does not exist yet.
 
-# Shared secret: signs cookies and CSRF tokens and derives the keys of the
-# secret scoreboard links. Hexadecimal, at least 16 bytes, and THE SAME in
-# every service of the installation. Generate it once with `cms ctl gen-secret`.
+# Shared secret: the keys that sign cookies and CSRF tokens, of the secret
+# scoreboard links and of the blob server are derived from it. Hexadecimal,
+# at least 16 bytes, and THE SAME in every service of the installation.
+# Generate it once with `cms ctl gen-secret`. Judges on other machines
+# (storage.backend remote) do not need it: give them storage.remote.token.
 secret_key: ""
 # Repository linked from the footer of every site (AGPL). Empty means the
 # upstream repository of this fork; change it if you run modified code.
@@ -35,18 +37,37 @@ redis:
   key_prefix: "cms:"
 
 storage:
-  backend: local   # local or s3
+  # Where files (statements, test cases, submissions...) are stored, by the
+  # SHA-256 of their content:
+  #   local:  a directory of this machine;
+  #   s3:     an S3-compatible bucket (AWS, MinIO, Garage...);
+  #   remote: the blob server of the dispatcher, for judges on other
+  #           machines (they never connect to the database).
+  backend: local
   local:
     path: /var/lib/cms/blobs
   s3:
+    # host[:port]; empty means AWS (s3.amazonaws.com).
     endpoint: ""
     region: ""
     bucket: ""
+    # Objects are named <prefix>/ab/<digest>.
     prefix: ""
     access_key: ""
     secret_key: ""
     use_ssl: true
-  # LRU cache of blobs on workers and web servers.
+  remote:
+    # Base URL of the blob server, e.g. http://10.0.0.1:8891.
+    url: ""
+    # Credential of the judge: run `cms ctl blob-token` on a machine that
+    # has secret_key and copy its output here. It only allows reading and
+    # adding files, so judges never need secret_key.
+    token: ""
+  # On-disk LRU cache in front of the s3 and remote backends (workers, web
+  # servers). Each service keeps its own cache in cache_dir/<service>, of at
+  # most cache_size_mb; 0 disables it. cache_dir/<service>/tmp also holds
+  # the temporary copies of uploads (up to 1 GiB each): keep cache_dir on
+  # disk, not on a tmpfs.
   cache_dir: /var/cache/cms/blobs
   cache_size_mb: 2048
 

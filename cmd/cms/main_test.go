@@ -57,6 +57,12 @@ func TestUsageAndAlias(t *testing.T) {
 	if b, err := hex.DecodeString(key); code != 0 || err != nil || len(b) != 32 {
 		t.Errorf("cmsctl gen-secret: code %d %q", code, out)
 	}
+	t.Setenv("CMS_CONFIG", "")
+	t.Setenv("CMS_SECRET_KEY", "00112233445566778899aabbccddeeff")
+	code, out, _ = runCmd(t, "cms", "ctl", "blob-token")
+	if tok := strings.TrimSpace(out); code != 0 || len(tok) != 64 || strings.Contains(tok, "00112233") {
+		t.Errorf("blob-token: code %d %q", code, out)
+	}
 	if code, out, _ := runCmd(t, "cms", "version"); code != 0 || !strings.Contains(out, "source: https://") {
 		t.Errorf("version: %d %q", code, out)
 	}

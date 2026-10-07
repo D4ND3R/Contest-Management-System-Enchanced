@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -32,9 +33,12 @@ var DefaultPaths = []string{"cms.yaml", "/etc/cms/cms.yaml"}
 
 // Config is the whole configuration of an installation.
 type Config struct {
-	// SecretKey signs cookies and CSRF tokens and derives the keys of
-	// private scoreboard links. Hex encoded, at least 16 bytes. It must be
-	// the same in every service; the installer generates it once.
+	// SecretKey is the root of the keys that sign cookies and CSRF tokens,
+	// of the private scoreboard links and of the blob server token (every
+	// use derives its own key with DeriveKey). Hex encoded, at least 16
+	// bytes. It must be the same in every service; the installer generates
+	// it once. Judges on other machines (storage.backend remote) do not
+	// need it: they only get storage.remote.token.
 	SecretKey string `yaml:"secret_key" secret:"true"`
 	// SourceURL is the repository linked from the footer of every site
 	// (AGPL §13). Change it if you run a modified version.
@@ -80,11 +84,20 @@ type Redis struct {
 
 // Storage configures the content-addressed blob store.
 type Storage struct {
-	Backend string    `yaml:"backend"` // local or s3
-	Local   LocalBlob `yaml:"local"`
-	S3      S3Blob    `yaml:"s3"`
-	// CacheDir and CacheSize configure the LRU cache of blobs kept by
-	// workers (and by web servers for statements and attachments).
+	// Backend is local (a directory), s3 (an S3-compatible bucket) or
+	// remote (the blob server of the dispatcher, for judges on other
+	// machines, which have no database access).
+	Backend string     `yaml:"backend"`
+	Local   LocalBlob  `yaml:"local"`
+	S3      S3Blob     `yaml:"s3"`
+	Remote  RemoteBlob `yaml:"remote"`
+	// CacheDir and CacheSizeMB configure the on-disk LRU cache in front of
+	// the s3 and remote backends (workers, web servers). Each service keeps
+	// its own cache, of at most CacheSizeMB, in CacheDir/<service>; 0
+	// disables it. CacheDir/<service>/tmp also holds the temporary copies
+	// of uploads to s3 and remote (up to 1 GiB each), so it must be on
+	// disk, not on a tmpfs. Empty CacheDir (allowed without a cache) puts
+	// them in $TMPDIR.
 	CacheDir    string `yaml:"cache_dir"`
 	CacheSizeMB int    `yaml:"cache_size_mb"`
 }
@@ -94,8 +107,10 @@ type LocalBlob struct {
 	Path string `yaml:"path"`
 }
 
-// S3Blob is an S3-compatible blob store.
+// S3Blob is an S3-compatible blob store. Objects are named
+// <prefix>/ab/<digest>.
 type S3Blob struct {
+	// Endpoint is host[:port]; empty means AWS (s3.amazonaws.com).
 	Endpoint  string `yaml:"endpoint"`
 	Region    string `yaml:"region"`
 	Bucket    string `yaml:"bucket"`
@@ -103,6 +118,18 @@ type S3Blob struct {
 	AccessKey string `yaml:"access_key" secret:"true"`
 	SecretKey string `yaml:"secret_key" secret:"true"`
 	UseSSL    bool   `yaml:"use_ssl"`
+}
+
+// RemoteBlob is the blob server of the dispatcher, reached by judges on
+// other machines.
+type RemoteBlob struct {
+	// URL is the base http(s) URL of the server; blobs are under URL/blobs/.
+	URL string `yaml:"url"`
+	// Token authenticates the judge: 64 hex characters derived from
+	// secret_key, printed by `cms ctl blob-token` on a machine that has
+	// it. It only lets its holder read and add blobs, so judges get this
+	// token instead of secret_key.
+	Token string `yaml:"token" secret:"true"`
 }
 
 // ContestWeb configures the contestant site (CMS ContestWebServer).
@@ -314,11 +341,7 @@ func (c *Config) Validate() error {
 	if _, err := time.LoadLocation(c.Timezone); err != nil {
 		errs = append(errs, fmt.Errorf("timezone: %w", err))
 	}
-	switch c.Storage.Backend {
-	case "local", "s3":
-	default:
-		errs = append(errs, fmt.Errorf("storage.backend: %q is not local or s3", c.Storage.Backend))
-	}
+	errs = append(errs, c.Storage.validate()...)
 	if c.Database.MaxConns < 1 {
 		errs = append(errs, errors.New("database.max_conns must be at least 1"))
 	}
@@ -344,6 +367,44 @@ func (c *Config) Validate() error {
 		}
 	}
 	return errors.Join(errs...)
+}
+
+func (s *Storage) validate() []error {
+	var errs []error
+	switch s.Backend {
+	case "local":
+		if s.Local.Path == "" {
+			errs = append(errs, errors.New("storage.local.path must be set when storage.backend is local"))
+		}
+	case "s3":
+		if s.S3.Bucket == "" {
+			errs = append(errs, errors.New("storage.s3.bucket must be set when storage.backend is s3"))
+		}
+	case "remote":
+		if s.Remote.URL == "" {
+			errs = append(errs, errors.New("storage.remote.url must be set when storage.backend is remote"))
+		} else if u, err := url.Parse(s.Remote.URL); err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+			errs = append(errs, fmt.Errorf("storage.remote.url: %q is not an http(s) URL", s.Remote.URL))
+		}
+		switch {
+		case s.Remote.Token == "":
+			errs = append(errs, errors.New("storage.remote.token must be set when storage.backend is remote "+
+				"(print it with `cms ctl blob-token` on a machine that has secret_key)"))
+		case !isHexKey(s.Remote.Token, 32):
+			errs = append(errs, errors.New("storage.remote.token must be 64 lowercase hexadecimal characters "+
+				"(print it with `cms ctl blob-token`)"))
+		}
+	default:
+		errs = append(errs, fmt.Errorf("storage.backend: %q is not local, s3 or remote", s.Backend))
+	}
+	if s.CacheSizeMB < 0 {
+		errs = append(errs, errors.New("storage.cache_size_mb must not be negative"))
+	}
+	// The local backend is never cached (see blob.Open).
+	if s.Backend != "local" && s.CacheSizeMB > 0 && s.CacheDir == "" {
+		errs = append(errs, errors.New("storage.cache_dir must be set when storage.cache_size_mb is not 0"))
+	}
+	return errs
 }
 
 func checkSecretKey(k string) error {

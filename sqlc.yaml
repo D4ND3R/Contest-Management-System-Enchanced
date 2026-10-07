@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# sqlc turns internal/store/queries/*.sql into the package
+# internal/store/q (D3). `make generate` runs it with the version pinned in
+# the Makefile (`make tools` installs it in bin/tools) and then `sqlc vet`
+# with the rules below; the generated code is committed and CI checks that
+# it is current.
+version: "2"
+
+rules:
+  - name: ordered-lists
+    message: "a :many query needs an ORDER BY: lists and pages must be deterministic"
+    rule: query.cmd == "many" && !query.sql.contains("ORDER BY")
+  - name: bounded-writes
+    message: "UPDATE and DELETE need a WHERE clause"
+    rule: >-
+      (query.sql.startsWith("UPDATE") || query.sql.startsWith("DELETE"))
+      && !query.sql.contains("WHERE")
+
+sql:
+  - engine: postgresql
+    schema: internal/db/migrations
+    queries: internal/store/queries
+    rules: [ordered-lists, bounded-writes]
+    gen:
+      go:
+        package: q
+        out: internal/store/q
+        sql_package: pgx/v5
+        emit_pointers_for_null_types: true
+        emit_empty_slices: true
+        # pgx v5 scans and encodes all of these natively (store tests check
+        # the round trips). A nullable column is a pointer, except jsonb
+        # (a nil json.RawMessage is NULL) and arrays (a nil slice is NULL;
+        # cidr[] becomes []netip.Prefix through the cidr override).
+        overrides:
+          # sqlc names the interval type pg_catalog.interval.
+          - db_type: pg_catalog.interval
+            go_type: time.Duration
+          - db_type: pg_catalog.interval
+            nullable: true
+            go_type:
+              import: time
+              type: Duration
+              pointer: true
+          - db_type: timestamptz
+            go_type: time.Time
+          - db_type: timestamptz
+            nullable: true
+            go_type:
+              import: time
+              type: Time
+              pointer: true
+          - db_type: jsonb
+            go_type: encoding/json.RawMessage
+          - db_type: jsonb
+            nullable: true
+            go_type: encoding/json.RawMessage
+          - db_type: cidr
+            go_type: net/netip.Prefix
+          - db_type: cidr
+            nullable: true
+            go_type:
+              import: net/netip
+              type: Prefix
+              pointer: true
+          - db_type: inet
+            go_type: net/netip.Addr
+          - db_type: inet
+            nullable: true
+            go_type:
+              import: net/netip
+              type: Addr
+              pointer: true

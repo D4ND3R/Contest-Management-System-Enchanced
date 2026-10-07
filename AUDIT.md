@@ -4,7 +4,7 @@ Cada requisito de SPEC.md con su código, su prueba y su estado:
 **hecho**, **parcial**, **falta** o **requiere hardware** (necesita una
 máquina que esta VM no ofrece, p. ej. cgroups v2 para isolate).
 
-Actualizada al cerrar F0.
+Actualizada al cerrar F1.
 
 ## F0 — Cimientos
 
@@ -25,7 +25,10 @@ Actualizada al cerrar F0.
 
 | Req. | Estado |
 |---|---|
-| R1.1–R1.4 Datos | falta |
+| R1.1 Modelo de CMS | hecho — `internal/db/migrations/0002_cms_model.sql`, prueba `internal/db/schema_test.go` |
+| R1.2 Blobs local/S3/remoto + LRU | hecho — `internal/blob`, pruebas en `internal/blob` |
+| R1.3 sqlc + pgx, sin N+1 | hecho — `sqlc.yaml`, `internal/store`, pruebas con `QueryCounter` |
+| R1.4 Tablas del fork | parcial — `audit_log`, `permission_tasks`, `server_settings`; la generación de resultados llega en F4 |
 | R2.1–R2.7 Sandbox y worker | falta (pruebas reales **requieren hardware**: cgroups v2) |
 | R3.1–R3.4 Tipos de problema, checkers, lenguajes | falta |
 | R4.1–R4.6 Dispatcher | falta |
@@ -40,7 +43,7 @@ Actualizada al cerrar F0.
 | Req. | Estado |
 |---|---|
 | N1 Rendimiento (k6) | falta |
-| N2 Sin N+1 | falta (se prueba desde F1) |
+| N2 Sin N+1 | parcial: consultas probadas con `QueryCounter`; las páginas se prueban al construirlas |
 | N3 Durabilidad | falta (F4) |
 | N4 Seguridad del juez | falta (F2) |
 | N5 Seguridad web | parcial: CSP con nonce, cabeceras, límites de cuerpo; CSRF, cookies y límites de frecuencia en F5 |
