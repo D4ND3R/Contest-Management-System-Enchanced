@@ -1,0 +1,8 @@
+name: half
+title: Half credit
+time_limit: 1.0
+memory_limit: 256
+n_input: 3
+infile: ""
+outfile: ""
+token_mode: infinite

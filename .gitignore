@@ -5,3 +5,4 @@
 /coverage.out
 *.test
 *.prof
+/testdata/contests/demo/half/check/checker

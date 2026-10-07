@@ -1,0 +1,10 @@
+name: sum
+title: A plus B
+time_limit: 1.0
+memory_limit: 256
+n_input: 4
+public_testcases: "0"
+infile: ""
+outfile: ""
+token_mode: infinite
+score_precision: 0

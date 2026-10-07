@@ -1,0 +1,33 @@
+name: demo
+description: Demo Contest
+start: 1735689600  # 2025-01-01 00:00 UTC
+stop: 1893456000   # 2030-01-01 00:00 UTC
+token_mode: finite
+token_max_number: 10
+token_min_interval: 0
+token_gen_initial: 2
+token_gen_number: 1
+token_gen_interval: 30
+token_gen_max: 5
+languages:
+  - "C++17 / g++"
+  - "C11 / gcc"
+  - "Python 3 / CPython"
+  - "Java / JDK"
+tasks:
+  - sum
+  - half
+  - quiz
+users:
+  - username: alice
+    password: demo
+    first_name: Alice
+    last_name: Liddell
+  - username: bob
+    password: demo
+    first_name: Bob
+    last_name: Builder
+  - username: carol
+    password: demo
+    first_name: Carol
+    last_name: Danvers
