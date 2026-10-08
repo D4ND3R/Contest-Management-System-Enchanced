@@ -214,9 +214,7 @@ func TestEndToEndBatch(t *testing.T) {
 
 	h.noResult(100 * time.Millisecond)
 	h.idle()
-	if n := r.count("evaluate", outcomeSuccess); n != 6 {
-		t.Errorf("evaluate/success = %v", n)
-	}
+	r.waitCount(t, "evaluate", outcomeSuccess, 6)
 	if err := r.stop(t); err != nil {
 		t.Fatal(err)
 	}

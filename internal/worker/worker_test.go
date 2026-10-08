@@ -268,6 +268,19 @@ func (r *runner) count(kind, outcome string) float64 {
 	return metricValue(r.w.m.jobs.WithLabelValues(kind, outcome))
 }
 
+// waitCount waits until the jobs counter of kind and outcome reaches want:
+// the worker counts a job right after publishing its result, so a test that
+// has just read the result may get there first.
+func (r *runner) waitCount(t *testing.T, kind, outcome string, want float64) {
+	t.Helper()
+	waitFor(t, fmt.Sprintf("%s/%s = %v", kind, outcome, want), func() bool {
+		return r.count(kind, outcome) == want
+	})
+	if n := r.count(kind, outcome); n != want {
+		t.Errorf("%s/%s = %v, want %v", kind, outcome, n, want)
+	}
+}
+
 // metricValue reads a counter or a gauge (prometheus/testutil needs a
 // module this one does not require).
 func metricValue(c prometheus.Collector) float64 {
@@ -341,12 +354,8 @@ func TestJobsAreRunAndAcknowledged(t *testing.T) {
 	}
 	h.noResult(100 * time.Millisecond)
 	h.idle()
-	if n := r.count("evaluate", outcomeSuccess); n != 2 {
-		t.Errorf("evaluate/success = %v", n)
-	}
-	if n := r.count("compile", outcomeSuccess); n != 1 {
-		t.Errorf("compile/success = %v", n)
-	}
+	r.waitCount(t, "evaluate", outcomeSuccess, 2)
+	r.waitCount(t, "compile", outcomeSuccess, 1)
 	if n := metricValue(r.w.m.busy); n != 0 {
 		t.Errorf("busy slots = %v", n)
 	}
@@ -400,9 +409,7 @@ func TestFailuresArePublished(t *testing.T) {
 		}
 	}
 	h.idle()
-	if n := r.count("evaluate", outcomeFailure); n != 2 {
-		t.Errorf("evaluate/failure = %v", n)
-	}
+	r.waitCount(t, "evaluate", outcomeFailure, 2)
 	// The worker survived the panic.
 	h.enqueue(evalJob(4, "tc1"), 0)
 	if res := h.result(10 * time.Second); !res.Success {
@@ -450,9 +457,7 @@ func TestInvalidPayloadIsDeadLettered(t *testing.T) {
 	}
 	h.noResult(50 * time.Millisecond)
 	// Two attempts each (MaxAttempts 2).
-	if n := r.count("unknown", outcomeInvalid); n != 4 {
-		t.Errorf("invalid = %v", n)
-	}
+	r.waitCount(t, "unknown", outcomeInvalid, 4)
 }
 
 func TestBoxesAreReserved(t *testing.T) {
@@ -600,9 +605,7 @@ func TestShutdownGivesBackUnfinishedJob(t *testing.T) {
 	if d := time.Since(start); d > 5*time.Second {
 		t.Errorf("stopping took %v", d)
 	}
-	if n := r1.count("evaluate", outcomeRequeued); n != 1 {
-		t.Errorf("requeued = %v", n)
-	}
+	r1.waitCount(t, "evaluate", outcomeRequeued, 1)
 	h.noResult(50 * time.Millisecond) // no result from the stopped worker
 
 	r2 := h.start("judge-2", &fakeExec{}, Options{})
