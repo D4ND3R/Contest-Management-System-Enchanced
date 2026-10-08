@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"os/exec"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -92,7 +93,10 @@ func freePort(t *testing.T) string {
 	return ln.Addr().String()
 }
 
-func waitHealthy(t *testing.T, url string, logs *syncBuffer) map[string]any {
+// waitHealthy waits until url reports healthy. The checks named in
+// mayFail are allowed to fail (the sandbox of the worker on machines
+// without isolate) as long as there are others and they pass.
+func waitHealthy(t *testing.T, url string, logs *syncBuffer, mayFail ...string) map[string]any {
 	t.Helper()
 	deadline := time.Now().Add(20 * time.Second)
 	for time.Now().Before(deadline) {
@@ -101,7 +105,7 @@ func waitHealthy(t *testing.T, url string, logs *syncBuffer) map[string]any {
 			var body map[string]any
 			_ = json.NewDecoder(resp.Body).Decode(&body)
 			resp.Body.Close()
-			if resp.StatusCode == http.StatusOK {
+			if resp.StatusCode == http.StatusOK || healthyExcept(body, mayFail) {
 				return body
 			}
 		}
@@ -109,6 +113,19 @@ func waitHealthy(t *testing.T, url string, logs *syncBuffer) map[string]any {
 	}
 	t.Fatalf("%s never became healthy; logs:\n%s", url, logs.String())
 	return nil
+}
+
+func healthyExcept(report map[string]any, mayFail []string) bool {
+	checks, _ := report["checks"].(map[string]any)
+	if len(mayFail) == 0 || len(checks) <= len(mayFail) {
+		return false
+	}
+	for name, v := range checks {
+		if v != "ok" && !slices.Contains(mayFail, name) {
+			return false
+		}
+	}
+	return true
 }
 
 // TestServicesSmoke migrates a fresh database and runs every service
@@ -121,7 +138,11 @@ func TestServicesSmoke(t *testing.T) {
 	t.Setenv("CMS_REDIS_URL", testutil.RedisURL(t))
 	t.Setenv("CMS_REDIS_KEY_PREFIX", fmt.Sprintf("smoke:%d:", time.Now().UnixNano()))
 	t.Setenv("CMS_SECRET_KEY", "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff")
+	// A relative work directory (made absolute by the worker), in a
+	// temporary directory: the worker creates it.
+	t.Chdir(t.TempDir())
 	t.Setenv("CMS_WORKER_WORK_DIR", "relative/work")
+	t.Setenv("CMS_STORAGE_LOCAL_PATH", t.TempDir())
 	t.Setenv("CMS_LOG_LEVEL", "debug")
 
 	// Services refuse an outdated schema; `cms migrate` fixes it.
@@ -176,9 +197,21 @@ func TestServicesSmoke(t *testing.T) {
 	}
 
 	for _, s := range services {
-		rep := waitHealthy(t, "http://"+ops[s.name]+"/healthz", logs[s.name])
-		if s.name != "ranking-web" && s.name != "worker" {
-			checks, _ := rep["checks"].(map[string]any)
+		var mayFail []string
+		if s.name == "worker" {
+			// Without isolate (or root, or cgroups v2) the worker runs but
+			// takes no jobs, and says so.
+			mayFail = []string{"sandbox"}
+		}
+		rep := waitHealthy(t, "http://"+ops[s.name]+"/healthz", logs[s.name], mayFail...)
+		checks, _ := rep["checks"].(map[string]any)
+		switch s.name {
+		case "ranking-web":
+		case "worker":
+			if checks["valkey"] != "ok" || checks["blob"] != "ok" || checks["sandbox"] == nil {
+				t.Errorf("%s checks: %v", s.name, rep)
+			}
+		default:
 			if checks["database"] != "ok" || checks["valkey"] != "ok" {
 				t.Errorf("%s checks: %v", s.name, rep)
 			}

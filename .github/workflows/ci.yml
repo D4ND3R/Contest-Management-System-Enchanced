@@ -74,6 +74,20 @@ jobs:
   sandbox:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    # The end-to-end tests of the worker (and later the dispatcher) need them.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 2s --health-retries 30
+      valkey:
+        image: valkey/valkey:8
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "valkey-cli ping" --health-interval 2s --health-retries 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
@@ -102,6 +116,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             g++ gcc python3 pypy3 default-jdk-headless fp-compiler ghc mono-mcs mono-runtime \
             rustc golang-go php-cli kotlin
+          # Like a judging host (config/languages/go.yaml).
+          sudo env CGO_ENABLED=0 GODEBUG=installgoroot=all /usr/bin/go install -pkgdir=/var/lib/cms/go-std std
       - name: cgroups v2 (isolate --cg)
         run: |
           set -ex
@@ -112,7 +128,9 @@ jobs:
         run: |
           go mod download
           sudo env "PATH=$PATH" "GOCACHE=$(go env GOCACHE)" "GOMODCACHE=$(go env GOMODCACHE)" \
-            "GOTOOLCHAIN=$(go env GOVERSION)" CMS_SANDBOX_CGROUPS=1 make test-sandbox
+            "GOTOOLCHAIN=$(go env GOVERSION)" CMS_SANDBOX_CGROUPS=1 CMS_TEST_REQUIRE_INFRA=1 \
+            "CMS_TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable" \
+            "CMS_TEST_REDIS_URL=redis://127.0.0.1:6379/0" make test-sandbox
       - name: cms ctl verify-host
         run: |
           make build

@@ -186,7 +186,10 @@ type Dispatcher struct {
 // each job carries what it needs and files are fetched by digest.
 type Worker struct {
 	OpsListen string `yaml:"ops_listen"`
-	// Name identifies the worker in the judges page; empty means hostname.
+	// Name identifies the worker in the judges page and in the job queue;
+	// empty means the hostname. Two running workers cannot have the same
+	// name: give each worker of a machine its own. Letters, digits, ".",
+	// "_" and "-", at most 64.
 	Name string `yaml:"name"`
 	// Concurrency is the number of jobs run in parallel. Use at most one
 	// per physical core reserved for judging.
@@ -209,6 +212,22 @@ type Worker struct {
 	// compilers, checkers or managers) under a seccomp filter that kills
 	// them with the "Security violation" verdict on forbidden system calls.
 	Seccomp bool `yaml:"seccomp"`
+	// ShutdownTimeout is how long a stopping worker lets its running jobs
+	// finish; the jobs still running then go back to the queue for
+	// another worker (0: at once). Keep it below the stop timeout of the
+	// supervisor (Docker waits 10s by default, systemd 90s).
+	ShutdownTimeout Duration `yaml:"shutdown_timeout"`
+	// JobTimeout is the longest a job may take (evaluations get four
+	// times their time limit on top); a job still running then fails and
+	// the dispatcher retries it. It only stops jobs stuck because of a
+	// fault: the sandbox enforces the real limits.
+	JobTimeout Duration `yaml:"job_timeout"`
+	// CompilationCacheTTL is how long the result of a successful
+	// compilation is kept in Valkey: an identical compilation (same
+	// language, compiler, task type, sources and graders) within that
+	// time reuses the executable instead of compiling again. 0 disables
+	// the cache.
+	CompilationCacheTTL Duration `yaml:"compilation_cache_ttl"`
 }
 
 // Monitor configures the health/metrics aggregator (CMS Checker,
@@ -282,6 +301,10 @@ func Default() *Config {
 			WorkDir:     "/var/lib/cms/worker",
 			IsolatePath: "isolate",
 			Seccomp:     true,
+
+			ShutdownTimeout:     Duration(8 * time.Second),
+			JobTimeout:          Duration(10 * time.Minute),
+			CompilationCacheTTL: Duration(7 * 24 * time.Hour),
 		},
 		Monitor: Monitor{Listen: "127.0.0.1:9193"},
 		Sandbox: Sandbox{
@@ -459,10 +482,38 @@ func (c *Config) validateSandbox() []error {
 	if w.IsolatePath == "" {
 		errs = append(errs, errors.New("worker.isolate_path must be set"))
 	}
+	if w.Name != "" && !ValidWorkerName(w.Name) {
+		errs = append(errs, fmt.Errorf("worker.name: %q must be 1 to 64 letters, digits, \".\", \"_\" or \"-\"", w.Name))
+	}
+	if w.ShutdownTimeout < 0 {
+		errs = append(errs, errors.New("worker.shutdown_timeout must not be negative"))
+	}
+	if w.JobTimeout.D() < 10*time.Second {
+		errs = append(errs, errors.New("worker.job_timeout must be at least 10s"))
+	}
+	if w.CompilationCacheTTL < 0 {
+		errs = append(errs, errors.New("worker.compilation_cache_ttl must not be negative (0 disables the cache)"))
+	}
 	if c.Sandbox.MaxFileSizeKiB < 1 {
 		errs = append(errs, errors.New("sandbox.max_file_size_kib must be at least 1"))
 	}
 	return errs
+}
+
+// ValidWorkerName reports whether s can name a worker (worker.name): 1 to
+// 64 ASCII letters, digits, ".", "_" or "-", not starting with "." or
+// "-". Hostnames qualify.
+func ValidWorkerName(s string) bool {
+	if s == "" || len(s) > 64 || s[0] == '.' || s[0] == '-' {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '.' && c != '_' && c != '-' {
+			return false
+		}
+	}
+	return true
 }
 
 func checkSecretKey(k string) error {

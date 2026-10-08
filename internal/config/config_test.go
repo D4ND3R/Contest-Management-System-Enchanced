@@ -160,6 +160,11 @@ func TestValidation(t *testing.T) {
 		"worker:\n  box_id_base: 65500":                                    "must not exceed 65536",
 		"worker:\n  work_dir: \"\"":                                        "worker.work_dir",
 		"worker:\n  isolate_path: \"\"":                                    "worker.isolate_path",
+		"worker:\n  name: \"judge 1\"":                                     "worker.name",
+		"worker:\n  name: worker:1":                                        "worker.name",
+		"worker:\n  shutdown_timeout: -1s":                                 "worker.shutdown_timeout",
+		"worker:\n  job_timeout: 1s":                                       "worker.job_timeout",
+		"worker:\n  compilation_cache_ttl: -1h":                            "worker.compilation_cache_ttl",
 		"sandbox:\n  max_file_size_kib: 0":                                 "sandbox.max_file_size_kib",
 		"contest_web:\n  cookie_duration: 3 d":                             "invalid duration",
 	}
@@ -278,6 +283,19 @@ func TestRedacted(t *testing.T) {
 	}
 	if back.ContestWeb.CookieDuration != c.ContestWeb.CookieDuration {
 		t.Errorf("duration round trip: %v", back.ContestWeb.CookieDuration)
+	}
+}
+
+func TestValidWorkerName(t *testing.T) {
+	for _, s := range []string{"judge1", "judge-1.example.org", "J_2", "a"} {
+		if !ValidWorkerName(s) {
+			t.Errorf("%q refused", s)
+		}
+	}
+	for _, s := range []string{"", "-a", ".a", "a b", "a:b", "a/b", "á", strings.Repeat("a", 65)} {
+		if ValidWorkerName(s) {
+			t.Errorf("%q accepted", s)
+		}
 	}
 }
 

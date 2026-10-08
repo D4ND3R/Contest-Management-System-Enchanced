@@ -109,7 +109,9 @@ dispatcher:
 
 worker:
   ops_listen: 127.0.0.1:9192
-  # Name shown on the judges page. Empty: the hostname.
+  # Name shown on the judges page and used in the job queue. Empty: the
+  # hostname. Two running workers cannot share a name: give each worker of
+  # a machine its own (letters, digits, ".", "_", "-"; at most 64).
   name: ""
   # Jobs run in parallel: at most one per physical core reserved for judging.
   concurrency: 1
@@ -127,6 +129,18 @@ worker:
   # (ptrace, mount, unshare, network sockets...) give "Security violation".
   # Compilers, checkers and managers never run under it.
   seccomp: true
+  # How long a stopping worker lets its running jobs finish; the others go
+  # back to the queue (0: at once). Keep it below the stop timeout of the
+  # supervisor (Docker: 10s by default; systemd: 90s).
+  shutdown_timeout: 8s
+  # Longest a job may take (evaluations get four times their time limit on
+  # top); a job still running then fails and is retried. Only stops jobs
+  # stuck because of a fault: the sandbox enforces the real limits.
+  job_timeout: 10m0s
+  # How long a successful compilation is remembered in Valkey: an
+  # identical one (same language, compiler, task type, sources and
+  # graders) reuses its executable. 0 disables the cache.
+  compilation_cache_ttl: 168h0m0s
 
 monitor:
   listen: 127.0.0.1:9193
