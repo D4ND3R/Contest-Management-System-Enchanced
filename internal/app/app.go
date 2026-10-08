@@ -51,6 +51,7 @@ func New(service string, cfg *config.Config, configPath string, logOut io.Writer
 		Metrics:    obs.NewRegistry(service),
 		Health:     obs.NewHealth(),
 	}
+	kv.SetLogger(rt.Log)
 	return rt
 }
 
