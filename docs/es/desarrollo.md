@@ -6,7 +6,10 @@
 - Para las pruebas y el stack local: binarios de **PostgreSQL 16** y de
   **Valkey** o **Redis ≥ 7**, o bien **Docker**. `scripts/infra.sh` elige
   solo (`CMS_INFRA=native|docker` para forzar).
-- Para `make test-sandbox`: root, isolate ≥ 2.0 y cgroups v2.
+- Para `make test-sandbox`: root, isolate ≥ 2.0, cgroups v2 y los
+  compiladores (ver [Jueces](jueces.md)). En una máquina sin cgroups v2:
+  `CMS_SANDBOX_CGROUPS=0 make test-sandbox` (se saltan los veredictos de
+  memoria; el CI los corre con cgroups v2).
 
 ## Comandos
 

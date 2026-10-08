@@ -106,3 +106,56 @@ lint, test y sandbox en verde; `TestIsolateIsUsable` corrió contra isolate
   tardíos en SQL (F4, D23).
 - Recolector de blobs sin referencias (con período de gracia): F9 junto con
   los respaldos.
+
+---
+
+## F2 + F3 — Juez: sandbox, colas, worker, tipos de problema (hecha)
+
+Se hicieron juntas: el worker necesita los tipos de problema para ejecutar
+trabajos reales.
+
+### Hecho
+
+- `internal/sandbox`: envoltorio de isolate 2.x (cajas con lock por id
+  compartido entre workers, directorios siempre absolutos, lectura de
+  archivos por `os.Root`, límites de CMS con cgroups v2 o rlimits en
+  desarrollo, estados donde un error interno nunca es veredicto) y lanzador
+  seccomp: el propio binario `cms` con un filtro BPF escrito a mano que da
+  *Security violation* (D28, D29).
+- `cms ctl verify-host`: cgroups v2, isolate y su cgroup, rangos de cajas,
+  SMT, governor, swap, hard links, seccomp y una prueba real de caja.
+- `internal/queue` (cola durable con prioridades sobre Streams, D27) e
+  `internal/job` (protocolo dispatcher ↔ worker, port de `Job.py`, con
+  intento y generación).
+- `config/languages`: los 13 lenguajes de CMS + Go y Kotlin como plantillas
+  YAML (D30); `internal/grading/{language,steps,checker}`: pasos de
+  compilación/evaluación y checkers (white diff, exacto, reales,
+  comparadores y testlib, D31).
+- `internal/grading/tasktype`: Batch, BatchAndOutput, OutputOnly,
+  Communication, Interactive y TwoSteps (D32);
+  `internal/grading/{scoretype,scoring}`: Sum, GroupMin, GroupMul,
+  GroupThreshold y los modos max, max_subtask y max_tokened_last.
+- `internal/worker`: ranuras que consumen la cola, reserva de cajas,
+  vigilante, caché de compilación en Valkey, registro de workers vivos para
+  la página de jueces y el monitor (D33).
+- Imagen del worker (`deploy/docker/Dockerfile.worker`) con isolate y los
+  compiladores; su entrypoint mantiene el cgroup de isolate dentro del
+  contenedor. Compose de desarrollo la usa.
+
+### Pruebas
+
+| Área | Pruebas |
+|---|---|
+| Sandbox | batería maliciosa (fork bomb, memoria, pila, red, escritura fuera, archivos enormes, salida gigante, señales, syscalls prohibidas, bucle de CPU, sleep), hola mundo en 12 lenguajes bajo seccomp, filtro BPF, pool concurrente, FIFOs, pipes |
+| Lenguajes y checkers | comandos idénticos a las clases de CMS en casos generados, white diff contra `_white_diff` de CMS en 457 casos, parser de managers en 23, cada lenguaje compila y corre en caja real |
+| Tipos de problema | `cmstestsuite/Tests.py` portado con sus tareas y programas (AC, WA, TLE, MLE, RE, CE, comparadores, graders, Communication, Interactive, TwoSteps, OutputOnly) |
+| Puntajes | pruebas unitarias de CMS portadas y casos dorados generados con el CMS original |
+| Worker | consumo y ACK, `kill -9` y reinicio sin perder trabajos, apagado, reservas de cajas, caché de compilación, prueba de punta a punta con caja real |
+| CI | trabajo `sandbox` con isolate 2.7 y cgroups v2 (run 37722160673: todo pasa, 0 pruebas saltadas, "memory limit exceeded" real); trabajo `worker-image`: `verify-host` sin fallas dentro del contenedor |
+
+### Pendiente
+
+- La revisión de campo con el juez real llega con el dispatcher (F4) y el
+  sitio del concursante (F5).
+- Interactores de testlib y códigos de "parcialmente correcto" de testlib
+  (16 en adelante): no soportados, como en CMS.

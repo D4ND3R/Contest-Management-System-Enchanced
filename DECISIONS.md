@@ -292,3 +292,117 @@ archivo, idiomas de enunciados, claves de ajustes) usan `COLLATE "C"`
 lingüística (en_US ignora la puntuación) ordenaba `aaa.h` antes que
 `aaa.%l` y hacía que los listados dependieran del idioma del servidor. Lo
 detectó el CI, cuyo PostgreSQL usa en_US.
+
+## D27 — Cola durable: un stream por prioridad
+
+**Decisión.** `internal/queue` usa un stream de Valkey por prioridad con
+un *consumer group*; los consumidores leen en orden estricto de prioridad.
+Un mensaje cuyo consumidor murió se recupera con `XAUTOCLAIM` pasado el
+tiempo de visibilidad (los trabajos largos lo extienden con `Extend`). Los
+reintentos esperan en un conjunto ordenado por hora (backoff exponencial)
+y tras el máximo de intentos van a una cola de mensajes muertos. Los
+trabajos (`internal/job`, port de `Job.py`) llevan número de intento y de
+generación para descartar resultados tardíos (D23).
+
+## D28 — Seccomp: el binario `cms` es el lanzador
+
+**Decisión.** Los programas de los concursantes corren con
+`cms sandbox-exec -- programa…`: el mismo binario `cms`, montado de solo
+lectura en la caja (`/cms-launcher`), instala un filtro BPF escrito a mano
+(`SECCOMP_RET_KILL_PROCESS`) y hace `exec`. Una llamada prohibida (ptrace,
+mount, espacios de nombres, bpf, keyctl, io_uring, kexec, módulos…) mata al
+programa con SIGSYS, que se informa como *Security violation*. Los sockets
+que no son unix fallan con `EAFNOSUPPORT` en lugar de matar (la JVM abre un
+socket IPv6 al arrancar); la red sigue inaccesible. Desde que baja sus
+límites hasta el `exec`, el lanzador solo hace llamadas al sistema directas
+(el runtime de Go fallaba al crear hilos con `RLIMIT_NPROC` reducido).
+Compiladores, checkers y managers nunca corren con el filtro.
+
+**Por qué.** No hay un segundo binario que instalar ni versionar, y el
+filtro no depende de libseccomp (cgo). Sin canal de estado: SIGSYS basta
+para distinguir el veredicto.
+
+## D29 — Errores del sandbox nunca son veredictos
+
+**Decisión.** `Box.Run`/`Wait` y los pasos de `internal/grading/steps`
+devuelven error solo ante fallas de infraestructura (isolate, disco,
+meta ilegible); el trabajo se reintenta y nunca se convierte en un
+veredicto del concursante. Los directorios pasados a isolate son
+absolutos (isolate rechaza los relativos). Las cajas se reservan con un
+archivo de lock por id compartido por todos los workers de la máquina;
+`cms ctl verify-host` revisa rangos disjuntos, cgroups v2, SMT,
+governor, swap y hace una prueba real de caja.
+
+## D30 — Lenguajes como plantillas YAML
+
+**Decisión.** `config/languages/*.yaml` (embebidos) describen cada
+lenguaje con plantillas de comandos (`{sources}`, `{executable}`,
+`{main}`, `{args}`…) validadas de forma estricta; `languages_dir` agrega
+o reemplaza lenguajes sin recompilar. Los 13 de CMS conservan nombre,
+extensiones, comandos y flags (comparados con las clases de Python en
+casos generados); se agregan Go y Kotlin.
+
+**Diferencias con CMS.** Los compiladores no ven `/etc`: cada lenguaje
+lista lo que necesita (`/etc/java-*-openjdk`, `/var/lib/ghc`;
+`/etc/fpc.cfg` se copia a la caja). Go necesita la biblioteca estándar
+precompilada en cada juez (`go install -pkgdir=/var/lib/cms/go-std std`;
+con la caché vacía compilar cuesta ~13 s de CPU, más que el límite de
+10 s): el instalador y la imagen del worker lo hacen. Kotlin compila con
+el colector serial y C1 (la mitad de CPU). C# recibe `{args}`.
+
+## D31 — Checkers y testlib
+
+**Decisión.** `internal/grading/checker` porta el white diff de CMS
+(mismo resultado en 457 casos dorados, leyendo en streaming), la
+comparación exacta, la de números reales, los comparadores con el
+protocolo de managers de CMS y los checkers testlib. El `testlib.h`
+parcheado de CMS se embebe (para el importador de Polygon): con `-DCMS`
+es un comparador normal; sin él (`KindTestlib`) corre como
+`checker entrada salida respuesta` y los códigos 0 → correcto, 1/2/4/8 →
+incorrecto, 7 → puntos en stderr, otro → error del sistema.
+
+## D32 — Tipos de problema: diferencias con CMS
+
+**Decisión.** Los seis tipos (`internal/grading/tasktype`) conservan los
+parámetros y la semántica de CMS; la suite `cmstestsuite/Tests.py` está
+portada con sus tareas y programas. Diferencias:
+
+- `output_eval` acepta además `exact`, `real` (tolerancia 1e-6) y `testlib`
+  (datasets que no se pueden exportar a CMS).
+- Communication: si un proceso del usuario falla, el resultado es 0 con ese
+  error y se detiene el manager (CMS espera 21 s y falla el trabajo, que
+  queda reintentándose sin juzgarse).
+- Interactive: el controlador es un *auto manager* (las pruebas de usuario
+  funcionan), las soluciones reciben el límite de procesos del concurso y
+  `%` en el mensaje del controlador se escapa.
+- BatchAndOutput ignora elementos vacíos de la lista de salida; los nombres
+  de archivos de E/S de Batch no pueden contener `/`.
+- Las cajas de trabajos fallidos no se conservan (usar `keep_sandbox`).
+
+`Boxes()` es el máximo de cajas que un trabajo usa a la vez (Interactive:
+`process_limit + 1`); el worker las reserva antes de empezar para que dos
+trabajos en paralelo no se bloqueen entre sí.
+
+## D33 — Worker: nombres, reservas y caché de compilación
+
+**Decisión.**
+- Un proceso por nombre de worker: una entrada en Valkey con TTL de 15 s
+  (renovada cada 5 s) lo reserva; si el dueño es un PID muerto del mismo
+  host se toma enseguida. Los consumidores de la cola se llaman
+  `<nombre>/<ranura>` y liberan al arrancar y al cerrar los trabajos que
+  tenían, así un `kill -9` seguido de reinicio no espera el tiempo de
+  visibilidad.
+- El resultado se publica y el trabajo se confirma en un solo paso
+  (`AckAndEnqueue`). Fallas de infraestructura, pánicos del tipo de
+  problema y el vigilante (`job_timeout`) publican `success=false`: decide
+  el dispatcher. Al apagar, lo que no termina en `shutdown_timeout` vuelve
+  a la cola.
+- Las cajas se reservan antes de empezar (semáforo de `box_count`).
+- Un sandbox roto no tira el worker: queda sin tomar trabajos, lo informa
+  en `/healthz` y reintenta la prueba de caja.
+- Caché de compilación en Valkey: la clave cubre tipo de problema y sus
+  parámetros, lenguaje, SHA-256 de los binarios de los compiladores,
+  límites, cgroups, arquitectura y los digests de fuentes y managers
+  compilables. Solo se guardan compilaciones exitosas y cada ejecutable se
+  comprueba en el almacén de blobs antes de usarlo (90 ms → 0,2 ms en C++).
+  Tras actualizar un compilador hay que reiniciar los workers.

@@ -4,7 +4,7 @@ Cada requisito de SPEC.md con su código, su prueba y su estado:
 **hecho**, **parcial**, **falta** o **requiere hardware** (necesita una
 máquina que esta VM no ofrece, p. ej. cgroups v2 para isolate).
 
-Actualizada al cerrar F1.
+Actualizada al cerrar F2 y F3.
 
 ## F0 — Cimientos
 
@@ -29,8 +29,17 @@ Actualizada al cerrar F1.
 | R1.2 Blobs local/S3/remoto + LRU | hecho — `internal/blob`, pruebas en `internal/blob` |
 | R1.3 sqlc + pgx, sin N+1 | hecho — `sqlc.yaml`, `internal/store`, pruebas con `QueryCounter` |
 | R1.4 Tablas del fork | parcial — `audit_log`, `permission_tasks`, `server_settings`; la generación de resultados llega en F4 |
-| R2.1–R2.7 Sandbox y worker | falta (pruebas reales **requieren hardware**: cgroups v2) |
-| R3.1–R3.4 Tipos de problema, checkers, lenguajes | falta |
+| R2.1 Wrapper de isolate | hecho — `internal/sandbox`, pruebas `isolate_test.go`, `sandbox_test.go`; CI con cgroups v2 |
+| R2.2 Seccomp → *Security violation* | hecho — `internal/sandbox/{launcher,seccomp}_linux.go`, pruebas `seccomp_linux_test.go`, batería |
+| R2.3 Caché de compilaciones | hecho — `internal/worker/cache.go`, pruebas `cache_test.go` (con compiladores reales en CI) |
+| R2.4 Batería maliciosa | hecho — `internal/sandbox/battery_test.go` en `make test-sandbox` (CI) |
+| R2.5 `verify-host` | hecho — `internal/ctl/verifyhost.go`, pruebas con `/sys` falso y en CI (runner y contenedor) |
+| R2.6 Worker sin BD | hecho — `internal/worker`, pruebas `worker_test.go`, `sandbox_test.go`, `TestWorkerHasNoDatabaseAccess` |
+| R2.7 Imagen del worker | hecho — `deploy/docker/Dockerfile.worker`, trabajo `worker-image` del CI |
+| R3.1 Tipos de problema | hecho — `internal/grading/tasktype`, `cmstestsuite` portado (`TestCMSTestSuite`) |
+| R3.2 Checkers | hecho — `internal/grading/checker`, casos dorados contra CMS |
+| R3.3 Tipos de puntaje | hecho — `internal/grading/{scoretype,scoring}`, pruebas de CMS portadas |
+| R3.4 Lenguajes en YAML | hecho — `config/languages`, `internal/grading/language`, `TestUpstreamCommands` |
 | R4.1–R4.6 Dispatcher | falta |
 | R5.1–R5.9 Sitio del concursante | falta (esqueleto: `/healthz`, `/source`) |
 | R6.1–R6.9 Administración | falta (esqueleto) |
@@ -45,7 +54,7 @@ Actualizada al cerrar F1.
 | N1 Rendimiento (k6) | falta |
 | N2 Sin N+1 | parcial: consultas probadas con `QueryCounter`; las páginas se prueban al construirlas |
 | N3 Durabilidad | falta (F4) |
-| N4 Seguridad del juez | falta (F2) |
+| N4 Seguridad del juez | hecho: seccomp, batería maliciosa, entorno del worker fuera de la caja, sin `/etc` en compilaciones (D28–D30) |
 | N5 Seguridad web | parcial: CSP con nonce, cabeceras, límites de cuerpo; CSRF, cookies y límites de frecuencia en F5 |
 | N6 Observabilidad | hecho para los esqueletos |
 | N7 Traducible | parcial: infraestructura y pruebas; textos a medida que llegan las páginas |

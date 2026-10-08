@@ -6,6 +6,7 @@
 |---|---|
 | [Configuración](configuracion.md) | disponible |
 | [Desarrollo](desarrollo.md) | disponible |
+| [Jueces (workers)](jueces.md) | disponible |
 | Primeros pasos | F9 |
 | Instalación, requisitos y dimensionamiento | F9 |
 | Actualización y respaldos | F9 |
