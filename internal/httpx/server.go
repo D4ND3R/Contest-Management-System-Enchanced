@@ -5,6 +5,10 @@
 // ops listeners: server lifecycle, middleware (recovery, access log,
 // metrics, security headers, body limits, client address) and the
 // /healthz, /metrics, /debug/pprof and /source endpoints.
+//
+// There is no compression middleware: the event streams of internal/live
+// must reach the client as they are flushed. One added later must leave
+// text/event-stream responses alone (and keep Flush and Unwrap working).
 package httpx
 
 import (
