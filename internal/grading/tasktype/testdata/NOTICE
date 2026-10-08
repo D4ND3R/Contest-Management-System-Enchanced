@@ -1,0 +1,20 @@
+Origin of these files
+=====================
+
+code/ and tasks/ are copied unchanged from cmstestsuite/code and
+cmstestsuite/tasks of CMS (https://github.com/cms-dev/cms, commit
+1914a5aa07fd9c551b8ec31400e5776e5f9bfa9f, 2026-10-05), licensed under the
+GNU Affero General Public License version 3 or later like the rest of CMS
+and of this project. Copyright the CMS authors (see the AUTHORS file of
+CMS).
+
+Only the data and the managers of each task were copied (tasks/*/data,
+tasks/*/code); the task definitions (tasks/*/__init__.py) are written in
+Go in sandbox_test.go, with the same parameters, and the test list
+(cmstestsuite/Tests.py) is ported there too. The task batch_50 was not
+copied.
+
+extra/ holds programs written for this project (not from CMS): solutions
+in Go and Kotlin, which CMS does not support, and cases for behaviours of
+this fork (the seccomp filter, Communication tasks whose user process
+dies early).

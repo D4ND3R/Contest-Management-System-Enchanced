@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -100,31 +101,65 @@ func LauncherMain(args []string) int {
 	if err != nil {
 		return launcherFail(launcherSetupFailed, err)
 	}
+	env := restoreEnv(os.Environ(), la.restoreEnv)
+	// Everything execve needs is prepared before the limits go down.
+	path, err := unix.BytePtrFromString(la.argv[0])
+	if err != nil {
+		return launcherFail(launcherSetupFailed, fmt.Errorf("program %q: %w", la.argv[0], err))
+	}
+	argv, err := syscall.SlicePtrFromStrings(la.argv)
+	if err != nil {
+		return launcherFail(launcherSetupFailed, fmt.Errorf("arguments: %w", err))
+	}
+	envv, err := syscall.SlicePtrFromStrings(env)
+	if err != nil {
+		return launcherFail(launcherSetupFailed, fmt.Errorf("environment: %w", err))
+	}
 	// prctl(PR_SET_NO_NEW_PRIVS), seccomp and execve must happen on the
 	// same OS thread.
 	runtime.LockOSThread()
+
+	// From here to execve only raw system calls (no Go runtime
+	// bookkeeping): during a normal system call the runtime may hand the
+	// processor to another thread, creating one if none is idle, and
+	// under the program's limits thread creation (and the memory of its
+	// stack) fails, so the runtime aborts and a correct program would get
+	// a runtime error (this happened under load).
+	//
 	// Limits the launcher itself could not live with: the Go runtime
 	// needs a few threads and reserves address space, so the sandbox
 	// grants more and the program gets the real values here. Lowering a
 	// limit never fails; both values are set so it cannot be raised back.
 	if la.nproc > 0 {
-		lim := unix.Rlimit{Cur: uint64(la.nproc), Max: uint64(la.nproc)}
-		if err := unix.Setrlimit(unix.RLIMIT_NPROC, &lim); err != nil {
+		if err := rawSetrlimit(unix.RLIMIT_NPROC, uint64(la.nproc)); err != nil {
 			return launcherFail(launcherSetupFailed, fmt.Errorf("setrlimit(NPROC): %w", err))
 		}
 	}
 	if la.rlimitAS > 0 {
-		lim := unix.Rlimit{Cur: uint64(la.rlimitAS) << 10, Max: uint64(la.rlimitAS) << 10}
-		if err := unix.Setrlimit(unix.RLIMIT_AS, &lim); err != nil {
+		if err := rawSetrlimit(unix.RLIMIT_AS, uint64(la.rlimitAS)<<10); err != nil {
 			return launcherFail(launcherSetupFailed, fmt.Errorf("setrlimit(AS): %w", err))
 		}
 	}
-	env := restoreEnv(os.Environ(), la.restoreEnv)
 	if err := installFilter(prog); err != nil {
 		return launcherFail(launcherSetupFailed, err)
 	}
-	err = unix.Exec(la.argv[0], la.argv, env)
-	return launcherFail(launcherExecFailed, fmt.Errorf("execve(%q): %w", la.argv[0], err))
+	_, _, errno := unix.RawSyscall(unix.SYS_EXECVE, uintptr(unsafe.Pointer(path)),
+		uintptr(unsafe.Pointer(&argv[0])), uintptr(unsafe.Pointer(&envv[0])))
+	runtime.KeepAlive(path)
+	runtime.KeepAlive(argv)
+	runtime.KeepAlive(envv)
+	return launcherFail(launcherExecFailed, fmt.Errorf("execve(%q): %w", la.argv[0], errno))
+}
+
+// rawSetrlimit sets both values of a limit of the process with a raw
+// system call (see LauncherMain).
+func rawSetrlimit(resource int, value uint64) error {
+	lim := unix.Rlimit{Cur: value, Max: value}
+	_, _, errno := unix.RawSyscall6(unix.SYS_PRLIMIT64, 0, uintptr(resource), uintptr(unsafe.Pointer(&lim)), 0, 0, 0)
+	if errno != 0 {
+		return errno
+	}
+	return nil
 }
 
 // restoreEnv applies the --restore-env rules: NAME removes the variable,

@@ -362,7 +362,7 @@ func TestEvaluationVerdicts(t *testing.T) {
 		{"timeout", "int main(void){volatile unsigned long i=0;for(;;)i++;}\n", job.ExitTimeout, "Execution timed out", 0, false},
 		{"wall timeout", "#include <unistd.h>\nint main(void){sleep(30);return 0;}\n", job.ExitTimeoutWall,
 			"Execution timed out (wall clock limit exceeded)", 2, false},
-		{"forbidden system call", "#include <sys/socket.h>\nint main(void){return socket(AF_INET,SOCK_STREAM,0)<0;}\n",
+		{"forbidden system call", "#include <sys/ptrace.h>\nint main(void){return ptrace(PTRACE_TRACEME,0,0,0)<0;}\n",
 			job.ExitSecurityViolation, "Execution killed because of a forbidden system call", 0, false},
 		{"memory limit", "#include <stdlib.h>\n#include <string.h>\nint main(void){for(;;){char*p=malloc(1<<20);if(!p)return 1;memset(p,1,1<<20);}}\n",
 			job.ExitMemoryLimit, "Memory limit exceeded", 0, true},

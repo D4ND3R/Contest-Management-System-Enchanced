@@ -16,6 +16,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"golang.org/x/sys/unix"
@@ -40,6 +41,7 @@ type Box struct {
 	execNum int
 	running map[*Process]struct{}
 	closed  bool
+	keep    bool
 	once    sync.Once
 	err     error
 }
@@ -62,8 +64,12 @@ func (s *Sandbox) NewBox(ctx context.Context, name string) (b *Box, err error) {
 	if !s.cfg.KeepSandbox {
 		// Homes left behind by a worker that died (nobody else can
 		// be using this id: we hold its lock).
+		// Boxes kept on purpose (Box.Keep) stay.
 		old, _ := filepath.Glob(filepath.Join(s.cfg.WorkDir, fmt.Sprintf("box%d-*", id)))
 		for _, d := range old {
+			if _, err := os.Lstat(filepath.Join(d, keptMarker)); err == nil {
+				continue
+			}
 			_ = os.RemoveAll(d)
 		}
 	}
@@ -135,9 +141,22 @@ func (b *Box) Home() string { return b.home }
 // the log of the commands run (commands.log).
 func (b *Box) Dir() string { return b.outer }
 
+// keptMarker is a file in the directory of a box kept with Keep: the
+// clean-up of leftover directories spares it.
+const keptMarker = "KEPT"
+
+// Keep leaves the directory of the box on disk when it is closed, as if
+// keep_sandbox were set, for a job that asked to keep its sandboxes. It
+// is never removed automatically.
+func (b *Box) Keep() {
+	b.mu.Lock()
+	b.keep = true
+	b.mu.Unlock()
+}
+
 // Close kills the processes still running, releases the isolate box and
 // the box id, and deletes the directory of the box unless keep_sandbox
-// is set. It is idempotent and safe to defer right after NewBox, so that
+// is set or Keep was called. It is idempotent and safe to defer right after NewBox, so that
 // boxes are released after errors, timeouts and panics.
 func (b *Box) Close() error {
 	b.once.Do(func() { b.err = b.close() })
@@ -147,6 +166,7 @@ func (b *Box) Close() error {
 func (b *Box) close() error {
 	b.mu.Lock()
 	b.closed = true
+	keep := b.keep
 	procs := make([]*Process, 0, len(b.running))
 	for p := range b.running {
 		procs = append(procs, p)
@@ -163,7 +183,12 @@ func (b *Box) close() error {
 	defer cancel()
 	b.root.Close()
 	var errs []error
-	if !b.s.cfg.KeepSandbox {
+	if keep && !b.s.cfg.KeepSandbox {
+		if err := os.WriteFile(filepath.Join(b.outer, keptMarker), nil, 0o644); err != nil {
+			errs = append(errs, fmt.Errorf("sandbox: keeping %s: %w", b.outer, err))
+		}
+	}
+	if !b.s.cfg.KeepSandbox && !keep {
 		if err := os.RemoveAll(b.outer); err != nil {
 			// Directories the box user created are not writable by a
 			// worker that is not root: let the box user open them up
@@ -216,6 +241,14 @@ func (b *Box) CreateFileFrom(name string, r io.Reader, executable bool) error {
 			return fmt.Errorf("sandbox: %w", err)
 		}
 	}
+	if executable {
+		return b.createExecutable(name, r, mode)
+	}
+	return b.writeNew(name, r, mode)
+}
+
+// writeNew creates name in the home with the content of r.
+func (b *Box) writeNew(name string, r io.Reader, mode fs.FileMode) error {
 	f, err := b.root.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL|unix.O_NOFOLLOW, mode)
 	if err != nil {
 		return fmt.Errorf("sandbox: %w", err)
@@ -232,6 +265,35 @@ func (b *Box) CreateFileFrom(name string, r io.Reader, executable bool) error {
 		return fmt.Errorf("sandbox: writing %s: %w", name, err)
 	}
 	return nil
+}
+
+// createExecutable creates a file that a program will execute. A process
+// that the worker forks (isolate, for another job) while a file is open
+// for writing holds a copy of the descriptor until it calls execve; if
+// the file is executed meanwhile, execve fails with ETXTBSY ("Text file
+// busy"), which isolate reports as a runtime error of the program. So
+// the content goes first to a temporary file outside the home (r may be
+// slow: a remote blob store), and the executable is written from it
+// while holding syscall.ForkLock, which every fork of the Go runtime
+// takes: no fork can inherit its descriptor.
+func (b *Box) createExecutable(name string, r io.Reader, mode fs.FileMode) error {
+	tmp, err := os.CreateTemp(b.outer, "executable-*")
+	if err != nil {
+		return fmt.Errorf("sandbox: %w", err)
+	}
+	defer func() {
+		tmp.Close()
+		os.Remove(tmp.Name())
+	}()
+	if _, err := io.Copy(tmp, r); err != nil {
+		return fmt.Errorf("sandbox: writing %s: %w", name, err)
+	}
+	if _, err := tmp.Seek(0, io.SeekStart); err != nil {
+		return fmt.Errorf("sandbox: %w", err)
+	}
+	syscall.ForkLock.RLock()
+	defer syscall.ForkLock.RUnlock()
+	return b.writeNew(name, tmp, mode)
 }
 
 // Open opens a regular file of the home for reading. Files are written by

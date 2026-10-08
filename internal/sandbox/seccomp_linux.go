@@ -5,6 +5,7 @@ package sandbox
 
 import (
 	"fmt"
+	"runtime"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -21,6 +22,7 @@ import (
 //	load nr;   [amd64] nr >= x32 bit      -> KILL
 //	nr == socket/clone/personality        -> argument check
 //	nr == clone3                          -> ERRNO(ENOSYS)
+//	(socket of a family other than AF_UNIX -> ERRNO(EAFNOSUPPORT))
 //	nr in the deny list                   -> KILL
 //	                                         ALLOW
 //
@@ -31,10 +33,11 @@ import (
 // 32-bit words in host byte order; only little-endian architectures are
 // supported (amd64, arm64), so the low half of args[0] is at offset 16.
 const (
-	offNr       = 0
-	offArch     = 4
-	offArg0Low  = 16
-	errnoENOSYS = 38
+	offNr             = 0
+	offArch           = 4
+	offArg0Low        = 16
+	errnoENOSYS       = 38
+	errnoEAFNOSUPPORT = 97
 )
 
 // namespaceCloneFlags are the clone(2) flags that create namespaces:
@@ -213,6 +216,7 @@ const (
 	kill   = unix.SECCOMP_RET_KILL_PROCESS
 	allow  = unix.SECCOMP_RET_ALLOW
 	enosys = unix.SECCOMP_RET_ERRNO | errnoENOSYS
+	noaf   = unix.SECCOMP_RET_ERRNO | errnoEAFNOSUPPORT
 )
 
 // program compiles the policy to classic BPF.
@@ -234,10 +238,15 @@ func (p *policy) program() ([]unix.SockFilter, error) {
 	a.stmt(retK, allow)
 
 	// socket(2): only AF_UNIX (runtimes talk to nscd that way; abstract
-	// sockets are confined to the network namespace of the box).
+	// sockets are confined to the network namespace of the box). Other
+	// families fail with EAFNOSUPPORT instead of killing the program:
+	// runtimes probe them at startup (the JVM creates an AF_INET6 socket
+	// to test for IPv6 as soon as a program uses java.nio, for example
+	// to read a file), and the system call never reaches the kernel's
+	// network code either way.
 	a.label("socket")
 	a.stmt(ldAbs, offArg0Low)
-	a.jump(jeqK, unix.AF_UNIX, "allow", "kill")
+	a.jump(jeqK, unix.AF_UNIX, "allow", "noaf")
 
 	// clone(2): threads and processes, but no new namespaces. The flags
 	// are the first argument on every supported architecture.
@@ -256,6 +265,8 @@ func (p *policy) program() ([]unix.SockFilter, error) {
 	// answer ENOSYS so that libc falls back to clone(2), which is checked.
 	a.label("enosys")
 	a.stmt(retK, enosys)
+	a.label("noaf")
+	a.stmt(retK, noaf)
 
 	a.label("allow")
 	a.stmt(retK, allow)
@@ -265,14 +276,16 @@ func (p *policy) program() ([]unix.SockFilter, error) {
 }
 
 // installFilter sets no_new_privs and loads the filter on every thread of
-// the process (TSYNC), so that nothing runs unfiltered after execve.
+// the process (TSYNC), so that nothing runs unfiltered after execve. It
+// makes raw system calls only (see LauncherMain).
 func installFilter(prog []unix.SockFilter) error {
-	if err := unix.Prctl(unix.PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0); err != nil {
-		return fmt.Errorf("prctl(PR_SET_NO_NEW_PRIVS): %w", err)
+	if _, _, errno := unix.RawSyscall6(unix.SYS_PRCTL, unix.PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0, 0); errno != 0 {
+		return fmt.Errorf("prctl(PR_SET_NO_NEW_PRIVS): %w", errno)
 	}
 	fprog := unix.SockFprog{Len: uint16(len(prog)), Filter: &prog[0]}
-	r, _, errno := unix.Syscall(unix.SYS_SECCOMP, unix.SECCOMP_SET_MODE_FILTER,
+	r, _, errno := unix.RawSyscall(unix.SYS_SECCOMP, unix.SECCOMP_SET_MODE_FILTER,
 		unix.SECCOMP_FILTER_FLAG_TSYNC, uintptr(unsafe.Pointer(&fprog)))
+	runtime.KeepAlive(prog)
 	if errno != 0 {
 		return fmt.Errorf("seccomp(SECCOMP_SET_MODE_FILTER): %w", errno)
 	}

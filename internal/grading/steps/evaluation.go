@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/language"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/job"
@@ -61,6 +62,12 @@ type Evaluation struct {
 	// Stdin and Stdout redirect the standard streams to files or FIFOs
 	// ("": /dev/null).
 	Stdin, Stdout string
+	// StdinFile and StdoutFile replace Stdin and Stdout with open files
+	// of the worker (pipes: the Interactive task type), and ExtraFiles
+	// are passed as the descriptors 3, 4... (trusted programs only, which
+	// then get no limit on open files). See sandbox.RunSpec.
+	StdinFile, StdoutFile *os.File
+	ExtraFiles            []*os.File
 
 	// Multiprocess allows MultiprocessLimit processes (job
 	// MultithreadedSandbox, a language of the contest needs threads);
@@ -89,6 +96,15 @@ func (c *Config) evaluationSpec(ev *Evaluation, argv []string) (sandbox.RunSpec,
 		Seccomp:        !ev.Trusted,
 		RestrictWrites: true,
 		Writable:       ev.Writable,
+		StdinFile:      ev.StdinFile,
+		StdoutFile:     ev.StdoutFile,
+		ExtraFiles:     ev.ExtraFiles,
+	}
+	if len(ev.ExtraFiles) > 0 {
+		if !ev.Trusted {
+			return sandbox.RunSpec{}, errors.New("evaluation: only trusted programs inherit file descriptors")
+		}
+		spec.OpenFiles = sandbox.Unlimited
 	}
 	if spec.WallTime == 0 {
 		spec.WallTime = wallLimit(ev.TimeLimit)

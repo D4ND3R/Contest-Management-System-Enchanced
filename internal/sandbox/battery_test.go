@@ -248,8 +248,10 @@ int main(int argc, char **argv) {
 }`
 	_, res := battery(t, s, src, RunSpec{Argv: []string{strconv.Itoa(port)}})
 	wantStatus(t, res, StatusOK) // the socket exists, but goes nowhere
+	// With the filter socket() fails (EAFNOSUPPORT): the program ends
+	// normally without a connection.
 	_, res = battery(t, s, src, RunSpec{Argv: []string{strconv.Itoa(port)}, Seccomp: true})
-	wantStatus(t, res, StatusSecurityViolation)
+	wantStatus(t, res, StatusOK)
 	select {
 	case <-accepted:
 		t.Error("a sandboxed program connected to the host")

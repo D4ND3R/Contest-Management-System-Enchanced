@@ -11,6 +11,9 @@ source_extensions: [.py]
 # A zip application (PEP 441) with the bytecode of every source; the one
 # with the entry point is __main__.pyc.
 executable_extension: .pyz
+# PyPy reserves its nursery and arenas up front: without cgroups it
+# aborts ("cannot allocate nursery") under a 128 MiB address space.
+large_address_space: true
 compilation:
   commands:
     - [/usr/bin/pypy3, -m, compileall, -b, .]

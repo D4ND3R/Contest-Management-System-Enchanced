@@ -8,6 +8,10 @@
 
 name: Rust
 source_extensions: [.rs]
+# rustc (LLVM, one thread per codegen unit) reserves more than the
+# 512 MiB compilation limit of address space: without cgroups it often
+# failed with "LLVM ERROR: out of memory".
+large_address_space: true
 compilation:
   commands:
     # Only the file with the main function: rustc finds the modules.

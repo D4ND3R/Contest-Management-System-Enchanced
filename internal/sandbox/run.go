@@ -38,6 +38,16 @@ type RunSpec struct {
 	// Stdin, Stdout and Stderr redirect the standard streams to files
 	// (or FIFOs) inside the box. Empty means /dev/null.
 	Stdin, Stdout, Stderr string
+	// StdinFile and StdoutFile, when set, are the standard input and
+	// output of the program instead of Stdin and Stdout: open files of
+	// the worker, usually pipes (the controller of an Interactive task
+	// and its solutions talk to the worker and to each other this way).
+	StdinFile, StdoutFile *os.File
+	// ExtraFiles are passed to the program as the file descriptors 3, 4,
+	// ... (isolate --inherit-fds). Only for trusted programs: isolate
+	// then leaves its own descriptors open in the box too, so it is
+	// refused together with Seccomp.
+	ExtraFiles []*os.File
 	// Env holds NAME=VALUE pairs. The program gets only these plus
 	// HOME=HomeDir and PATH=DefaultPath (unless Env overrides them):
 	// the environment of the worker, which may hold credentials, never
@@ -196,6 +206,9 @@ func (b *Box) args(spec *RunSpec, metaPath string) ([]string, error) {
 		}
 	}
 	seccomp := spec.Seccomp && b.s.cfg.Seccomp
+	if len(spec.ExtraFiles) > 0 && spec.Seccomp {
+		return nil, errors.New("sandbox: extra file descriptors are only for trusted programs (no seccomp)")
+	}
 	a := make([]string, 0, 32+len(spec.Argv)+len(spec.Dirs)+len(spec.Env))
 	if b.s.cfg.Cgroups {
 		a = append(a, "--cg")
@@ -322,10 +335,20 @@ func (b *Box) args(spec *RunSpec, metaPath string) ([]string, error) {
 		// small one.
 	}
 
-	// Redirections (CMS always redirects; empty means /dev/null).
+	if len(spec.ExtraFiles) > 0 {
+		a = append(a, "--inherit-fds")
+	}
+
+	// Redirections (CMS always redirects; empty means /dev/null). Without
+	// --stdin or --stdout the program inherits those of isolate, which
+	// are StdinFile and StdoutFile.
 	for _, r := range []struct {
 		flag, p string
-	}{{"--stdin=", spec.Stdin}, {"--stdout=", spec.Stdout}, {"--stderr=", spec.Stderr}} {
+		file    *os.File
+	}{{"--stdin=", spec.Stdin, spec.StdinFile}, {"--stdout=", spec.Stdout, spec.StdoutFile}, {"--stderr=", spec.Stderr, nil}} {
+		if r.file != nil {
+			continue
+		}
 		p := "/dev/null"
 		if r.p != "" {
 			if p, err = innerPath(r.p); err != nil {
@@ -417,6 +440,14 @@ func (b *Box) Start(ctx context.Context, spec RunSpec) (*Process, error) {
 	// fatal errors. The program's streams are always redirected.
 	p.cmd.Stderr = &p.stderr
 	p.cmd.Stdout = &p.stderr
+	if spec.StdinFile != nil {
+		p.cmd.Stdin = spec.StdinFile
+	}
+	if spec.StdoutFile != nil {
+		// With --silent isolate writes nothing on its standard output.
+		p.cmd.Stdout = spec.StdoutFile
+	}
+	p.cmd.ExtraFiles = spec.ExtraFiles
 	// If isolate dies without its box (SIGKILL), the box processes may
 	// still hold the pipes: stop waiting for them after a while.
 	p.cmd.WaitDelay = 5 * time.Second

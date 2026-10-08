@@ -76,9 +76,12 @@ var helpers = map[string]func() int{
 	"pivot_root":        func() int { sys(unix.SYS_PIVOT_ROOT); return 0 },
 	"unshare":           func() int { sys(unix.SYS_UNSHARE, unix.CLONE_NEWUSER); return 0 },
 	"setns":             func() int { sys(unix.SYS_SETNS, 0, 0); return 0 },
-	"socket-inet":       func() int { sys(unix.SYS_SOCKET, unix.AF_INET, unix.SOCK_STREAM); return 0 },
-	"socket-netlink":    func() int { sys(unix.SYS_SOCKET, unix.AF_NETLINK, unix.SOCK_RAW); return 0 },
-	"socket-vsock":      func() int { sys(unix.SYS_SOCKET, unix.AF_VSOCK, unix.SOCK_STREAM); return 0 },
+	// Sockets other than AF_UNIX fail (the JVM probes AF_INET6).
+	"socket-inet":       func() int { return socketRefused(unix.AF_INET, unix.SOCK_STREAM) },
+	"socket-inet6":      func() int { return socketRefused(unix.AF_INET6, unix.SOCK_STREAM) },
+	"socket-netlink":    func() int { return socketRefused(unix.AF_NETLINK, unix.SOCK_RAW) },
+	"socket-vsock":      func() int { return socketRefused(unix.AF_VSOCK, unix.SOCK_STREAM) },
+	"socket-packet":     func() int { return socketRefused(unix.AF_PACKET, unix.SOCK_RAW) },
 	"keyctl":            func() int { sys(unix.SYS_KEYCTL); return 0 },
 	"bpf":               func() int { sys(unix.SYS_BPF); return 0 },
 	"perf_event_open":   func() int { sys(unix.SYS_PERF_EVENT_OPEN); return 0 },
@@ -121,10 +124,11 @@ func TestSeccompPolicy(t *testing.T) {
 	if err := checkSeccompSupport(); err != nil {
 		t.Skipf("seccomp not supported here: %v", err)
 	}
-	allowed := []string{"true", "threads", "socket-unix", "clone3", "personality-query"}
+	allowed := []string{"true", "threads", "socket-unix", "clone3", "personality-query",
+		"socket-inet", "socket-inet6", "socket-netlink", "socket-vsock", "socket-packet"}
 	denied := []string{
 		"personality-set", "ptrace", "process_vm_readv", "mount", "umount2", "chroot", "pivot_root",
-		"unshare", "setns", "socket-inet", "socket-netlink", "socket-vsock", "keyctl", "bpf",
+		"unshare", "setns", "keyctl", "bpf",
 		"perf_event_open", "userfaultfd", "io_uring_setup", "kexec_load", "init_module", "reboot",
 		"settimeofday", "sethostname", "swapon", "open_by_handle_at", "clone-newuser",
 	}
@@ -157,7 +161,7 @@ func TestSeccompHelpersWithoutFilter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"ptrace", "socket-inet", "personality-set", "keyctl"} {
+	for _, name := range []string{"ptrace", "personality-set", "keyctl"} {
 		cmd := exec.Command(exe)
 		cmd.Env = append(os.Environ(), helperEnv+"="+name)
 		if out, err := cmd.CombinedOutput(); err != nil {
@@ -225,4 +229,18 @@ func TestLauncherFailures(t *testing.T) {
 			t.Errorf("%q: exit %d, want %d with %q:\n%s", tc.args, cmd.ProcessState.ExitCode(), tc.code, tc.msg, out)
 		}
 	}
+}
+
+// socketRefused creates a socket and reports success (0) when the filter
+// refused it with EAFNOSUPPORT.
+func socketRefused(family, typ int) int {
+	r, _, errno := unix.RawSyscall(unix.SYS_SOCKET, uintptr(family), uintptr(typ), 0)
+	if errno == unix.EAFNOSUPPORT {
+		return 0
+	}
+	if errno == 0 {
+		unix.Close(int(r))
+	}
+	fmt.Println("socket:", errno)
+	return 1
 }
