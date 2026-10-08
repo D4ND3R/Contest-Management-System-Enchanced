@@ -98,7 +98,7 @@ func TestAdminSpanishIsComplete(t *testing.T) {
 // `make generate` was not run.
 func TestPOTIsUpToDate(t *testing.T) {
 	for domain, dirs := range map[string][]string{
-		DomainAdmin: {"../internal/adminweb"},
+		DomainAdmin: {"../internal/adminweb", "../internal/grading/steps"},
 	} {
 		c := extract.NewCollector()
 		for _, d := range dirs {

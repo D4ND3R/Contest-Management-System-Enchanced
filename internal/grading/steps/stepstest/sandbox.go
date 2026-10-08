@@ -30,8 +30,7 @@ func Cgroups() bool {
 }
 
 // Sandbox returns a real sandbox for a test, or skips it when not root
-// or without isolate. With seccomp, the test binary is the launcher: its
-// TestMain must call sandbox.MaybeRunLauncher first.
+// or without isolate.
 func Sandbox(t testing.TB, seccomp bool) *sandbox.Sandbox {
 	t.Helper()
 	if os.Geteuid() != 0 {

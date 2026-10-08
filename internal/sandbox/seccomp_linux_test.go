@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -104,26 +105,57 @@ var helpers = map[string]func() int{
 	},
 }
 
-// runLauncher runs `<test binary> sandbox-exec [flags] -- <test binary>`
-// as helper name, outside isolate.
-func runLauncher(t *testing.T, name string, flags ...string) (*os.ProcessState, string) {
+// writeLauncher writes a launcher with the filter prog in dir and returns
+// its path. It must not run while other goroutines start processes: a
+// child holding the file open for writing between fork and exec would make
+// running it fail with ETXTBSY.
+func writeLauncher(t *testing.T, dir string, prog []unix.SockFilter) string {
+	t.Helper()
+	img, err := buildLauncher(runtime.GOARCH, prog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, launcherBinary)
+	if err := os.WriteFile(path, img, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+// defaultLauncher writes the launcher of the default policy in a
+// temporary directory.
+func defaultLauncher(t *testing.T) string {
+	t.Helper()
+	if err := checkSeccompSupport(); err != nil {
+		t.Skipf("seccomp not supported here: %v", err)
+	}
+	img, err := launcherImage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), launcherBinary)
+	if err := os.WriteFile(path, img, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+// runLauncher runs `launcher <test binary>` as helper name, outside
+// isolate.
+func runLauncher(t *testing.T, launcher, name string) (*os.ProcessState, string) {
 	t.Helper()
 	exe, err := os.Executable()
 	if err != nil {
 		t.Fatal(err)
 	}
-	args := append([]string{LauncherCommand}, flags...)
-	args = append(args, "--", exe)
-	cmd := exec.Command(exe, args...)
+	cmd := exec.Command(launcher, exe)
 	cmd.Env = append(os.Environ(), helperEnv+"="+name)
 	out, _ := cmd.CombinedOutput()
 	return cmd.ProcessState, string(out)
 }
 
 func TestSeccompPolicy(t *testing.T) {
-	if err := checkSeccompSupport(); err != nil {
-		t.Skipf("seccomp not supported here: %v", err)
-	}
+	launcher := defaultLauncher(t)
 	allowed := []string{"true", "threads", "socket-unix", "clone3", "personality-query",
 		"socket-inet", "socket-inet6", "socket-netlink", "socket-vsock", "socket-packet"}
 	denied := []string{
@@ -136,7 +168,7 @@ func TestSeccompPolicy(t *testing.T) {
 	for _, name := range allowed {
 		t.Run("allow/"+name, func(t *testing.T) {
 			t.Parallel()
-			st, out := runLauncher(t, name)
+			st, out := runLauncher(t, launcher, name)
 			if !st.Success() {
 				t.Errorf("%s: %v\n%s", name, st, out)
 			}
@@ -145,7 +177,7 @@ func TestSeccompPolicy(t *testing.T) {
 	for _, name := range denied {
 		t.Run("deny/"+name, func(t *testing.T) {
 			t.Parallel()
-			st, out := runLauncher(t, name)
+			st, out := runLauncher(t, launcher, name)
 			ws := st.Sys().(syscall.WaitStatus)
 			if !ws.Signaled() || ws.Signal() != syscall.SIGSYS {
 				t.Errorf("%s: want SIGSYS, got %v\n%s", name, st, out)
@@ -170,63 +202,42 @@ func TestSeccompHelpersWithoutFilter(t *testing.T) {
 	}
 }
 
-func TestLauncherLimitsAndEnv(t *testing.T) {
-	if err := checkSeccompSupport(); err != nil {
-		t.Skipf("seccomp not supported here: %v", err)
-	}
-	t.Setenv("GOGC", "off")
-	t.Setenv("GOMAXPROCS", "1")
-	st, out := runLauncher(t, "env", "--restore-env=GOGC=50", "--restore-env=GOMAXPROCS")
-	if !st.Success() {
-		t.Fatalf("%v\n%s", st, out)
-	}
-	vars := map[string]bool{}
-	for _, l := range strings.Split(out, "\n") {
-		vars[l] = true
-		if strings.HasPrefix(l, "GOMAXPROCS=") {
-			t.Errorf("GOMAXPROCS not removed: %s", l)
-		}
-	}
-	if !vars["GOGC=50"] || !vars[helperEnv+"=env"] {
-		t.Errorf("environment not restored:\n%s", out)
-	}
-
-	// The limits (an external program: the race detector of the test
-	// binary cannot live with an address space limit).
-	exe, err := os.Executable()
+// TestLauncherPassesArgsAndEnv: the program gets the arguments after the
+// launcher's own name, argv[0] included, and the environment unchanged.
+func TestLauncherPassesArgsAndEnv(t *testing.T) {
+	launcher := defaultLauncher(t)
+	cmd := exec.Command(launcher, "/bin/sh", "-c", `printf '%s|' "$0" "$@" "$FOO"; printf '%s\n' "$(cat /proc/self/status | grep -c Seccomp:.2)"`,
+		"zero", "one", "two words", "")
+	cmd.Env = []string{"FOO=bar baz", "PATH=/usr/bin:/bin"}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%v\n%s", err, out)
 	}
-	cmd := exec.Command(exe, LauncherCommand, "--nproc=7", "--rlimit-as=1048576", "--", "/bin/cat", "/proc/self/limits")
-	out2, err := cmd.CombinedOutput()
-	limits := strings.Join(strings.Fields(string(out2)), " ")
-	if err != nil || !strings.Contains(limits, "Max processes 7 7 processes") ||
-		!strings.Contains(limits, "Max address space 1073741824 1073741824 bytes") {
-		t.Errorf("limits not applied: %v\n%s", err, out2)
+	// $0 of sh -c is the first argument after the script; the shell and
+	// its children run under the filter (Seccomp: 2).
+	if want := "zero|one|two words||bar baz|1\n"; string(out) != want {
+		t.Errorf("output %q, want %q", out, want)
 	}
 }
 
 func TestLauncherFailures(t *testing.T) {
-	exe, err := os.Executable()
-	if err != nil {
-		t.Fatal(err)
-	}
+	launcher := defaultLauncher(t)
+	// A filter the kernel rejects (it does not end with a return).
+	badFilter := writeLauncher(t, t.TempDir(), []unix.SockFilter{{Code: ldAbs, K: offNr}})
 	for _, tc := range []struct {
-		args []string
+		argv []string
 		code int
 		msg  string
 	}{
-		{[]string{"--"}, launcherSetupFailed, "no program"},
-		{[]string{"--policy=strict", "--", "/bin/true"}, launcherSetupFailed, "unknown policy"},
-		{[]string{"--nproc=0", "--", "/bin/true"}, launcherSetupFailed, "--nproc"},
-		{[]string{"--bogus=1", "--", "/bin/true"}, launcherSetupFailed, "unknown flag"},
-		{[]string{"/bin/true"}, launcherSetupFailed, "unexpected argument"},
-		{[]string{"--", "/nonexistent/program"}, launcherExecFailed, "execve"},
+		{[]string{launcher}, launcherSetupFailed, launcherMessages[0]},
+		{[]string{badFilter, "/bin/true"}, launcherSetupFailed, launcherMessages[1]},
+		{[]string{launcher, "/nonexistent/program"}, launcherExecFailed, launcherMessages[2]},
+		{[]string{launcher, "relative/program"}, launcherExecFailed, launcherMessages[2]},
 	} {
-		cmd := exec.Command(exe, append([]string{LauncherCommand}, tc.args...)...)
+		cmd := exec.Command(tc.argv[0], tc.argv[1:]...)
 		out, _ := cmd.CombinedOutput()
-		if cmd.ProcessState.ExitCode() != tc.code || !strings.Contains(string(out), tc.msg) {
-			t.Errorf("%q: exit %d, want %d with %q:\n%s", tc.args, cmd.ProcessState.ExitCode(), tc.code, tc.msg, out)
+		if cmd.ProcessState.ExitCode() != tc.code || string(out) != tc.msg {
+			t.Errorf("%q: exit %d, want %d with %q; output %q", tc.argv[1:], cmd.ProcessState.ExitCode(), tc.code, tc.msg, out)
 		}
 	}
 }

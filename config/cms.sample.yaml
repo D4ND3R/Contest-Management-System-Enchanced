@@ -117,7 +117,10 @@ worker:
   concurrency: 1
   # isolate box ids [box_id_base, box_id_base + box_count). Workers on the
   # same machine need disjoint ranges (`cms ctl verify-host` checks it).
-  # Communication tasks use one box per process plus one for the manager.
+  # At least 2 per job slot (concurrency): Batch tasks with a checker and
+  # TwoSteps tasks use 2 boxes at a time, Communication tasks one per
+  # process plus one for the manager, Interactive tasks the process limit
+  # plus one. A job that needs more boxes than box_count fails.
   box_id_base: 0
   box_count: 100
   # Converted to an absolute path at startup (isolate rejects relative dirs).

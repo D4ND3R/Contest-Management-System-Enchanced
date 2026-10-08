@@ -26,6 +26,9 @@ func TestParseControllerFeedback(t *testing.T) {
 		{"  USER_MESSAGE:   50% done  \r\nSCORE: 0.5", 0.5, []string{"50%% done"}, ""},
 		{"ADMIN_MESSAGE: only admins\n", 0, nil, "only admins"},
 		{"USER_MESSAGE:  .\n", 0, []string{"."}, ""},
+		// Python's float(): underscores between digits, other scripts.
+		{"SCORE: 1_0\n", 10, nil, ""},
+		{"SCORE: \u0660.\u0665\n", 0.5, nil, ""},
 	}
 	for _, c := range cases {
 		score, text, admin, err := parseControllerFeedback([]byte(c.in))
@@ -39,6 +42,8 @@ func TestParseControllerFeedback(t *testing.T) {
 		"ADMIN_MESSAGE: a\nADMIN_MESSAGE: b\n",
 		"SCORE: lots\n",
 		"SCORE: nan\n",
+		"SCORE: 0x1p-1\n", // not for Python
+		"SCORE: 1e400\n",
 		"SCORE: 1\n\n",
 		"USER_MESSAGE: \n", // stripped, the prefix loses its space (upstream too)
 		"Traceback (most recent call last):\n",

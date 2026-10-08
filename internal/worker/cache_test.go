@@ -283,6 +283,94 @@ evaluation:
 	}
 }
 
+// TestCompilerIdentityFollowsWrappers: upgrading what a compiler runs
+// changes the identity even when the program of the command stays the
+// same (wrapper scripts, compilers installed as <home>/bin + <home>/lib,
+// shell commands).
+func TestCompilerIdentityFollowsWrappers(t *testing.T) {
+	dir := t.TempDir()
+	write := func(path, content string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	lang := func(env string, commands ...string) *language.Language {
+		t.Helper()
+		l, err := language.Parse([]byte(`
+name: Test
+source_extensions: [.t]
+compilation:
+  commands:
+`+strings.Join(commands, "\n")+`
+  env: [`+env+`]
+evaluation:
+  commands:
+    - ["./{executable}"]
+`), "test.yaml")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return l
+	}
+	// Each case: the language, then the file an upgrade changes.
+	interp := filepath.Join(dir, "interp", "sh")
+	write(interp, "interpreter v1")
+	write(filepath.Join(dir, "wrapper", "real-cc"), "compiler v1")
+	write(filepath.Join(dir, "wrapper", "cc"), "#!/bin/sh\nexec "+filepath.Join(dir, "wrapper", "real-cc")+` "$@"`+"\n")
+	write(filepath.Join(dir, "kotlin", "bin", "kotlinc"), "#!/bin/sh\nexec java -cp \"$(dirname $0)/../lib/compiler.jar\" \"$@\"\n")
+	write(filepath.Join(dir, "kotlin", "lib", "compiler.jar"), "jar v1")
+	write(filepath.Join(dir, "jdk", "bin", "javac"), "launcher")
+	write(filepath.Join(dir, "jdk", "release"), `JAVA_VERSION="21.0.1"`)
+	write(filepath.Join(dir, "path", "jar"), "jar tool v1")
+	write(filepath.Join(dir, "script", "cc"), "#!"+interp+" -e\n")
+	for name, tc := range map[string]struct {
+		lang    *language.Language
+		upgrade string
+	}{
+		"wrapper script":  {lang("", `    - ["`+filepath.Join(dir, "wrapper", "cc")+`", "{sources}"]`), filepath.Join(dir, "wrapper", "real-cc")},
+		"interpreter":     {lang("", `    - ["`+filepath.Join(dir, "script", "cc")+`", "{sources}"]`), interp},
+		"installation":    {lang("", `    - ["`+filepath.Join(dir, "kotlin", "bin", "kotlinc")+`", "{sources}"]`), filepath.Join(dir, "kotlin", "lib", "compiler.jar")},
+		"release file":    {lang("", `    - ["`+filepath.Join(dir, "jdk", "bin", "javac")+`", "{sources}"]`), filepath.Join(dir, "jdk", "release")},
+		"shell from PATH": {lang("PATH="+filepath.Join(dir, "path"), `    - [/bin/sh, -c, "jar cf {executable|quote} *.class"]`), filepath.Join(dir, "path", "jar")},
+	} {
+		before, err := CompilerIdentity(tc.lang)
+		if err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		if again, _ := CompilerIdentity(tc.lang); again != before {
+			t.Errorf("%s: the identity is not stable", name)
+		}
+		old, err := os.ReadFile(tc.upgrade)
+		if err != nil {
+			t.Fatal(err)
+		}
+		write(tc.upgrade, string(old)+" upgraded")
+		if after, err := CompilerIdentity(tc.lang); err != nil || after == before {
+			t.Errorf("%s: upgrading %s does not change the identity (%v)", name, tc.upgrade, err)
+		}
+	}
+}
+
+func TestShellProgram(t *testing.T) {
+	for args, want := range map[string]string{
+		"/bin/sh|-c|jar cf {executable|quote} *.class": "jar",
+		"/bin/bash|-c|/opt/x/tool --flag":              "/opt/x/tool",
+		"/bin/sh|-c|{compiler} x":                      "",
+		"/bin/sh|-c|FOO=1 tool":                        "",
+		"/bin/sh|-c|$CC x":                             "",
+		"/bin/sh|script.sh":                            "",
+		"/usr/bin/g++|-c|x.cpp":                        "",
+	} {
+		if got := shellProgram(strings.Split(args, "|")); got != want {
+			t.Errorf("%q: %q, want %q", args, got, want)
+		}
+	}
+}
+
 func TestCacheWithRealCompilers(t *testing.T) {
 	cpp, err := language.Builtin().Get("C++17 / g++")
 	if err != nil {

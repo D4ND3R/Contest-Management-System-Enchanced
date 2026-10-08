@@ -411,3 +411,57 @@ func TestBoxPoolConcurrency(t *testing.T) {
 		}
 	}
 }
+
+// TestSeccompLauncherCost: the launcher costs the program nothing it could
+// notice. Its peak memory is the program's (the kernel and the cgroup keep
+// the peak across execve, so a launcher with a runtime would raise it), it
+// runs under memory limits the program alone fits in, and it adds well
+// under a millisecond of CPU time (the cms binary as launcher added about
+// 8 ms and 14 MiB).
+func TestSeccompLauncherCost(t *testing.T) {
+	s := newTestSandbox(t, nil)
+	b := newTestBox(t, s)
+	putExe(t, b, "prog", gcc(t, "int main(void) { volatile int a = 3, b = 4; return a + b == 7 ? 0 : 1; }\n", "-static"))
+	const runs = 10
+	measure := func(seccomp bool, memKiB int64) (mem int64, cpu float64) {
+		mem, cpu = -1, -1
+		for range runs {
+			res := run(t, b, RunSpec{Argv: []string{"./prog"}, CPUTime: 1, WallTime: 5, MemoryKiB: memKiB, Seccomp: seccomp})
+			if res.Status != StatusOK {
+				t.Fatalf("seccomp=%v, memory limit %d KiB: %+v", seccomp, memKiB, res)
+			}
+			if mem < 0 || res.MemoryKiB < mem {
+				mem = res.MemoryKiB
+			}
+			if cpu < 0 || res.CPUTime < cpu {
+				cpu = res.CPUTime
+			}
+		}
+		return mem, cpu
+	}
+	memPlain, cpuPlain := measure(false, 64<<10)
+	memSeccomp, cpuSeccomp := measure(true, 64<<10)
+	t.Logf("static C program (best of %d): %d KiB, %.3f s; under the launcher: %d KiB, %.3f s",
+		runs, memPlain, cpuPlain, memSeccomp, cpuSeccomp)
+	if memSeccomp > memPlain+256 {
+		t.Errorf("the launcher raises the peak memory from %d to %d KiB", memPlain, memSeccomp)
+	}
+	if cpuSeccomp > cpuPlain+0.002 {
+		t.Errorf("the launcher raises the CPU time from %.3f to %.3f s", cpuPlain, cpuSeccomp)
+	}
+	// The smallest memory limit the program runs in (of a few) is enough
+	// for the launcher too.
+	ctx := context.Background()
+	for _, memKiB := range []int64{2 << 10, 4 << 10, 8 << 10} {
+		spec := RunSpec{Argv: []string{"./prog"}, CPUTime: 1, WallTime: 5, MemoryKiB: memKiB}
+		if res, err := b.Run(ctx, spec); err != nil || res.Status != StatusOK {
+			continue
+		}
+		spec.Seccomp = true
+		if res, err := b.Run(ctx, spec); err != nil || res.Status != StatusOK {
+			t.Errorf("the program runs with %d KiB but not under the launcher: %+v %v", memKiB, res, err)
+		}
+		return
+	}
+	t.Log("the program does not run with 8 MiB")
+}

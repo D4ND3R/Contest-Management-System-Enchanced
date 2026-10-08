@@ -81,8 +81,9 @@ type Options struct {
 	Concurrency int
 	// Boxes is the number of sandbox boxes the slots share
 	// (worker.box_count): a job starts once the boxes it may need
-	// (Executor.Boxes, at most Boxes) are free, so parallel jobs never
-	// wait for each other's boxes halfway.
+	// (Executor.Boxes) are free, so parallel jobs never wait for each
+	// other's boxes halfway. A job that needs more than Boxes fails at
+	// once.
 	Boxes int
 	// ShutdownTimeout is how long Run lets running jobs finish once its
 	// context ends (default 8s; worker.shutdown_timeout).
@@ -475,11 +476,21 @@ func (w *Worker) run(ctx context.Context, j *job.Job, res *job.Result) (cached b
 	return false, err
 }
 
-// execute waits for the boxes the job needs and runs it. A panic of the
-// executor (a bug) fails the job instead of killing the worker.
+// execute waits for the boxes the job needs and runs it. A job that
+// needs more boxes than the worker has fails at once: it would take them
+// all and then wait for one more until its timeout, stalling the other
+// slots meanwhile. A panic of the executor (a bug) fails the job instead
+// of killing the worker.
 func (w *Worker) execute(ctx context.Context, j *job.Job, res *job.Result) (err error) {
-	n := int64(min(max(w.exec.Boxes(j), 1), w.opts.Boxes))
+	need := max(w.exec.Boxes(j), 1)
 	start := time.Now()
+	if need > w.opts.Boxes {
+		err = fmt.Errorf("the job needs %d sandbox boxes at the same time and worker.box_count is %d", need, w.opts.Boxes)
+		failed(res, err)
+		res.Durations.Total = time.Since(start)
+		return err
+	}
+	n := int64(need)
 	if err := w.boxes.Acquire(ctx, n); err != nil {
 		err = fmt.Errorf("waiting for %d sandbox boxes: %w", n, context.Cause(ctx))
 		failed(res, err)

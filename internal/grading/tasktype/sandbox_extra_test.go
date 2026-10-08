@@ -7,6 +7,7 @@ package tasktype
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -103,6 +104,62 @@ func TestTaskTypeExtras(t *testing.T) {
 			}
 		}
 	})
+}
+
+// TestCommunicationManagerFailure: a manager that fails by itself fails
+// the job, as upstream (CommunicationTest
+// test_single_process_manager_and_user_failure), instead of the user
+// process scoring 0 after waiting for the FIFOs; a manager killed by
+// SIGPIPE failed because a user process closed its FIFO.
+func TestCommunicationManagerFailure(t *testing.T) {
+	j := newJudge(t)
+	lang, err := j.langs.Get(langCC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	withManager := func(tk *task, path string) *task {
+		c := *tk
+		c.managerPaths = map[string]string{"manager": path}
+		return &c
+	}
+	cases := []struct {
+		name string
+		task *task
+		file string
+		// check is nil when the job must fail.
+		check check
+	}{
+		{"exit-at-once", withManager(communicationFifoioStubbed, "testdata/extra/manager-exit-at-once"),
+			"communication-stubbed-correct.c", nil},
+		{"exit-at-the-end", withManager(communicationStdio, "testdata/extra/manager-exit-at-the-end"),
+			"communication-stdio-correct.c", nil},
+		{"sigpipe", withManager(communicationStdio, "testdata/extra/manager-sigpipe"),
+			"../extra/communication-stdio-close-stdin.c", failed("Execution timed out")},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			files := []string{c.file}
+			if c.check != nil {
+				r := j.submit(t, c.task, lang, files)
+				c.check(t, r)
+				t.Logf("%s", r)
+				return
+			}
+			comp := j.execute(t, j.newTaskJob(t, c.task, lang, files, job.Compilation))
+			if comp.CompilationOutcome != job.CompilationOK {
+				t.Fatalf("compilation: %q", comp.Text)
+			}
+			jb := j.evaluationJob(t, c.task, lang, files, comp, 0)
+			res := jb.NewResult("sandbox-test")
+			start := time.Now()
+			err := Execute(context.Background(), j.env, jb, res)
+			if !errors.Is(err, ErrConfiguration) || !strings.Contains(err.Error(), "the manager ended with") {
+				t.Errorf("err = %v, want the failure of the manager (outcome %q %q)", err, res.Outcome, res.Text)
+			}
+			t.Logf("%v in %v", err, time.Since(start).Round(time.Millisecond))
+		})
+	}
 }
 
 // BenchmarkBatchEvaluation measures the cost of judging one testcase of

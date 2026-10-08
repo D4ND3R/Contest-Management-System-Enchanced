@@ -17,12 +17,12 @@ import (
 	"io"
 	"math"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/checker"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/language"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/steps"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/job"
@@ -490,7 +490,7 @@ func parseControllerFeedback(data []byte) (score float64, text []string, admin s
 			if haveScore {
 				return 0, nil, "", errors.New("two scores in the feedback of the controller")
 			}
-			v, err := strconv.ParseFloat(pyStrip(line[len(feedbackScore):]), 64)
+			v, err := checker.PyFloat(pyStrip(line[len(feedbackScore):]))
 			if err != nil || math.IsNaN(v) || math.IsInf(v, 0) {
 				return 0, nil, "", fmt.Errorf("invalid score %q from the controller", line[len(feedbackScore):])
 			}

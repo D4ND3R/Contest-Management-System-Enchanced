@@ -304,23 +304,26 @@ y tras el máximo de intentos van a una cola de mensajes muertos. Los
 trabajos (`internal/job`, port de `Job.py`) llevan número de intento y de
 generación para descartar resultados tardíos (D23).
 
-## D28 — Seccomp: el binario `cms` es el lanzador
+## D28 — Seccomp con un lanzador mínimo
 
 **Decisión.** Los programas de los concursantes corren con
-`cms sandbox-exec -- programa…`: el mismo binario `cms`, montado de solo
-lectura en la caja (`/cms-launcher`), instala un filtro BPF escrito a mano
-(`SECCOMP_RET_KILL_PROCESS`) y hace `exec`. Una llamada prohibida (ptrace,
-mount, espacios de nombres, bpf, keyctl, io_uring, kexec, módulos…) mata al
-programa con SIGSYS, que se informa como *Security violation*. Los sockets
-que no son unix fallan con `EAFNOSUPPORT` en lugar de matar (la JVM abre un
-socket IPv6 al arrancar); la red sigue inaccesible. Desde que baja sus
-límites hasta el `exec`, el lanzador solo hace llamadas al sistema directas
-(el runtime de Go fallaba al crear hilos con `RLIMIT_NPROC` reducido).
-Compiladores, checkers y managers nunca corren con el filtro.
+`/cms-launcher/seccomp-exec programa…`: un ELF estático de ~1 KiB que el
+worker escribe al arrancar (código ensamblado a mano para amd64 y arm64
+más el filtro BPF; una prueba lo compara con su fuente en ensamblador).
+Hace `prctl(NO_NEW_PRIVS)`, instala el filtro (`SECCOMP_RET_KILL_PROCESS`)
+y hace `execve`. Una llamada prohibida (ptrace, mount, espacios de nombres,
+bpf, keyctl, io_uring, kexec, módulos…) mata al programa con SIGSYS, que se
+informa como *Security violation*. Los sockets que no son unix fallan con
+`EAFNOSUPPORT` en lugar de matar (la JVM abre un socket IPv6 al arrancar);
+la red sigue inaccesible. Compiladores, checkers y managers nunca corren
+con el filtro.
 
-**Por qué.** No hay un segundo binario que instalar ni versionar, y el
-filtro no depende de libseccomp (cgo). Sin canal de estado: SIGSYS basta
-para distinguir el veredicto.
+**Por qué.** Sin runtime en la caja, el programa recibe sus límites
+directamente de isolate y paga ~0,3 ms de CPU (un `execve` más) y nada de
+memoria; la primera versión usaba el binario `cms` como lanzador y costaba
+8 ms y 14 MiB por ejecución, cargados al concursante. No depende de
+libseccomp (cgo) ni de un segundo binario que instalar. Sin canal de
+estado: SIGSYS basta para distinguir el veredicto.
 
 ## D29 — Errores del sandbox nunca son veredictos
 
@@ -369,9 +372,16 @@ portada con sus tareas y programas. Diferencias:
 
 - `output_eval` acepta además `exact`, `real` (tolerancia 1e-6) y `testlib`
   (datasets que no se pueden exportar a CMS).
-- Communication: si un proceso del usuario falla, el resultado es 0 con ese
-  error y se detiene el manager (CMS espera 21 s y falla el trabajo, que
-  queda reintentándose sin juzgarse).
+- Communication: decide quién falló primero. Si un proceso del usuario
+  falla antes que el manager, el resultado es 0 con ese error y se detiene
+  el manager (CMS espera 21 s y falla el trabajo, que queda reintentándose
+  sin juzgarse); un manager muerto por SIGPIPE cuenta como falla del
+  usuario. Si el manager falla primero, el trabajo falla (error de
+  configuración), nunca se culpa al concursante.
+- Las expresiones regulares de los grupos (GroupMin/Mul/Threshold) usan la
+  sintaxis de Python traducida a RE2; lo que RE2 no puede ejecutar
+  (lookahead, referencias hacia atrás…) se rechaza al guardar el dataset.
+  Los números de los managers se leen como `float()` de Python.
 - Interactive: el controlador es un *auto manager* (las pruebas de usuario
   funcionan), las soluciones reciben el límite de procesos del concurso y
   `%` en el mensaje del controlador se escapa.
@@ -397,7 +407,9 @@ trabajos en paralelo no se bloqueen entre sí.
   problema y el vigilante (`job_timeout`) publican `success=false`: decide
   el dispatcher. Al apagar, lo que no termina en `shutdown_timeout` vuelve
   a la cola.
-- Las cajas se reservan antes de empezar (semáforo de `box_count`).
+- Las cajas se reservan antes de empezar (semáforo de `box_count`);
+  `box_count` debe ser al menos 2 × `concurrency` y un trabajo que necesita
+  más cajas que `box_count` falla enseguida en lugar de bloquear al worker.
 - Un sandbox roto no tira el worker: queda sin tomar trabajos, lo informa
   en `/healthz` y reintenta la prueba de caja.
 - Caché de compilación en Valkey: la clave cubre tipo de problema y sus
@@ -405,4 +417,7 @@ trabajos en paralelo no se bloqueen entre sí.
   límites, cgroups, arquitectura y los digests de fuentes y managers
   compilables. Solo se guardan compilaciones exitosas y cada ejecutable se
   comprueba en el almacén de blobs antes de usarlo (90 ms → 0,2 ms en C++).
-  Tras actualizar un compilador hay que reiniciar los workers.
+  La identidad del compilador sigue scripts envoltorio, intérpretes y las
+  instalaciones con `bin/` y `lib/` (JDK, kotlinc, mono). Tras actualizar
+  un compilador hay que reiniciar los workers; la JVM que kotlinc toma del
+  PATH no está cubierta (vaciar `compcache:*` tras actualizarla).

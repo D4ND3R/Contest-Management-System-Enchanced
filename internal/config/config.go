@@ -197,8 +197,11 @@ type Worker struct {
 	// BoxIDBase is the first isolate box id used by this worker and
 	// BoxCount the number of ids it may use: [BoxIDBase, BoxIDBase+BoxCount).
 	// Workers on the same machine need disjoint ranges (`cms ctl
-	// verify-host` checks it). A job uses one box at a time, except
-	// Communication tasks (one per process plus the manager).
+	// verify-host` checks it). BoxCount must be at least MinBoxesPerJob
+	// times Concurrency, and at least the number of boxes the largest
+	// job uses at the same time (Communication: one per process plus the
+	// manager; Interactive: the process limit plus the controller): a job
+	// that needs more fails.
 	BoxIDBase int `yaml:"box_id_base"`
 	BoxCount  int `yaml:"box_count"`
 	// WorkDir holds sandboxes and compiled files. It is converted to an
@@ -457,6 +460,14 @@ func (s *Storage) validate() []error {
 	return errs
 }
 
+// MinBoxesPerJob is the number of sandbox boxes worker.box_count must
+// provide for each job slot (worker.concurrency): what the common task
+// types use at the same time (Batch with a checker, TwoSteps). Tasks that
+// use more (Communication: one per process plus one; Interactive: the
+// process limit plus one) need a larger worker.box_count, or their jobs
+// fail with an explicit error.
+const MinBoxesPerJob = 2
+
 // maxBoxID bounds box ids: isolate accepts at most 65536 boxes with its
 // default configuration (`cms ctl verify-host` checks the real limit).
 const maxBoxID = 1 << 16
@@ -469,9 +480,10 @@ func (c *Config) validateSandbox() []error {
 	}
 	if w.BoxCount < 1 {
 		errs = append(errs, errors.New("worker.box_count must be at least 1"))
-	} else if w.BoxCount < w.Concurrency {
-		errs = append(errs, fmt.Errorf("worker.box_count (%d) must be at least worker.concurrency (%d): "+
-			"every job needs its own box", w.BoxCount, w.Concurrency))
+	} else if w.BoxCount < MinBoxesPerJob*w.Concurrency {
+		errs = append(errs, fmt.Errorf("worker.box_count (%d) must be at least %d times worker.concurrency (%d): "+
+			"a job of a Batch task with a checker or of a TwoSteps task uses %d boxes",
+			w.BoxCount, MinBoxesPerJob, w.Concurrency, MinBoxesPerJob))
 	}
 	if w.BoxIDBase >= 0 && w.BoxCount >= 1 && w.BoxIDBase+w.BoxCount > maxBoxID {
 		errs = append(errs, fmt.Errorf("worker.box_id_base + worker.box_count must not exceed %d", maxBoxID))

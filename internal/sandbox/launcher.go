@@ -3,40 +3,36 @@
 
 package sandbox
 
-import (
-	"os"
-)
-
-// LauncherCommand is the hidden subcommand of the cms binary that starts a
-// contestant program under the seccomp filter:
+// The seccomp launcher puts contestant programs under the seccomp filter
+// (RunSpec.Seccomp): instead of the program, the box runs
 //
-//	cms sandbox-exec [--policy=default] [--nproc=N] [--rlimit-as=KiB]
-//	                 [--restore-env=NAME[=VALUE]]... -- program args...
+//	/cms-launcher/seccomp-exec program args...
 //
-// It is not meant to be typed by people: the sandbox puts the binary in
-// the box (read-only, at LauncherDir) and prepends this command to the
-// argv of programs run with RunSpec.Seccomp.
-const LauncherCommand = "sandbox-exec"
+// which sets no_new_privs, installs the filter and executes the program
+// (no PATH search, exactly like isolate) with the same arguments and
+// environment.
+//
+// The launcher is a tiny static ELF executable that the worker writes at
+// startup (launcherImage, installLauncher): a few dozen machine
+// instructions for the native architecture followed by the BPF program of
+// the policy, about 1 KiB in all. Nothing else runs in the box before the
+// program, so the program pays practically nothing for it: no runtime
+// start-up, no memory, no threads. The program gets the limits of its run
+// straight from isolate, like a run without the filter.
 
-// LauncherDir is where the directory holding the launcher binary is
-// mounted inside the box.
+// LauncherDir is where the directory holding the launcher is mounted
+// inside the box (read-only).
 const LauncherDir = "/cms-launcher"
 
 // launcherBinary is the name of the launcher inside LauncherDir.
-const launcherBinary = "cms"
+const launcherBinary = "seccomp-exec"
 
-// MaybeRunLauncher turns the current process into the launcher when it
-// was invoked as `<binary> sandbox-exec ...`, and never returns in that
-// case. The cms binary calls it first thing in main. Tests that run
-// programs with RunSpec.Seccomp use the test binary as the launcher, so
-// their TestMain must call it first:
-//
-//	func TestMain(m *testing.M) {
-//		sandbox.MaybeRunLauncher()
-//		os.Exit(m.Run())
-//	}
-func MaybeRunLauncher() {
-	if len(os.Args) > 1 && os.Args[1] == LauncherCommand {
-		os.Exit(LauncherMain(os.Args[2:]))
-	}
-}
+// Exit statuses of the launcher when it cannot run the program, with a
+// message on the standard error. They are reported as a runtime error
+// like any other exit status (a contestant program can exit with them
+// too, so they cannot mean "sandbox error"); Sandbox.SelfTest catches
+// hosts where the filter cannot be installed.
+const (
+	launcherSetupFailed = 125
+	launcherExecFailed  = 127 // like a shell
+)

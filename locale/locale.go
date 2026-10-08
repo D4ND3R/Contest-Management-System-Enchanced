@@ -14,7 +14,7 @@ package locale
 
 import "embed"
 
-//go:generate go run ../cmd/i18n-extract -domain admin -out admin.pot ../internal/adminweb
+//go:generate go run ../cmd/i18n-extract -domain admin -out admin.pot ../internal/adminweb ../internal/grading/steps
 
 // FS holds every catalog.
 //

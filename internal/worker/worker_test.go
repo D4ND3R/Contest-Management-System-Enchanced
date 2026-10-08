@@ -470,13 +470,16 @@ func TestBoxesAreReserved(t *testing.T) {
 			case strings.HasPrefix(j.Operation.TestcaseCodename, "big"):
 				return 3
 			case strings.HasPrefix(j.Operation.TestcaseCodename, "huge"):
-				return 50 // more than the worker has: runs alone
+				return boxes + 1 // more than the worker has: fails at once
 			}
 			return 1
 		},
 	}
 	exec.fn = func(ctx context.Context, j *job.Job, res *job.Result) error {
-		n := int64(min(exec.Boxes(j), boxes))
+		n := int64(exec.Boxes(j))
+		if n > boxes {
+			t.Errorf("%s ran with %d boxes", j.ID, n)
+		}
 		if v := inUse.Add(n); v > peak.Load() {
 			peak.Store(v)
 		}
@@ -487,19 +490,28 @@ func TestBoxesAreReserved(t *testing.T) {
 		inUse.Add(-n)
 		return exec.succeed(ctx, j, res)
 	}
-	h.start("judge", exec, Options{Concurrency: 3, Boxes: boxes})
+	// Without the check, the job that needs too many boxes would hold them
+	// all until JobTimeout and only then fail with a timeout.
+	h.start("judge", exec, Options{Concurrency: 3, Boxes: boxes, JobTimeout: time.Minute})
 	for i, tc := range []string{"a", "big1", "b", "c", "huge", "d", "big2", "e"} {
 		h.enqueue(evalJob(int32(10+i), tc), 0)
 	}
 	for range 8 {
-		if res := h.result(10 * time.Second); !res.Success {
-			t.Errorf("%+v", res)
+		res := h.result(10 * time.Second)
+		if res.JobID != "evaluate-14-huge" {
+			if !res.Success {
+				t.Errorf("%+v", res)
+			}
+			continue
+		}
+		if want := "needs 4 sandbox boxes at the same time and worker.box_count is 3"; res.Success || !strings.Contains(res.Error, want) {
+			t.Errorf("huge job: success %v, error %q, want %q", res.Success, res.Error, want)
 		}
 	}
 	if p := peak.Load(); p > boxes {
 		t.Errorf("%d boxes in use at once, the worker has %d", p, boxes)
 	}
-	if bigRunning.Load() != 3 {
+	if bigRunning.Load() != 2 {
 		t.Errorf("big jobs: %d", bigRunning.Load())
 	}
 }

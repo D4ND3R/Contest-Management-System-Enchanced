@@ -37,12 +37,6 @@ import (
 // Run with `make test-sandbox` (root, isolate); CMS_SANDBOX_CGROUPS=0
 // without cgroups v2. -short tests fewer languages.
 
-func TestMain(m *testing.M) {
-	// The test binary is the seccomp launcher of the evaluations.
-	sandbox.MaybeRunLauncher()
-	os.Exit(m.Run())
-}
-
 // The languages of cmstestsuite/Tests.py.
 const (
 	langCPP    = "C++11 / g++"
@@ -68,9 +62,6 @@ var (
 	// COMMUNICATION_LANGUAGES).
 	managerLanguages       = without(allLanguages, langHS, langPHP, langRust)
 	communicationLanguages = without(managerLanguages, langCS)
-	// Upstream runs most tests in every C++ version; here the newer
-	// versions run only the tests written for them.
-	mainLanguages = without(allLanguages, langCPP14, langCPP17, langCPP20)
 	// shortLanguages are those of -short.
 	shortLanguages = []string{langCC, langCPP, langPy3, langJava}
 )
@@ -91,8 +82,10 @@ type task struct {
 	timeLimit float64
 	memoryMiB int64
 	managers  []string // files of testdata/tasks/<dir>/code
-	testcases []testcase
-	points    float64 // per testcase (score type Sum)
+	// managerPaths replaces some of the managers with other files.
+	managerPaths map[string]string
+	testcases    []testcase
+	points       float64 // per testcase (score type Sum)
 }
 
 func tc(pairs ...string) []testcase {
@@ -298,23 +291,23 @@ var cmsTests = []test{
 	{name: "correct-stdio-inner-class", task: batchStdio, files: []string{"correct-stdio-inner-class.%l"},
 		languages: []string{langJava, langCS}, checks: []check{score(100)}},
 	{name: "correct-fileio", task: batchFileio, files: []string{"correct-fileio.%l"},
-		languages: mainLanguages, checks: []check{score(100)}},
+		languages: allLanguages, checks: []check{score(100)}},
 
 	// Various incorrect solutions to batch tasks.
 	{name: "incorrect-stdio", task: batchStdio, files: []string{"incorrect-stdio.%l"},
-		languages: mainLanguages, checks: []check{score(0)}},
+		languages: allLanguages, checks: []check{score(0)}},
 	{name: "half-correct-stdio", task: batchStdio, files: []string{"half-correct-stdio.%l"},
-		languages: mainLanguages, checks: []check{score(50)}},
+		languages: allLanguages, checks: []check{score(50)}},
 	{name: "incorrect-fileio", task: batchFileio, files: []string{"incorrect-fileio.%l"},
-		languages: mainLanguages, checks: []check{score(0)}},
+		languages: allLanguages, checks: []check{score(0)}},
 	{name: "half-correct-fileio", task: batchFileio, files: []string{"half-correct-fileio.%l"},
-		languages: mainLanguages, checks: []check{score(50)}},
+		languages: allLanguages, checks: []check{score(50)}},
 	{name: "incorrect-fileio-nooutput", task: batchFileio, files: []string{"incorrect-fileio-nooutput.%l"},
 		languages: []string{langCC}, checks: []check{score(0)}},
 	{name: "incorrect-fileio-emptyoutput", task: batchFileio, files: []string{"incorrect-fileio-emptyoutput.%l"},
 		languages: []string{langCC}, checks: []check{score(0)}},
 	{name: "incorrect-fileio-with-stdio", task: batchFileio, files: []string{"incorrect-fileio-with-stdio.%l"},
-		languages: mainLanguages, checks: []check{score(0)}},
+		languages: allLanguages, checks: []check{score(0)}},
 
 	// OutputOnly tasks.
 	{name: "correct-outputonly", task: outputOnlyTask,
@@ -332,7 +325,7 @@ var cmsTests = []test{
 
 	// Failed compilation (PHP's compilation cannot fail).
 	{name: "compile-fail", task: batchFileio, files: []string{"compile-fail.%l"},
-		languages: without(mainLanguages, langPHP), checks: []check{compilationFailed}},
+		languages: without(allLanguages, langPHP), checks: []check{compilationFailed}},
 	{name: "compile-timeout", task: batchFileio, files: []string{"compile-timeout.%l"},
 		languages: []string{langCPP}, checks: []check{compilationFailed}},
 	{name: "compile-memory-limit", task: batchFileio, files: []string{"compile-memory-limit.%l"},
@@ -340,7 +333,7 @@ var cmsTests = []test{
 
 	// Various timeout conditions.
 	{name: "timeout-cputime", task: batchStdio, files: []string{"timeout-cputime.%l"},
-		languages: mainLanguages, checks: []check{score(0), timedOut}},
+		languages: allLanguages, checks: []check{score(0), timedOut}},
 	{name: "timeout-pause", task: batchStdio, files: []string{"timeout-pause.%l"},
 		languages: []string{langCPP}, checks: []check{score(0), wallTimedOut}},
 	{name: "timeout-sleep", task: batchStdio, files: []string{"timeout-sleep.%l"},
@@ -352,51 +345,51 @@ var cmsTests = []test{
 
 	// Nonzero return status.
 	{name: "nonzero-return-stdio", task: batchStdio, files: []string{"nonzero-return-stdio.%l"},
-		languages: mainLanguages, checks: []check{score(0), nonzero}},
+		languages: allLanguages, checks: []check{score(0), nonzero}},
 	{name: "nonzero-return-fileio", task: batchFileio, files: []string{"nonzero-return-fileio.%l"},
-		languages: mainLanguages, checks: []check{score(0), nonzero}},
+		languages: allLanguages, checks: []check{score(0), nonzero}},
 
 	// OOM problems.
 	{name: "oom-static", task: batchStdio, files: []string{"oom-static.%l"},
 		languages: []string{langCC, langCPP, langCPP14, langCPP17, langCPP20, langPascal}, checks: []check{memoryLimit}},
 	{name: "oom-heap", task: batchStdio, files: []string{"oom-heap.%l"},
-		languages: mainLanguages, checks: []check{memoryLimit}},
+		languages: allLanguages, checks: []check{memoryLimit}},
 
 	// Tasks with graders.
 	{name: "managed-correct", task: batchFileioManaged, files: []string{"managed-correct.%l"},
-		languages: without(managerLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(100)},
+		languages: managerLanguages, checks: []check{score(100)},
 		userTest: true, userManagers: []string{"grader.%l"}},
 	{name: "managed-incorrect", task: batchFileioManaged, files: []string{"managed-incorrect.%l"},
-		languages: without(managerLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(0)}},
+		languages: managerLanguages, checks: []check{score(0)}},
 
 	// Communication tasks.
 	{name: "communication-fifoio-correct", task: communicationFifoioStubbed, files: []string{"communication-stubbed-correct.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(100)}},
+		languages: communicationLanguages, checks: []check{score(100)}},
 	{name: "communication-fifoio-incorrect", task: communicationFifoioStubbed, files: []string{"communication-stubbed-incorrect.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(0)}},
+		languages: communicationLanguages, checks: []check{score(0)}},
 	{name: "communication-stdio-correct", task: communicationStdioStubbed, files: []string{"communication-stubbed-correct.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(100)},
+		languages: communicationLanguages, checks: []check{score(100)},
 		userTest: true, userManagers: []string{"grader.%l"}},
 	{name: "communication-stdio-incorrect", task: communicationStdioStubbed, files: []string{"communication-stubbed-incorrect.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(0)}},
+		languages: communicationLanguages, checks: []check{score(0)}},
 	{name: "communication-stdio-unstubbed-correct", task: communicationStdio, files: []string{"communication-stdio-correct.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(100)}},
+		languages: communicationLanguages, checks: []check{score(100)}},
 	{name: "communication-stdio-unstubbed-incorrect", task: communicationStdio, files: []string{"communication-stdio-incorrect.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(0)}},
+		languages: communicationLanguages, checks: []check{score(0)}},
 
 	// Communication tasks with two processes.
 	{name: "communication-many-fifoio-correct", task: communicationManyFifoioStubbed,
 		files:     []string{"communication-many-correct-user1.%l", "communication-many-correct-user2.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(100)}},
+		languages: communicationLanguages, checks: []check{score(100)}},
 	{name: "communication-many-fifoio-incorrect", task: communicationManyFifoioStubbed,
 		files:     []string{"communication-many-incorrect-user1.%l", "communication-many-incorrect-user2.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(0)}},
+		languages: communicationLanguages, checks: []check{score(0)}},
 	{name: "communication-many-stdio-correct", task: communicationManyStdioStubbed,
 		files:     []string{"communication-many-correct-user1.%l", "communication-many-correct-user2.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(100)}},
+		languages: communicationLanguages, checks: []check{score(100)}},
 	{name: "communication-many-stdio-incorrect", task: communicationManyStdioStubbed,
 		files:     []string{"communication-many-incorrect-user1.%l", "communication-many-incorrect-user2.%l"},
-		languages: without(communicationLanguages, langCPP14, langCPP17, langCPP20), checks: []check{score(0)}},
+		languages: communicationLanguages, checks: []check{score(0)}},
 
 	// TwoSteps.
 	{name: "twosteps-correct", task: twoStepsTask, files: []string{"twosteps-correct-first.%l", "twosteps-correct-second.%l"},
@@ -539,43 +532,60 @@ func (j *judge) execute(t *testing.T, jb *job.Job) *job.Result {
 	return res
 }
 
+// newTaskJob builds a job of a submission of the files in testdata/code
+// to a task in a language (nil for none).
+func (j *judge) newTaskJob(t *testing.T, tk *task, lang *language.Language, files []string, kind job.Kind) *job.Job {
+	t.Helper()
+	jb := newJob(kind, tk.taskType, tk.params)
+	if lang != nil {
+		jb.Language = lang.Name
+	}
+	for i, f := range files {
+		if f == "" {
+			continue
+		}
+		jb.Files[tk.format[i]] = j.put(t, filepath.Join("testdata", "code", f))
+	}
+	for _, m := range tk.managers {
+		path := filepath.Join("testdata", "tasks", tk.dir, "code", m)
+		if p, ok := tk.managerPaths[m]; ok {
+			path = p
+		}
+		jb.Managers[m] = j.put(t, path)
+	}
+	return jb
+}
+
+// evaluationJob builds the evaluation job of testcase i of a submission
+// that compiled.
+func (j *judge) evaluationJob(t *testing.T, tk *task, lang *language.Language, files []string,
+	compilation *job.Result, i int) *job.Job {
+	t.Helper()
+	c := tk.testcases[i]
+	jb := j.newTaskJob(t, tk, lang, files, job.Evaluation)
+	jb.Operation.TestcaseCodename = fmt.Sprintf("%03d", i)
+	jb.Executables = compilation.Executables
+	if jb.Executables == nil {
+		jb.Executables = map[string]string{}
+	}
+	jb.Input = j.put(t, filepath.Join("testdata", "tasks", tk.dir, "data", c.input))
+	jb.Output = j.put(t, filepath.Join("testdata", "tasks", tk.dir, "data", c.output))
+	jb.TimeLimit = tk.timeLimit
+	jb.MemoryLimit = tk.memoryMiB << 20
+	jb.Operation.ArchiveSandbox = j.archive
+	return jb
+}
+
 // submit compiles and evaluates a submission of the files of a test
 // (testdata/code) in a language (nil for none).
 func (j *judge) submit(t *testing.T, tk *task, lang *language.Language, files []string) *result {
 	t.Helper()
-	mk := func(kind job.Kind) *job.Job {
-		jb := newJob(kind, tk.taskType, tk.params)
-		if lang != nil {
-			jb.Language = lang.Name
-		}
-		for i, f := range files {
-			if f == "" {
-				continue
-			}
-			jb.Files[tk.format[i]] = j.put(t, filepath.Join("testdata", "code", f))
-		}
-		for _, m := range tk.managers {
-			jb.Managers[m] = j.put(t, filepath.Join("testdata", "tasks", tk.dir, "code", m))
-		}
-		return jb
-	}
-	r := &result{lang: lang, compilation: j.execute(t, mk(job.Compilation))}
+	r := &result{lang: lang, compilation: j.execute(t, j.newTaskJob(t, tk, lang, files, job.Compilation))}
 	if r.compilation.CompilationOutcome != job.CompilationOK {
 		return r
 	}
-	for i, c := range tk.testcases {
-		jb := mk(job.Evaluation)
-		jb.Operation.TestcaseCodename = fmt.Sprintf("%03d", i)
-		jb.Executables = r.compilation.Executables
-		if jb.Executables == nil {
-			jb.Executables = map[string]string{}
-		}
-		jb.Input = j.put(t, filepath.Join("testdata", "tasks", tk.dir, "data", c.input))
-		jb.Output = j.put(t, filepath.Join("testdata", "tasks", tk.dir, "data", c.output))
-		jb.TimeLimit = tk.timeLimit
-		jb.MemoryLimit = tk.memoryMiB << 20
-		jb.Operation.ArchiveSandbox = j.archive
-		e := j.execute(t, jb)
+	for i := range tk.testcases {
+		e := j.execute(t, j.evaluationJob(t, tk, lang, files, r.compilation, i))
 		r.evaluations = append(r.evaluations, e)
 		v, _, err := e.OutcomeValue()
 		if err != nil {

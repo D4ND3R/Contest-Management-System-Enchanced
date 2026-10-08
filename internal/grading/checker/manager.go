@@ -17,7 +17,6 @@ package checker
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -41,7 +40,7 @@ const maxMessage = job.MaxTextLen / 2
 
 // ParseManagerOutput reads the standard manager output (upstream
 // extract_outcome_and_text): the first line of stdout is the outcome, a
-// finite number; the first line of stderr is the text for the
+// finite number as Python's float() reads it (PyFloat); the first line of stderr is the text for the
 // contestant; the following lines of stderr starting with
 // "ADMIN_MESSAGE:" are joined into the admin text, and the others are
 // ignored. A text "translate:success", "translate:partial" or
@@ -80,7 +79,7 @@ func ParseManagerOutput(stdout, stderr []byte) (*Outcome, error) {
 		admin = append(admin, msg)
 	}
 
-	v, err := strconv.ParseFloat(outcome, 64)
+	v, err := PyFloat(outcome)
 	if err != nil || math.IsNaN(v) || math.IsInf(v, 0) {
 		return nil, fmt.Errorf("wrong outcome `%s' from manager: not a finite number", job.TruncateUTF8(outcome, 64))
 	}

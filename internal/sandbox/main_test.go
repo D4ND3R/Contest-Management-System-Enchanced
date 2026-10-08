@@ -15,8 +15,6 @@ import (
 const helperEnv = "CMS_SANDBOX_TEST_HELPER"
 
 func TestMain(m *testing.M) {
-	// The test binary is the launcher of the boxes it runs.
-	MaybeRunLauncher()
 	if h := os.Getenv(helperEnv); h != "" {
 		os.Exit(runHelper(h))
 	}

@@ -43,6 +43,12 @@ jobs:
         run: |
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /dev/null ./cmd/cms
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o /dev/null ./cmd/cms
+      # The runners cannot execute the arm64 launcher: at least its machine
+      # code must be what its assembler source says.
+      - name: seccomp launcher code matches its source (amd64, arm64)
+        run: |
+          command -v llvm-mc || { sudo apt-get update && sudo apt-get install -y --no-install-recommends llvm; }
+          CMS_TEST_REQUIRE_ASSEMBLER=1 go test -count=1 -run 'TestLauncherCodeMatchesSource|TestLauncherELF' ./internal/sandbox/
 
   test:
     runs-on: ubuntu-24.04

@@ -5,8 +5,6 @@ package sandbox
 
 import (
 	"fmt"
-	"runtime"
-	"unsafe"
 
 	"golang.org/x/sys/unix"
 )
@@ -273,24 +271,4 @@ func (p *policy) program() ([]unix.SockFilter, error) {
 	a.label("kill")
 	a.stmt(retK, kill)
 	return a.assemble()
-}
-
-// installFilter sets no_new_privs and loads the filter on every thread of
-// the process (TSYNC), so that nothing runs unfiltered after execve. It
-// makes raw system calls only (see LauncherMain).
-func installFilter(prog []unix.SockFilter) error {
-	if _, _, errno := unix.RawSyscall6(unix.SYS_PRCTL, unix.PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0, 0); errno != 0 {
-		return fmt.Errorf("prctl(PR_SET_NO_NEW_PRIVS): %w", errno)
-	}
-	fprog := unix.SockFprog{Len: uint16(len(prog)), Filter: &prog[0]}
-	r, _, errno := unix.RawSyscall(unix.SYS_SECCOMP, unix.SECCOMP_SET_MODE_FILTER,
-		unix.SECCOMP_FILTER_FLAG_TSYNC, uintptr(unsafe.Pointer(&fprog)))
-	runtime.KeepAlive(prog)
-	if errno != 0 {
-		return fmt.Errorf("seccomp(SECCOMP_SET_MODE_FILTER): %w", errno)
-	}
-	if r != 0 {
-		return fmt.Errorf("seccomp: thread %d could not be synchronized", r)
-	}
-	return nil
 }

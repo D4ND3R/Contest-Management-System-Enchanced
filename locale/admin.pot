@@ -4,3 +4,27 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: ../internal/grading/steps/messages.go:111
+msgid "Compilation killed with signal %s"
+msgstr ""
+
+#: ../internal/grading/steps/messages.go:108
+msgid "Compilation memory limit exceeded"
+msgstr ""
+
+#: ../internal/grading/steps/messages.go:167
+msgid "Execution killed because of a forbidden system call"
+msgstr ""
+
+#: ../internal/grading/steps/messages.go:109
+msgid "Your submission exceeded the memory limit while compiling. This might be caused by an excessive use of C++ templates, or too large global variables, for example."
+msgstr ""
+
+#: ../internal/grading/steps/messages.go:168
+msgid "Your submission tried to use a system call that is not allowed during the evaluation, such as opening network connections or tracing other processes."
+msgstr ""
+
+#: ../internal/grading/steps/messages.go:112
+msgid "Your submission was killed with the specified signal. This might be caused by a bug in the compiler, for example."
+msgstr ""

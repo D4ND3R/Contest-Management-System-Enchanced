@@ -4,6 +4,7 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -168,20 +169,22 @@ func TestArgs(t *testing.T) {
 		t.Errorf("command: %q", tail)
 	}
 
-	// Seccomp wraps the command with the launcher; without cgroups the
-	// launcher sets the address space limit.
+	// Seccomp puts the launcher in front of the command and changes
+	// nothing else: the program gets its limits and environment from
+	// isolate.
 	b = fakeBox(t, Config{Cgroups: false, Seccomp: true})
-	args, err = b.args(&RunSpec{Argv: []string{"./prog"}, Env: []string{"GOGC=50"}, MemoryKiB: 1000, Processes: 3, Seccomp: true, AllowFileLocks: true}, "/meta")
+	spec := RunSpec{Argv: []string{"./prog", "x"}, Env: []string{"GOGC=50"}, MemoryKiB: 1000, Processes: 3, Seccomp: true, AllowFileLocks: true}
+	args, err = b.args(&spec, "/meta")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for flag, w := range map[string][]string{
 		"--cg":        nil,
-		"--mem":       nil,
+		"--mem":       {"1000"},
 		"--cg-mem":    nil,
-		"--processes": {"19"},
+		"--processes": {"3"},
 		"--syscalls":  {"65531"},
-		"--env":       {"HOME=/tmp", "PATH=" + DefaultPath, "GOGC=off", "GOMAXPROCS=1"},
+		"--env":       {"HOME=/tmp", "PATH=" + DefaultPath, "GOGC=50"},
 	} {
 		if got := flagValue(args, flag); !slices.Equal(got, w) {
 			t.Errorf("seccomp %s: %q, want %q", flag, got, w)
@@ -191,16 +194,25 @@ func TestArgs(t *testing.T) {
 		t.Errorf("launcher not mounted: %q", args)
 	}
 	i := slices.Index(args, "--run")
-	wantCmd := []string{"--run", "--", "/cms-launcher/cms", "sandbox-exec", "--nproc=3", "--rlimit-as=1000",
-		"--restore-env=GOMAXPROCS", "--restore-env=GOGC=50", "--", "./prog"}
+	wantCmd := []string{"--run", "--", "/cms-launcher/seccomp-exec", "./prog", "x"}
 	if got := args[i:]; !slices.Equal(got, wantCmd) {
 		t.Errorf("seccomp command:\n%q\nwant\n%q", got, wantCmd)
+	}
+	spec.Seccomp = false
+	plain, err := b.args(&spec, "/meta")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := slices.DeleteFunc(slices.Clone(args), func(a string) bool {
+		return strings.HasPrefix(a, "--dir=/cms-launcher=") || a == "/cms-launcher/seccomp-exec"
+	}); !slices.Equal(plain, want) {
+		t.Errorf("seccomp changes more than the command:\n%q\n%q", args, plain)
 	}
 
 	// Without worker.seccomp the flag is ignored.
 	b = fakeBox(t, Config{Cgroups: true, Seccomp: false})
 	args, _ = b.args(&RunSpec{Argv: []string{"./prog"}, Seccomp: true, Processes: Unlimited}, "/meta")
-	if slices.Contains(args, "sandbox-exec") || !slices.Equal(flagValue(args, "--processes"), []string{""}) {
+	if slices.Contains(args, "/cms-launcher/seccomp-exec") || !slices.Equal(flagValue(args, "--processes"), []string{""}) {
 		t.Errorf("seccomp off: %q", args)
 	}
 }
@@ -430,26 +442,49 @@ func TestInstallLauncher(t *testing.T) {
 	if err := checkSeccompSupport(); err != nil {
 		t.Skip(err)
 	}
+	exe, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	exeBefore, err := os.Stat(exe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The box user runs the launcher whatever the umask of the worker.
+	old := unix.Umask(0o077)
+	defer unix.Umask(old)
 	c := Config{BoxCount: 1, WorkDir: t.TempDir(), MaxFileSizeKiB: 1024, LockDir: t.TempDir(), Seccomp: true}
 	s, err := New(c)
 	if err != nil {
 		t.Fatal(err)
 	}
-	st, err := os.Stat(filepath.Join(s.launcherDir, launcherBinary))
-	if err != nil || st.Mode().Perm() != 0o755 {
+	path := filepath.Join(s.launcherDir, launcherBinary)
+	st, err := os.Stat(path)
+	if err != nil || !st.Mode().IsRegular() || st.Mode().Perm() != 0o755 {
 		t.Fatalf("launcher: %v %v", st, err)
 	}
 	if dst, err := os.Stat(s.launcherDir); err != nil || dst.Mode().Perm() != 0o755 {
 		t.Errorf("launcher dir: %v %v", dst, err)
 	}
-	// Installing again (another worker, a restart) replaces it.
+	img, _ := launcherImage()
+	if data, err := os.ReadFile(path); err != nil || !bytes.Equal(data, img) {
+		t.Errorf("launcher content: %d bytes, %v", len(data), err)
+	}
+	// It is a file of its own: the binary of the worker is neither
+	// linked nor changed (its permissions are the admin's).
+	if os.SameFile(st, exeBefore) {
+		t.Error("the launcher is the binary of the worker")
+	}
+	if exeAfter, err := os.Stat(exe); err != nil || exeAfter.Mode() != exeBefore.Mode() {
+		t.Errorf("the binary of the worker changed: %v -> %v (%v)", exeBefore.Mode(), exeAfter.Mode(), err)
+	}
+	// Installing again (another worker, a restart) replaces it and leaves
+	// no temporary file.
 	if _, err := New(c); err != nil {
 		t.Fatal(err)
 	}
-	// A launcher that is not there is an error at startup.
-	c.LauncherPath = "/nonexistent/cms"
-	if _, err := New(c); err == nil {
-		t.Error("missing launcher accepted")
+	if entries, err := os.ReadDir(s.launcherDir); err != nil || len(entries) != 1 {
+		t.Errorf("launcher dir: %v %v", entries, err)
 	}
 }
 

@@ -1,0 +1,4 @@
+#!/bin/sh
+# A broken manager: it fails before opening the FIFOs, and the user
+# process waits for them until its wall clock limit. The job fails.
+exit 3

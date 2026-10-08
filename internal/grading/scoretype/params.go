@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
 )
 
@@ -19,7 +18,7 @@ const (
 	// selCount: the next n testcases in codename order.
 	selCount selector = iota + 1
 	// selRegex: the testcases whose codename matches a regular expression
-	// at its start (Python re.match).
+	// at its start (Python re.match; see compileCodenameRegex).
 	selRegex
 	// selList: a list of codenames.
 	selList
@@ -194,8 +193,8 @@ func targets(params []groupParam, public map[string]bool, codenames []string) ([
 			out[i] = codenames[next : next+p.count : next+p.count]
 			next += p.count
 		case selRegex:
-			// Python's re.match only anchors at the start.
-			re, err := regexp.Compile(`^(?:` + p.regex + `)`)
+			// Python's re.match, anchored at the start.
+			re, err := compileCodenameRegex(p.regex)
 			if err != nil {
 				return nil, fmt.Errorf("subtask %d: invalid regular expression %q: %w", i, p.regex, err)
 			}

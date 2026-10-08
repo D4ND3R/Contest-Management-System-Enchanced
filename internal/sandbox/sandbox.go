@@ -64,10 +64,6 @@ type Config struct {
 	// Seccomp enables the seccomp launcher for runs that ask for it
 	// (RunSpec.Seccomp). When false those runs go without the filter.
 	Seccomp bool
-	// LauncherPath is a binary implementing `sandbox-exec` (see
-	// MaybeRunLauncher). Empty means the running executable, which is
-	// the cms binary in production and the test binary in tests.
-	LauncherPath string
 	// LockDir holds one lock file per box id, shared by every worker of
 	// the machine so that two workers never use the same box. Empty
 	// means DefaultLockDir.
@@ -147,7 +143,7 @@ func New(cfg Config) (*Sandbox, error) {
 		if err := checkSeccompSupport(); err != nil {
 			return nil, fmt.Errorf("sandbox: worker.seccomp is on but %w", err)
 		}
-		if s.launcherDir, err = installLauncher(cfg.LauncherPath, cfg.WorkDir); err != nil {
+		if s.launcherDir, err = installLauncher(cfg.WorkDir); err != nil {
 			return nil, fmt.Errorf("sandbox: seccomp launcher: %w", err)
 		}
 	}
@@ -157,28 +153,15 @@ func New(cfg Config) (*Sandbox, error) {
 // Config returns the configuration in use (WorkDir is absolute).
 func (s *Sandbox) Config() Config { return s.cfg }
 
-// installLauncher puts the launcher binary in its own directory under
-// workDir, which the boxes mount read-only at LauncherDir. A hard link
-// (or a copy when linking is not possible) instead of mounting the
-// directory of the binary: the box sees nothing else, the directory has
-// known permissions, and replacing the binary during an upgrade does not
-// change what running workers execute.
-func installLauncher(path, workDir string) (string, error) {
-	if path == "" {
-		exe, err := os.Executable()
-		if err != nil {
-			return "", err
-		}
-		path = exe
-	}
-	path, err := filepath.EvalSymlinks(path)
+// installLauncher writes the seccomp launcher (launcherImage) in its own
+// directory under workDir, which the boxes mount read-only at
+// LauncherDir, so that they see nothing else of the host. The file is
+// written under a temporary name and renamed: other workers sharing
+// workDir may be starting boxes with it (they write the same bytes).
+func installLauncher(workDir string) (string, error) {
+	img, err := launcherImage()
 	if err != nil {
 		return "", err
-	}
-	if !filepath.IsAbs(path) {
-		if path, err = filepath.Abs(path); err != nil {
-			return "", err
-		}
 	}
 	dir := filepath.Join(workDir, "launcher")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -189,42 +172,28 @@ func installLauncher(path, workDir string) (string, error) {
 	if err := os.Chmod(dir, 0o755); err != nil {
 		return "", err
 	}
-	dst := filepath.Join(dir, launcherBinary)
-	tmp := dst + ".new-" + strconv.Itoa(os.Getpid())
-	_ = os.Remove(tmp)
-	if err := os.Link(path, tmp); err != nil {
-		if err := copyFile(path, tmp, 0o755); err != nil {
-			_ = os.Remove(tmp)
-			return "", err
-		}
-	}
-	if err := os.Chmod(tmp, 0o755); err != nil {
-		_ = os.Remove(tmp)
+	f, err := os.CreateTemp(dir, launcherBinary+".new-*")
+	if err != nil {
 		return "", err
 	}
-	// Atomic: boxes of other workers sharing workDir may be starting it.
-	if err := os.Rename(tmp, dst); err != nil {
+	tmp := f.Name()
+	_, err = f.Write(img)
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	// A file of our own (CreateTemp makes it 0600): the box user must
+	// be able to run it whatever the umask.
+	if err == nil {
+		err = os.Chmod(tmp, 0o755)
+	}
+	if err == nil {
+		err = os.Rename(tmp, filepath.Join(dir, launcherBinary))
+	}
+	if err != nil {
 		_ = os.Remove(tmp)
 		return "", err
 	}
 	return dir, nil
-}
-
-func copyFile(src, dst string, mode os.FileMode) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_EXCL, mode)
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(out, in); err != nil {
-		out.Close()
-		return err
-	}
-	return out.Close()
 }
 
 // isolate runs an isolate command that is not a --run (init, cleanup)

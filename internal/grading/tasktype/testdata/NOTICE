@@ -17,4 +17,4 @@ copied.
 extra/ holds programs written for this project (not from CMS): solutions
 in Go and Kotlin, which CMS does not support, and cases for behaviours of
 this fork (the seccomp filter, Communication tasks whose user process
-dies early).
+dies early or whose manager fails).

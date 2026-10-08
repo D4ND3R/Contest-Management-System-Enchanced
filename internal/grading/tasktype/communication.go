@@ -16,6 +16,8 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"syscall"
+	"time"
 
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/checker"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/language"
@@ -79,11 +81,13 @@ func communicationParams() []Param {
 // several.
 //
 // The users' statistics are merged as concurrent runs, and their total
-// CPU time must stay under the time limit. When a user process fails,
-// the outcome is 0 with its message whatever the manager does (it is
-// stopped: it may be blocked on the FIFOs of a dead process, or die of a
-// broken pipe); upstream fails the job in those cases, and also answers
-// "Execution completed successfully" to a user test whose program failed.
+// CPU time must stay under the time limit. A manager that does not end
+// normally fails the job (the admins must fix it), except when a user
+// process failed first: then the outcome is 0 with the users' message
+// whatever the manager does (it is stopped: it may be blocked on the
+// FIFOs of a dead process, or die of a broken pipe). Upstream fails the
+// job in that case too, and also answers "Execution completed
+// successfully" to a user test whose program failed.
 type communication struct {
 	numProcesses int
 	grader       bool
@@ -229,6 +233,10 @@ func (t *communication) Evaluate(ctx context.Context, env *Env, j *job.Job, res 
 	if err != nil {
 		return err
 	}
+	// Each process is waited for from the moment it starts, noting when
+	// it ended: which of the manager and the users failed first decides
+	// whose fault the failure is.
+	mgr := waitEnd(mgrProc)
 
 	// The users, with the grader as entry point when there is one.
 	main := ""
@@ -236,6 +244,7 @@ func (t *communication) Evaluate(ctx context.Context, env *Env, j *job.Job, res 
 		main = graderBasename
 	}
 	userProcs := make([]*sandbox.Process, n)
+	users := make([]*processEnd, n)
 	for i := range n {
 		ev := steps.Evaluation{
 			Language:     lang,
@@ -265,53 +274,97 @@ func (t *communication) Evaluate(ctx context.Context, env *Env, j *job.Job, res 
 		if userProcs[i], err = r.env.Steps.StartEvaluation(r.ctx, userBoxes[i], ev); err != nil {
 			return err
 		}
+		users[i] = waitEnd(userProcs[i])
 	}
 
-	// Wait for the users, then for the manager.
+	// Wait for the users. A manager that fails by itself before any
+	// user process failed is the admins' error (upstream fails the job
+	// whenever the manager fails): the users, which may stay blocked on
+	// the FIFOs until their wall clock limit, are not waited for.
+	usersDone := make(chan struct{})
+	go func() {
+		for _, u := range users {
+			<-u.done
+		}
+		close(usersDone)
+	}()
+	select {
+	case <-usersDone:
+	case <-mgr.done:
+		if mgr.err != nil {
+			return fmt.Errorf("manager: %w", mgr.err)
+		}
+		if mgr.failedByItself() && !failedBefore(users, mgr.at) {
+			return mgr.failure()
+		}
+		<-usersDone
+	}
 	var errs []error
 	var userStats *job.Stats
-	userOK := true
-	for i := range n {
-		st, err := steps.WaitEvaluation(userProcs[i])
-		if err != nil {
-			errs = append(errs, fmt.Errorf("user process %d: %w", i, err))
+	var failedAt, lastAt time.Time // when the first user that failed, the last user ended
+	for i, u := range users {
+		if u.err != nil {
+			errs = append(errs, fmt.Errorf("user process %d: %w", i, u.err))
 			continue
 		}
-		userOK = userOK && steps.EvaluationSucceeded(st)
-		merged := steps.MergeStats(userStats, *st, true)
+		if !steps.EvaluationSucceeded(u.stats) && (failedAt.IsZero() || u.at.Before(failedAt)) {
+			failedAt = u.at
+		}
+		if u.at.After(lastAt) {
+			lastAt = u.at
+		}
+		merged := steps.MergeStats(userStats, *u.stats, true)
 		userStats = &merged
 	}
 	if len(errs) > 0 {
 		return errors.Join(errs...) // closing the box stops the manager
 	}
 	// The time is the sum over the user processes, but each box can only
-	// enforce its own.
-	if userOK && r.j.TimeLimit > 0 && userStats.ExecutionTime != nil && *userStats.ExecutionTime >= r.j.TimeLimit {
-		userOK = false
+	// enforce its own: the users exceed it when the last one ends.
+	if failedAt.IsZero() && r.j.TimeLimit > 0 && userStats.ExecutionTime != nil && *userStats.ExecutionTime >= r.j.TimeLimit {
 		userStats.ExitStatus, userStats.Signal = job.ExitTimeout, 0
+		failedAt = lastAt
 	}
-	if !userOK {
-		// The outcome is the users' failure, whatever the manager does:
-		// it may be blocked opening the FIFOs of a user that died
-		// before opening them, or fail writing to one that died later
-		// (a broken pipe). Unlike upstream, which waits for the manager
-		// and then fails the job (retried, never judged), stop it.
-		mgrProc.Kill()
-	}
-	mgrStats, err := steps.WaitEvaluation(mgrProc)
-	if err != nil {
-		return fmt.Errorf("manager: %w", err)
-	}
-	r.res.Stats = userStats
 
-	switch {
-	case !userOK:
+	if !failedAt.IsZero() {
+		// The users failed. If the manager had already failed by
+		// itself, the failure is the manager's (upstream fails the job
+		// whenever the manager fails). Otherwise the outcome is the
+		// users' failure, whatever the manager does: it may be blocked
+		// opening the FIFOs of a user that died before opening them, or
+		// fail writing to one that died later (a broken pipe). Unlike
+		// upstream, which waits for the manager and then fails the job
+		// (retried, never judged), stop it.
+		select {
+		case <-mgr.done:
+		default:
+			mgrProc.Kill()
+		}
+		<-mgr.done
+		if mgr.err != nil {
+			return fmt.Errorf("manager: %w", mgr.err)
+		}
+		if mgr.failedByItself() && mgr.at.Before(failedAt) {
+			return mgr.failure()
+		}
+		r.res.Stats = userStats
 		// Unlike upstream (which says "Execution completed
 		// successfully" to a user test whose program failed), the
 		// failure comes first, as in the other task types.
 		r.setOutcome(0, steps.EvaluationText(userStats), "")
-	case !steps.EvaluationSucceeded(mgrStats):
-		return configError("the manager ended with %s (signal %d)", mgrStats.ExitStatus, mgrStats.Signal)
+		return r.storeUserOutput(mgrBox, communicationOutput)
+	}
+
+	// The users ended normally: the manager must end normally too.
+	<-mgr.done
+	if mgr.err != nil {
+		return fmt.Errorf("manager: %w", mgr.err)
+	}
+	if !steps.EvaluationSucceeded(mgr.stats) {
+		return mgr.failure()
+	}
+	r.res.Stats = userStats
+	switch {
 	case r.j.OnlyExecution:
 		r.setOutcome(0, []string{steps.ExecutionCompleted}, "")
 	default:
@@ -322,6 +375,53 @@ func (t *communication) Evaluate(ctx context.Context, env *Env, j *job.Job, res 
 		r.setOutcome(o.Outcome, o.Text, o.AdminText)
 	}
 	return r.storeUserOutput(mgrBox, communicationOutput)
+}
+
+// processEnd is how and when a program running in the background ended.
+type processEnd struct {
+	done  chan struct{} // closed when the other fields are set
+	stats *job.Stats
+	err   error
+	at    time.Time
+}
+
+// waitEnd waits for p in the background.
+func waitEnd(p *sandbox.Process) *processEnd {
+	e := &processEnd{done: make(chan struct{})}
+	go func() {
+		e.stats, e.err = steps.WaitEvaluation(p)
+		e.at = time.Now()
+		close(e.done)
+	}()
+	return e
+}
+
+// failedByItself reports whether a manager that ended did not end
+// normally, other than by a broken pipe: SIGPIPE means that a user
+// process closed its end of a FIFO, so the user failed first.
+func (e *processEnd) failedByItself() bool {
+	return !steps.EvaluationSucceeded(e.stats) &&
+		!(e.stats.ExitStatus == job.ExitSignal && e.stats.Signal == int(syscall.SIGPIPE))
+}
+
+// failure is the error of a job whose manager failed.
+func (e *processEnd) failure() error {
+	return configError("the manager ended with %s (signal %d)", e.stats.ExitStatus, e.stats.Signal)
+}
+
+// failedBefore reports whether one of the processes that already ended
+// failed before t.
+func failedBefore(procs []*processEnd, t time.Time) bool {
+	for _, p := range procs {
+		select {
+		case <-p.done:
+			if p.err == nil && !steps.EvaluationSucceeded(p.stats) && p.at.Before(t) {
+				return true
+			}
+		default:
+		}
+	}
+	return false
 }
 
 // maxManagerOutput bounds what is read of the outputs of a manager.

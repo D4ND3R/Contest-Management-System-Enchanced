@@ -5,17 +5,10 @@
 
 package sandbox
 
-import (
-	"fmt"
-	"os"
-)
+import "errors"
 
-// LauncherMain fails outside Linux: seccomp and isolate are Linux-only.
-func LauncherMain(args []string) int {
-	fmt.Fprintf(os.Stderr, "cms %s: only supported on Linux\n", LauncherCommand)
-	return 125
-}
+var errNotLinux = errors.New("seccomp is only supported on Linux")
 
-func checkSeccompSupport() error {
-	return fmt.Errorf("seccomp is only supported on Linux")
-}
+func launcherImage() ([]byte, error) { return nil, errNotLinux }
+
+func checkSeccompSupport() error { return errNotLinux }

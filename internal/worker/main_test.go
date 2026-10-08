@@ -14,7 +14,6 @@ import (
 
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/job"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/kv"
-	"github.com/d4nd3r/contest-management-system-enchanced/internal/sandbox"
 )
 
 // helperEnv turns the test binary into a worker process that the crash
@@ -27,8 +26,6 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	// The sandbox tests use the test binary as the seccomp launcher.
-	sandbox.MaybeRunLauncher()
 	if name := os.Getenv(helperEnv); name != "" {
 		if err := helperMain(name); err != nil {
 			fmt.Fprintln(os.Stderr, "worker helper:", err)

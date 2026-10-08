@@ -185,16 +185,6 @@ const (
 	isolateSyscallsLocks = 4
 )
 
-// launcherEnv are the variables the sandbox sets for the launcher only
-// (a Go program that needs no parallelism nor garbage collection); the
-// launcher restores the values the program must see before exec.
-var launcherEnv = []string{"GOMAXPROCS=1", "GOGC=off"}
-
-// launcherThreads is how many threads the Go runtime of the launcher may
-// need on top of the limit of the program (isolate counts them against
-// --processes; the launcher sets the real limit before exec).
-const launcherThreads = 16
-
 // args builds the isolate command line of a run.
 func (b *Box) args(spec *RunSpec, metaPath string) ([]string, error) {
 	if len(spec.Argv) == 0 || spec.Argv[0] == "" {
@@ -259,19 +249,6 @@ func (b *Box) args(spec *RunSpec, metaPath string) ([]string, error) {
 		}
 		env[name] = val
 	}
-	var restore []string
-	if seccomp {
-		for _, kv := range launcherEnv {
-			name, _, _ := strings.Cut(kv, "=")
-			if v, ok := env[name]; ok {
-				restore = append(restore, "--restore-env="+name+"="+v)
-			} else {
-				restore = append(restore, "--restore-env="+name)
-				order = append(order, name)
-			}
-			env[name] = kv[len(name)+1:]
-		}
-	}
 	for _, name := range order {
 		a = append(a, "--env="+name+"="+env[name])
 	}
@@ -304,8 +281,6 @@ func (b *Box) args(spec *RunSpec, metaPath string) ([]string, error) {
 		a = append(a, "--processes")
 	case procs < 0:
 		return nil, fmt.Errorf("sandbox: invalid process limit %d", procs)
-	case seccomp:
-		a = append(a, "--processes="+itoa(procs+launcherThreads))
 	default:
 		a = append(a, "--processes="+itoa(procs))
 	}
@@ -324,15 +299,11 @@ func (b *Box) args(spec *RunSpec, metaPath string) ([]string, error) {
 		return nil, fmt.Errorf("sandbox: negative memory limit %d", spec.MemoryKiB)
 	}
 	if spec.MemoryKiB > 0 {
-		switch {
-		case b.s.cfg.Cgroups:
+		if b.s.cfg.Cgroups {
 			a = append(a, "--cg-mem="+strconv.FormatInt(spec.MemoryKiB, 10))
-		case !seccomp:
+		} else {
 			a = append(a, "--mem="+strconv.FormatInt(spec.MemoryKiB, 10))
 		}
-		// With the launcher and no cgroups, the launcher sets the
-		// address space limit: the Go runtime cannot start under a
-		// small one.
 	}
 
 	if len(spec.ExtraFiles) > 0 {
@@ -360,15 +331,9 @@ func (b *Box) args(spec *RunSpec, metaPath string) ([]string, error) {
 
 	a = append(a, "--run", "--")
 	if seccomp {
-		a = append(a, LauncherDir+"/"+launcherBinary, LauncherCommand)
-		if procs != Unlimited {
-			a = append(a, "--nproc="+itoa(procs))
-		}
-		if spec.MemoryKiB > 0 && !b.s.cfg.Cgroups {
-			a = append(a, "--rlimit-as="+strconv.FormatInt(spec.MemoryKiB, 10))
-		}
-		a = append(a, restore...)
-		a = append(a, "--")
+		// The launcher runs the program with the same environment and
+		// limits (see launcher.go).
+		a = append(a, LauncherDir+"/"+launcherBinary)
 	}
 	return append(a, spec.Argv...), nil
 }

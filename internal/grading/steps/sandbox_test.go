@@ -27,12 +27,6 @@ import (
 // Run with `make test-sandbox` (root, isolate); CMS_SANDBOX_CGROUPS=0
 // without cgroups v2.
 
-func TestMain(m *testing.M) {
-	// The test binary is the seccomp launcher of the evaluations.
-	sandbox.MaybeRunLauncher()
-	os.Exit(m.Run())
-}
-
 func stepsConfig() *steps.Config {
 	c := steps.ConfigFrom(config.Default()) // the real default limits
 	c.Cgroups = stepstest.Cgroups()

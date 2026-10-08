@@ -1,0 +1,11 @@
+#!/bin/sh
+# Asks one question to communication-stdio-correct.c, tells it to stop
+# and then fails: the job fails although the user process ended
+# normally. The FIFOs are opened in the order of the sandbox (the
+# standard input of the user first).
+exec 3>"$2"
+exec 4<"$1"
+echo 7 >&3
+read answer <&4
+echo 0 >&3
+exit 3

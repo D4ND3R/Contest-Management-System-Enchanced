@@ -67,7 +67,7 @@ The `worker` section of `cms.yaml` (or `CMS_WORKER_*` variables):
 |---|---|
 | `name` | name on the judges page; empty = the host name. One process per name |
 | `concurrency` | jobs in parallel: at most one per **physical** core reserved for judging |
-| `box_id_base`, `box_count` | isolate boxes `[base, base + count)`; workers on the same machine need disjoint ranges |
+| `box_id_base`, `box_count` | isolate boxes `[base, base + count)`; workers on the same machine need disjoint ranges. At least 2 per parallel job; Communication uses one per process plus one, Interactive the process limit plus one |
 | `work_dir` | directory of the boxes (made absolute) |
 | `seccomp` | seccomp filter for contestant programs (recommended) |
 | `shutdown_timeout` | on shutdown, how long running jobs may finish; the others go back to the queue |

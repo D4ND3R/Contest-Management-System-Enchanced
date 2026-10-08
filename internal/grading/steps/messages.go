@@ -21,12 +21,19 @@ import (
 // HumanMessage is an outcome message for contestants (upstream
 // HumanMessage). Message and HelpText are msgids of the "cms" catalogs,
 // translated when shown; the help texts are listed on the documentation
-// page of the contestant site.
+// page of the contestant site. The msgids missing from the catalogs of
+// CMS are marked with N.
 type HumanMessage struct {
 	Shorthand string
 	Message   string
 	HelpText  string
 }
+
+// N marks a msgid without translating it (gettext N_): outcome texts are
+// stored as msgids and translated when shown. `make generate`
+// (internal/i18n/extract) collects the strings passed to N, which must be
+// single literals; the msgids of the catalogs of CMS are not marked.
+func N(msgid string) string { return msgid }
 
 // MessageCollection is an ordered set of messages (upstream
 // MessageCollection).
@@ -96,16 +103,13 @@ var CompilationMessages = NewMessageCollection(
 		"Your submission exceeded the time limit while compiling. " +
 			"This might be caused by an excessive use of C++ " +
 			"templates, for example."},
+	// The two messages below are newer than the catalogs of CMS.
 	HumanMessage{CompilationMemoryLimit,
-		"Compilation memory limit exceeded",
-		"Your submission exceeded the memory limit while compiling. " +
-			"This might be caused by an excessive use of C++ " +
-			"templates, or too large global variables, for example."},
+		N("Compilation memory limit exceeded"),
+		N("Your submission exceeded the memory limit while compiling. This might be caused by an excessive use of C++ templates, or too large global variables, for example.")},
 	HumanMessage{CompilationSignal,
-		"Compilation killed with signal %s",
-		"Your submission was killed with the specified signal. " +
-			"This might be caused by a bug in the compiler, " +
-			"for example."},
+		N("Compilation killed with signal %s"),
+		N("Your submission was killed with the specified signal. This might be caused by a bug in the compiler, for example.")},
 )
 
 // Shorthands of EvaluationMessages.
@@ -160,10 +164,8 @@ var EvaluationMessages = NewMessageCollection(
 		"Your submission failed because it exited with a return " +
 			"code different from 0."},
 	HumanMessage{EvaluationSecurity,
-		"Execution killed because of a forbidden system call",
-		"Your submission tried to use a system call that is not " +
-			"allowed during the evaluation, such as opening network " +
-			"connections or tracing other processes."},
+		N("Execution killed because of a forbidden system call"),
+		N("Your submission tried to use a system call that is not allowed during the evaluation, such as opening network connections or tracing other processes.")},
 )
 
 // ExecutionCompleted is the text of a user test that ran correctly

@@ -70,7 +70,7 @@ Sección `worker` de `cms.yaml` (o variables `CMS_WORKER_*`):
 |---|---|
 | `name` | nombre en la página de jueces; vacío = nombre del host. Un solo proceso por nombre |
 | `concurrency` | trabajos en paralelo: como mucho uno por núcleo **físico** reservado para juzgar |
-| `box_id_base`, `box_count` | cajas de isolate `[base, base + count)`; los workers de una misma máquina necesitan rangos disjuntos |
+| `box_id_base`, `box_count` | cajas de isolate `[base, base + count)`; los workers de una misma máquina necesitan rangos disjuntos. Al menos 2 por trabajo en paralelo; Communication usa una por proceso más una, Interactive el límite de procesos más una |
 | `work_dir` | directorio de las cajas (se convierte a ruta absoluta) |
 | `seccomp` | filtro seccomp para los programas de los concursantes (recomendado) |
 | `shutdown_timeout` | al apagarse, cuánto espera a que terminen los trabajos en curso; los demás vuelven a la cola |
