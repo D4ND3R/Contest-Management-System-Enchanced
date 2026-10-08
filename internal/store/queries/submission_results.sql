@@ -112,10 +112,10 @@ WHERE submission_id = sqlc.arg(submission_id) AND dataset_id = sqlc.arg(dataset_
 -- name: InvalidateSubmissionCompilation :execrows
 -- Reevaluation from scratch (CMS invalidate_compilation): blanks the
 -- compilation, the evaluation and the score and deletes the executables
--- and evaluations, in one statement. The writes above cannot tell the
--- result of a job queued before this from a new one: the caller must
--- make the dispatcher drop the results of the jobs in flight (CMS
--- WorkerPool.ignore_operation), or a late one wins over the new job.
+-- and evaluations, in one statement, and increments the generation. The
+-- writes above cannot tell the result of a job queued before this from a
+-- new one; the dispatcher writes results with the generation-checked
+-- queries of internal/judging, which drop them (D23).
 WITH gone_executables AS (
     DELETE FROM executables e
     WHERE e.submission_id = sqlc.arg(submission_id) AND e.dataset_id = sqlc.arg(dataset_id)
@@ -130,14 +130,14 @@ UPDATE submission_results sr SET
     compilation_sandbox_paths = NULL, compilation_sandbox_digests = NULL,
     evaluation_outcome = NULL, evaluation_tries = 0,
     score = NULL, score_details = NULL, public_score = NULL, public_score_details = NULL,
-    ranking_score_details = NULL
+    ranking_score_details = NULL,
+    generation = sr.generation + 1
 WHERE sr.submission_id = sqlc.arg(submission_id) AND sr.dataset_id = sqlc.arg(dataset_id);
 
 -- name: InvalidateSubmissionEvaluation :execrows
 -- Re-run the testcases (CMS invalidate_evaluation): deletes the
--- evaluations and blanks the evaluation outcome and the score. As for
--- InvalidateSubmissionCompilation, results of evaluation jobs already in
--- flight must be dropped by the dispatcher.
+-- evaluations, blanks the evaluation outcome and the score, and
+-- increments the generation, as InvalidateSubmissionCompilation.
 WITH gone_evaluations AS (
     DELETE FROM evaluations ev
     WHERE ev.submission_id = sqlc.arg(submission_id) AND ev.dataset_id = sqlc.arg(dataset_id)
@@ -145,7 +145,8 @@ WITH gone_evaluations AS (
 UPDATE submission_results sr SET
     evaluation_outcome = NULL, evaluation_tries = 0,
     score = NULL, score_details = NULL, public_score = NULL, public_score_details = NULL,
-    ranking_score_details = NULL
+    ranking_score_details = NULL,
+    generation = sr.generation + 1
 WHERE sr.submission_id = sqlc.arg(submission_id) AND sr.dataset_id = sqlc.arg(dataset_id);
 
 -- name: InvalidateSubmissionScore :execrows

@@ -118,6 +118,11 @@ func queriesNotRun() ([]string, error) {
 	defer executed.mu.Unlock()
 	var missing []string
 	for _, f := range files {
+		// The queries of the judging core are exercised (and checked the
+		// same way) by the tests of internal/judging.
+		if strings.HasPrefix(filepath.Base(f), "judging") {
+			continue
+		}
 		data, err := os.ReadFile(f)
 		if err != nil {
 			return nil, err

@@ -53,7 +53,7 @@ func (q *Queries) DeleteSubmissionResult(ctx context.Context, arg DeleteSubmissi
 }
 
 const getSubmissionResult = `-- name: GetSubmissionResult :one
-SELECT submission_id, dataset_id, compilation_outcome, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, compilation_shard, compilation_sandbox_paths, compilation_sandbox_digests, evaluation_outcome, evaluation_tries, score, score_details, scored_at, public_score, public_score_details, ranking_score_details FROM submission_results WHERE submission_id = $1 AND dataset_id = $2
+SELECT submission_id, dataset_id, compilation_outcome, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, compilation_shard, compilation_sandbox_paths, compilation_sandbox_digests, evaluation_outcome, evaluation_tries, score, score_details, scored_at, public_score, public_score_details, ranking_score_details, generation, subtask_scores, public_subtask_scores FROM submission_results WHERE submission_id = $1 AND dataset_id = $2
 `
 
 type GetSubmissionResultParams struct {
@@ -86,6 +86,9 @@ func (q *Queries) GetSubmissionResult(ctx context.Context, arg GetSubmissionResu
 		&i.PublicScore,
 		&i.PublicScoreDetails,
 		&i.RankingScoreDetails,
+		&i.Generation,
+		&i.SubtaskScores,
+		&i.PublicSubtaskScores,
 	)
 	return i, err
 }
@@ -122,7 +125,8 @@ UPDATE submission_results sr SET
     compilation_sandbox_paths = NULL, compilation_sandbox_digests = NULL,
     evaluation_outcome = NULL, evaluation_tries = 0,
     score = NULL, score_details = NULL, public_score = NULL, public_score_details = NULL,
-    ranking_score_details = NULL
+    ranking_score_details = NULL,
+    generation = sr.generation + 1
 WHERE sr.submission_id = $1 AND sr.dataset_id = $2
 `
 
@@ -133,10 +137,10 @@ type InvalidateSubmissionCompilationParams struct {
 
 // Reevaluation from scratch (CMS invalidate_compilation): blanks the
 // compilation, the evaluation and the score and deletes the executables
-// and evaluations, in one statement. The writes above cannot tell the
-// result of a job queued before this from a new one: the caller must
-// make the dispatcher drop the results of the jobs in flight (CMS
-// WorkerPool.ignore_operation), or a late one wins over the new job.
+// and evaluations, in one statement, and increments the generation. The
+// writes above cannot tell the result of a job queued before this from a
+// new one; the dispatcher writes results with the generation-checked
+// queries of internal/judging, which drop them (D23).
 func (q *Queries) InvalidateSubmissionCompilation(ctx context.Context, arg InvalidateSubmissionCompilationParams) (int64, error) {
 	result, err := q.db.Exec(ctx, invalidateSubmissionCompilation, arg.SubmissionID, arg.DatasetID)
 	if err != nil {
@@ -153,7 +157,8 @@ WITH gone_evaluations AS (
 UPDATE submission_results sr SET
     evaluation_outcome = NULL, evaluation_tries = 0,
     score = NULL, score_details = NULL, public_score = NULL, public_score_details = NULL,
-    ranking_score_details = NULL
+    ranking_score_details = NULL,
+    generation = sr.generation + 1
 WHERE sr.submission_id = $1 AND sr.dataset_id = $2
 `
 
@@ -163,9 +168,8 @@ type InvalidateSubmissionEvaluationParams struct {
 }
 
 // Re-run the testcases (CMS invalidate_evaluation): deletes the
-// evaluations and blanks the evaluation outcome and the score. As for
-// InvalidateSubmissionCompilation, results of evaluation jobs already in
-// flight must be dropped by the dispatcher.
+// evaluations, blanks the evaluation outcome and the score, and
+// increments the generation, as InvalidateSubmissionCompilation.
 func (q *Queries) InvalidateSubmissionEvaluation(ctx context.Context, arg InvalidateSubmissionEvaluationParams) (int64, error) {
 	result, err := q.db.Exec(ctx, invalidateSubmissionEvaluation, arg.SubmissionID, arg.DatasetID)
 	if err != nil {
@@ -261,7 +265,7 @@ func (q *Queries) ListScoredResultsByContest(ctx context.Context, contestID int3
 }
 
 const listSubmissionResultsByDataset = `-- name: ListSubmissionResultsByDataset :many
-SELECT submission_id, dataset_id, compilation_outcome, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, compilation_shard, compilation_sandbox_paths, compilation_sandbox_digests, evaluation_outcome, evaluation_tries, score, score_details, scored_at, public_score, public_score_details, ranking_score_details FROM submission_results WHERE dataset_id = $1 ORDER BY submission_id
+SELECT submission_id, dataset_id, compilation_outcome, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, compilation_shard, compilation_sandbox_paths, compilation_sandbox_digests, evaluation_outcome, evaluation_tries, score, score_details, scored_at, public_score, public_score_details, ranking_score_details, generation, subtask_scores, public_subtask_scores FROM submission_results WHERE dataset_id = $1 ORDER BY submission_id
 `
 
 // Every result on a dataset (rescoring, dataset comparison) through
@@ -297,6 +301,9 @@ func (q *Queries) ListSubmissionResultsByDataset(ctx context.Context, datasetID 
 			&i.PublicScore,
 			&i.PublicScoreDetails,
 			&i.RankingScoreDetails,
+			&i.Generation,
+			&i.SubtaskScores,
+			&i.PublicSubtaskScores,
 		); err != nil {
 			return nil, err
 		}
@@ -309,7 +316,7 @@ func (q *Queries) ListSubmissionResultsByDataset(ctx context.Context, datasetID 
 }
 
 const listSubmissionResultsBySubmission = `-- name: ListSubmissionResultsBySubmission :many
-SELECT sr.submission_id, sr.dataset_id, sr.compilation_outcome, sr.compilation_text, sr.compilation_tries, sr.compilation_stdout, sr.compilation_stderr, sr.compilation_time, sr.compilation_wall_clock_time, sr.compilation_memory, sr.compilation_shard, sr.compilation_sandbox_paths, sr.compilation_sandbox_digests, sr.evaluation_outcome, sr.evaluation_tries, sr.score, sr.score_details, sr.scored_at, sr.public_score, sr.public_score_details, sr.ranking_score_details, d.description AS dataset_description, d.autojudge AS dataset_autojudge,
+SELECT sr.submission_id, sr.dataset_id, sr.compilation_outcome, sr.compilation_text, sr.compilation_tries, sr.compilation_stdout, sr.compilation_stderr, sr.compilation_time, sr.compilation_wall_clock_time, sr.compilation_memory, sr.compilation_shard, sr.compilation_sandbox_paths, sr.compilation_sandbox_digests, sr.evaluation_outcome, sr.evaluation_tries, sr.score, sr.score_details, sr.scored_at, sr.public_score, sr.public_score_details, sr.ranking_score_details, sr.generation, sr.subtask_scores, sr.public_subtask_scores, d.description AS dataset_description, d.autojudge AS dataset_autojudge,
        coalesce(t.active_dataset_id = d.id, false)::boolean AS active
 FROM submission_results sr
 JOIN datasets d ON d.id = sr.dataset_id
@@ -358,6 +365,9 @@ func (q *Queries) ListSubmissionResultsBySubmission(ctx context.Context, submiss
 			&i.SubmissionResult.PublicScore,
 			&i.SubmissionResult.PublicScoreDetails,
 			&i.SubmissionResult.RankingScoreDetails,
+			&i.SubmissionResult.Generation,
+			&i.SubmissionResult.SubtaskScores,
+			&i.SubmissionResult.PublicSubtaskScores,
 			&i.DatasetDescription,
 			&i.DatasetAutojudge,
 			&i.Active,

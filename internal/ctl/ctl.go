@@ -22,7 +22,7 @@ import (
 
 // Command returns the `ctl` command tree.
 func Command() *cli.Command {
-	return &cli.Command{
+	c := &cli.Command{
 		Name:  "ctl",
 		Short: "administration commands (replaces cmscontrib)",
 		Sub: []*cli.Command{
@@ -55,6 +55,8 @@ it signs cookies and derives the keys of the secret scoreboard links.`,
 			},
 		},
 	}
+	c.Sub = append(c.Sub, JudgeCommands()...)
+	return c
 }
 
 func noArgs(args []string) error {

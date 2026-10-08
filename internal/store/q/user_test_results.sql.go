@@ -51,7 +51,7 @@ func (q *Queries) DeleteUserTestResult(ctx context.Context, arg DeleteUserTestRe
 }
 
 const getUserTestResult = `-- name: GetUserTestResult :one
-SELECT user_test_id, dataset_id, output, compilation_outcome, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, compilation_shard, compilation_sandbox_paths, compilation_sandbox_digests, evaluation_outcome, evaluation_text, evaluation_tries, execution_time, execution_wall_clock_time, execution_memory, evaluation_shard, evaluation_sandbox_paths, evaluation_sandbox_digests FROM user_test_results WHERE user_test_id = $1 AND dataset_id = $2
+SELECT user_test_id, dataset_id, output, compilation_outcome, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, compilation_shard, compilation_sandbox_paths, compilation_sandbox_digests, evaluation_outcome, evaluation_text, evaluation_tries, execution_time, execution_wall_clock_time, execution_memory, evaluation_shard, evaluation_sandbox_paths, evaluation_sandbox_digests, generation FROM user_test_results WHERE user_test_id = $1 AND dataset_id = $2
 `
 
 type GetUserTestResultParams struct {
@@ -86,12 +86,13 @@ func (q *Queries) GetUserTestResult(ctx context.Context, arg GetUserTestResultPa
 		&i.EvaluationShard,
 		&i.EvaluationSandboxPaths,
 		&i.EvaluationSandboxDigests,
+		&i.Generation,
 	)
 	return i, err
 }
 
 const listUserTestResults = `-- name: ListUserTestResults :many
-SELECT utr.user_test_id, utr.dataset_id, utr.output, utr.compilation_outcome, utr.compilation_text, utr.compilation_tries, utr.compilation_stdout, utr.compilation_stderr, utr.compilation_time, utr.compilation_wall_clock_time, utr.compilation_memory, utr.compilation_shard, utr.compilation_sandbox_paths, utr.compilation_sandbox_digests, utr.evaluation_outcome, utr.evaluation_text, utr.evaluation_tries, utr.execution_time, utr.execution_wall_clock_time, utr.execution_memory, utr.evaluation_shard, utr.evaluation_sandbox_paths, utr.evaluation_sandbox_digests, d.description AS dataset_description
+SELECT utr.user_test_id, utr.dataset_id, utr.output, utr.compilation_outcome, utr.compilation_text, utr.compilation_tries, utr.compilation_stdout, utr.compilation_stderr, utr.compilation_time, utr.compilation_wall_clock_time, utr.compilation_memory, utr.compilation_shard, utr.compilation_sandbox_paths, utr.compilation_sandbox_digests, utr.evaluation_outcome, utr.evaluation_text, utr.evaluation_tries, utr.execution_time, utr.execution_wall_clock_time, utr.execution_memory, utr.evaluation_shard, utr.evaluation_sandbox_paths, utr.evaluation_sandbox_digests, utr.generation, d.description AS dataset_description
 FROM user_test_results utr
 JOIN datasets d ON d.id = utr.dataset_id
 WHERE utr.user_test_id = $1
@@ -137,6 +138,7 @@ func (q *Queries) ListUserTestResults(ctx context.Context, userTestID int32) ([]
 			&i.UserTestResult.EvaluationShard,
 			&i.UserTestResult.EvaluationSandboxPaths,
 			&i.UserTestResult.EvaluationSandboxDigests,
+			&i.UserTestResult.Generation,
 			&i.DatasetDescription,
 		); err != nil {
 			return nil, err

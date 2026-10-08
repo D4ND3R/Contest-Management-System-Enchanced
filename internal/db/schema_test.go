@@ -243,6 +243,9 @@ var cmsColumns = map[string][]string{
 		"public_score double precision",
 		"public_score_details jsonb",
 		"ranking_score_details text[]",
+		"generation bigint NOT NULL",  // fork: stale results (D23, migration 0004)
+		"subtask_scores jsonb",        // fork: generated, for the task score cache (migration 0004)
+		"public_subtask_scores jsonb", // fork: generated, for the task score cache (migration 0004)
 	},
 	"executables": {
 		"id integer NOT NULL",
@@ -310,6 +313,7 @@ var cmsColumns = map[string][]string{
 		"evaluation_shard integer",
 		"evaluation_sandbox_paths text[]",
 		"evaluation_sandbox_digests text[]",
+		"generation bigint NOT NULL", // fork: stale results (D23, migration 0004)
 	},
 	"user_test_executables": {
 		"id integer NOT NULL",
@@ -1052,7 +1056,8 @@ func TestSchemaDefaults(t *testing.T) {
 				"compilation_wall_clock_time": nil, "compilation_memory": nil, "compilation_shard": nil,
 				"compilation_sandbox_paths": nil, "compilation_sandbox_digests": nil,
 				"evaluation_outcome": nil, "evaluation_tries": 0, "score": nil, "score_details": nil,
-				"scored_at": nil, "public_score": nil, "public_score_details": nil, "ranking_score_details": nil}},
+				"scored_at": nil, "public_score": nil, "public_score_details": nil, "ranking_score_details": nil,
+				"generation": 0}},
 		{"evaluations", `INSERT INTO evaluations (submission_id, dataset_id, testcase_id) VALUES ({submissions}, {datasets}, {testcases})`,
 			map[string]any{"outcome": nil, "text": empty, "admin_text": nil, "execution_time": nil,
 				"execution_wall_clock_time": nil, "execution_memory": nil, "evaluation_shard": nil,
@@ -1061,7 +1066,7 @@ func TestSchemaDefaults(t *testing.T) {
 			map[string]any{"language": nil}},
 		{"user_test_results", `INSERT INTO user_test_results (user_test_id, dataset_id) VALUES ({user_tests}, {datasets})`,
 			map[string]any{"output": nil, "compilation_outcome": nil, "compilation_text": empty, "compilation_tries": 0,
-				"evaluation_outcome": nil, "evaluation_text": empty, "evaluation_tries": 0}},
+				"evaluation_outcome": nil, "evaluation_text": empty, "evaluation_tries": 0, "generation": 0}},
 		{"audit_log", `INSERT INTO audit_log (action, target_type) VALUES ('server.update', 'server_settings')`,
 			map[string]any{"admin_id": nil, "target_id": nil, "contest_id": nil, "details": map[string]any{}, "ip": nil}},
 	}

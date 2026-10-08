@@ -29,11 +29,12 @@
 //     for a retry) and the tries become the highest attempt seen, so a
 //     failure delivered twice counts once (and affects 0 rows the second
 //     time: do not queue the retry again).
-//   - These writes cannot tell a stale result from a fresh one: after an
-//     Invalidate… query, the dispatcher must drop the results of the
-//     jobs that were in flight for that result (CMS
-//     WorkerPool.ignore_operation), or a late one is stored and the new
-//     job's result is ignored as a duplicate.
+//   - These writes cannot tell a stale result from a fresh one. The
+//     dispatcher does not use them: internal/judging writes results with
+//     the generation-checked queries of queries/judging_*.sql, so that
+//     the result of a job that was in flight when an Invalidate… query
+//     ran (they increment submission_results.generation) is dropped
+//     (D23, CMS WorkerPool.ignore_operation).
 //   - Rows that CMS never edits (submission files, tokens, evaluations,
 //     user tests and their files) have no Update query.
 //   - The query files carry no license header: sqlc would copy a leading

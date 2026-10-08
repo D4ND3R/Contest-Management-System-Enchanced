@@ -230,6 +230,9 @@ type SubmissionResult struct {
 	PublicScore               *float64
 	PublicScoreDetails        json.RawMessage
 	RankingScoreDetails       []string
+	Generation                int64
+	SubtaskScores             json.RawMessage
+	PublicSubtaskScores       json.RawMessage
 }
 
 type Task struct {
@@ -256,6 +259,17 @@ type Task struct {
 	ScorePrecision        int32
 	ScoreMode             string
 	ActiveDatasetID       *int32
+}
+
+type TaskScore struct {
+	ParticipationID int32
+	TaskID          int32
+	DatasetID       *int32
+	Score           float64
+	PublicScore     float64
+	TokenedScore    float64
+	Partial         bool
+	UpdatedAt       time.Time
 }
 
 type Team struct {
@@ -345,4 +359,5 @@ type UserTestResult struct {
 	EvaluationShard           *int32
 	EvaluationSandboxPaths    []string
 	EvaluationSandboxDigests  []string
+	Generation                int64
 }

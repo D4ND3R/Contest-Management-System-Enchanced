@@ -10,7 +10,9 @@ package q
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -95,6 +97,680 @@ func (b *CreateEvaluationsBatchBatchResults) Exec(f func(int, error)) {
 }
 
 func (b *CreateEvaluationsBatchBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingFailSubmissionCompilation = `-- name: JudgingFailSubmissionCompilation :batchone
+UPDATE submission_results SET compilation_tries = $1::integer
+WHERE submission_id = $2 AND dataset_id = $3
+  AND generation = $4 AND compilation_outcome IS NULL
+  AND compilation_tries < $1::integer
+RETURNING compilation_tries
+`
+
+type JudgingFailSubmissionCompilationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingFailSubmissionCompilationParams struct {
+	Attempt      int32
+	SubmissionID int32
+	DatasetID    int32
+	Generation   int64
+}
+
+// Counts a failed compilation attempt of this generation: compilation_tries
+// becomes the attempt, once (D23). Nothing for a stale, repeated or
+// already superseded failure.
+func (q *Queries) JudgingFailSubmissionCompilation(ctx context.Context, arg []JudgingFailSubmissionCompilationParams) *JudgingFailSubmissionCompilationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.Attempt,
+			a.SubmissionID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingFailSubmissionCompilation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingFailSubmissionCompilationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingFailSubmissionCompilationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var compilation_tries int32
+		if b.closed {
+			if f != nil {
+				f(t, compilation_tries, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&compilation_tries)
+		if f != nil {
+			f(t, compilation_tries, err)
+		}
+	}
+}
+
+func (b *JudgingFailSubmissionCompilationBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingFailSubmissionEvaluation = `-- name: JudgingFailSubmissionEvaluation :batchone
+UPDATE submission_results SET evaluation_tries = $1::integer
+WHERE submission_id = $2 AND dataset_id = $3
+  AND generation = $4 AND compilation_outcome = 'ok' AND evaluation_outcome IS NULL
+  AND evaluation_tries < $1::integer
+RETURNING evaluation_tries
+`
+
+type JudgingFailSubmissionEvaluationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingFailSubmissionEvaluationParams struct {
+	Attempt      int32
+	SubmissionID int32
+	DatasetID    int32
+	Generation   int64
+}
+
+// Counts a failed evaluation attempt of this generation, as
+// JudgingFailSubmissionCompilation: evaluation_tries is the highest
+// attempt in which some testcase failed.
+func (q *Queries) JudgingFailSubmissionEvaluation(ctx context.Context, arg []JudgingFailSubmissionEvaluationParams) *JudgingFailSubmissionEvaluationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.Attempt,
+			a.SubmissionID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingFailSubmissionEvaluation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingFailSubmissionEvaluationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingFailSubmissionEvaluationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var evaluation_tries int32
+		if b.closed {
+			if f != nil {
+				f(t, evaluation_tries, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&evaluation_tries)
+		if f != nil {
+			f(t, evaluation_tries, err)
+		}
+	}
+}
+
+func (b *JudgingFailSubmissionEvaluationBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingFailUserTestCompilation = `-- name: JudgingFailUserTestCompilation :batchone
+UPDATE user_test_results SET compilation_tries = $1::integer
+WHERE user_test_id = $2 AND dataset_id = $3
+  AND generation = $4 AND compilation_outcome IS NULL
+  AND compilation_tries < $1::integer
+RETURNING compilation_tries
+`
+
+type JudgingFailUserTestCompilationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingFailUserTestCompilationParams struct {
+	Attempt    int32
+	UserTestID int32
+	DatasetID  int32
+	Generation int64
+}
+
+// As JudgingFailSubmissionCompilation for user tests.
+func (q *Queries) JudgingFailUserTestCompilation(ctx context.Context, arg []JudgingFailUserTestCompilationParams) *JudgingFailUserTestCompilationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.Attempt,
+			a.UserTestID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingFailUserTestCompilation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingFailUserTestCompilationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingFailUserTestCompilationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var compilation_tries int32
+		if b.closed {
+			if f != nil {
+				f(t, compilation_tries, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&compilation_tries)
+		if f != nil {
+			f(t, compilation_tries, err)
+		}
+	}
+}
+
+func (b *JudgingFailUserTestCompilationBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingFailUserTestEvaluation = `-- name: JudgingFailUserTestEvaluation :batchone
+UPDATE user_test_results SET evaluation_tries = $1::integer
+WHERE user_test_id = $2 AND dataset_id = $3
+  AND generation = $4 AND compilation_outcome = 'ok' AND evaluation_outcome IS NULL
+  AND evaluation_tries < $1::integer
+RETURNING evaluation_tries
+`
+
+type JudgingFailUserTestEvaluationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingFailUserTestEvaluationParams struct {
+	Attempt    int32
+	UserTestID int32
+	DatasetID  int32
+	Generation int64
+}
+
+// As JudgingFailSubmissionEvaluation for user tests.
+func (q *Queries) JudgingFailUserTestEvaluation(ctx context.Context, arg []JudgingFailUserTestEvaluationParams) *JudgingFailUserTestEvaluationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.Attempt,
+			a.UserTestID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingFailUserTestEvaluation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingFailUserTestEvaluationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingFailUserTestEvaluationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var evaluation_tries int32
+		if b.closed {
+			if f != nil {
+				f(t, evaluation_tries, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&evaluation_tries)
+		if f != nil {
+			f(t, evaluation_tries, err)
+		}
+	}
+}
+
+func (b *JudgingFailUserTestEvaluationBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingInsertEvaluation = `-- name: JudgingInsertEvaluation :batchone
+INSERT INTO evaluations (
+    submission_id, dataset_id, testcase_id, outcome, text, admin_text,
+    execution_time, execution_wall_clock_time, execution_memory,
+    evaluation_sandbox_paths, evaluation_sandbox_digests
+)
+SELECT sr.submission_id, sr.dataset_id, tc.id, $1::text,
+       coalesce($2::text[], '{}'), $3::text,
+       $4::double precision, $5::double precision,
+       $6::bigint,
+       $7::text[], $8::text[]
+FROM submission_results sr
+JOIN testcases tc ON tc.dataset_id = sr.dataset_id AND tc.codename = $9::text
+WHERE sr.submission_id = $10::integer AND sr.dataset_id = $11::integer
+  AND sr.generation = $12::bigint
+  AND sr.compilation_outcome = 'ok' AND sr.evaluation_outcome IS NULL
+ON CONFLICT (submission_id, dataset_id, testcase_id) DO NOTHING
+RETURNING id
+`
+
+type JudgingInsertEvaluationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingInsertEvaluationParams struct {
+	Outcome                  *string
+	Text                     []string
+	AdminText                *string
+	ExecutionTime            *float64
+	ExecutionWallClockTime   *float64
+	ExecutionMemory          *int64
+	EvaluationSandboxPaths   []string
+	EvaluationSandboxDigests []string
+	Codename                 string
+	SubmissionID             int32
+	DatasetID                int32
+	Generation               int64
+}
+
+// Stores the evaluation of a testcase, if the result is still being
+// evaluated in this generation; first result wins. Nothing for a stale or
+// repeated result, or an unknown testcase.
+func (q *Queries) JudgingInsertEvaluation(ctx context.Context, arg []JudgingInsertEvaluationParams) *JudgingInsertEvaluationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.Outcome,
+			a.Text,
+			a.AdminText,
+			a.ExecutionTime,
+			a.ExecutionWallClockTime,
+			a.ExecutionMemory,
+			a.EvaluationSandboxPaths,
+			a.EvaluationSandboxDigests,
+			a.Codename,
+			a.SubmissionID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingInsertEvaluation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingInsertEvaluationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingInsertEvaluationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var id int32
+		if b.closed {
+			if f != nil {
+				f(t, id, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&id)
+		if f != nil {
+			f(t, id, err)
+		}
+	}
+}
+
+func (b *JudgingInsertEvaluationBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingSetScore = `-- name: JudgingSetScore :batchone
+UPDATE submission_results SET
+    score = $1::double precision,
+    score_details = $2::jsonb,
+    public_score = $3::double precision,
+    public_score_details = $4::jsonb,
+    ranking_score_details = coalesce($5::text[], '{}'),
+    scored_at = coalesce(scored_at, $6::timestamptz)
+WHERE submission_id = $7 AND dataset_id = $8
+  AND generation = $9
+  AND (score IS NULL OR score_details IS NULL OR public_score IS NULL
+       OR public_score_details IS NULL OR ranking_score_details IS NULL)
+  AND (compilation_outcome = 'fail' OR evaluation_outcome IS NOT NULL)
+RETURNING submission_id
+`
+
+type JudgingSetScoreBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingSetScoreParams struct {
+	Score               float64
+	ScoreDetails        json.RawMessage
+	PublicScore         float64
+	PublicScoreDetails  json.RawMessage
+	RankingScoreDetails []string
+	ScoredAt            time.Time
+	SubmissionID        int32
+	DatasetID           int32
+	Generation          int64
+}
+
+// Stores the score of a result of this generation that is ready for it
+// (upstream needs_scoring); nothing if it is already scored or not ready.
+// scored_at keeps the first scoring time, as in CMS.
+func (q *Queries) JudgingSetScore(ctx context.Context, arg []JudgingSetScoreParams) *JudgingSetScoreBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.Score,
+			a.ScoreDetails,
+			a.PublicScore,
+			a.PublicScoreDetails,
+			a.RankingScoreDetails,
+			a.ScoredAt,
+			a.SubmissionID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingSetScore, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingSetScoreBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingSetScoreBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var submission_id int32
+		if b.closed {
+			if f != nil {
+				f(t, submission_id, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&submission_id)
+		if f != nil {
+			f(t, submission_id, err)
+		}
+	}
+}
+
+func (b *JudgingSetScoreBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingSetSubmissionCompilation = `-- name: JudgingSetSubmissionCompilation :batchone
+UPDATE submission_results SET
+    compilation_outcome = $1::text,
+    compilation_text = coalesce($2::text[], '{}'),
+    compilation_tries = greatest(compilation_tries, $3::integer),
+    compilation_stdout = $4,
+    compilation_stderr = $5,
+    compilation_time = $6,
+    compilation_wall_clock_time = $7,
+    compilation_memory = $8,
+    compilation_sandbox_paths = $9,
+    compilation_sandbox_digests = $10
+WHERE submission_id = $11 AND dataset_id = $12
+  AND generation = $13 AND compilation_outcome IS NULL
+RETURNING compilation_tries
+`
+
+type JudgingSetSubmissionCompilationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingSetSubmissionCompilationParams struct {
+	CompilationOutcome        string
+	CompilationText           []string
+	Attempt                   int32
+	CompilationStdout         *string
+	CompilationStderr         *string
+	CompilationTime           *float64
+	CompilationWallClockTime  *float64
+	CompilationMemory         *int64
+	CompilationSandboxPaths   []string
+	CompilationSandboxDigests []string
+	SubmissionID              int32
+	DatasetID                 int32
+	Generation                int64
+}
+
+// Stores the outcome of a compilation built for this generation. Nothing
+// (pgx.ErrNoRows) for a duplicate or a stale result. compilation_tries
+// becomes the highest attempt seen (D23).
+func (q *Queries) JudgingSetSubmissionCompilation(ctx context.Context, arg []JudgingSetSubmissionCompilationParams) *JudgingSetSubmissionCompilationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.CompilationOutcome,
+			a.CompilationText,
+			a.Attempt,
+			a.CompilationStdout,
+			a.CompilationStderr,
+			a.CompilationTime,
+			a.CompilationWallClockTime,
+			a.CompilationMemory,
+			a.CompilationSandboxPaths,
+			a.CompilationSandboxDigests,
+			a.SubmissionID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingSetSubmissionCompilation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingSetSubmissionCompilationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingSetSubmissionCompilationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var compilation_tries int32
+		if b.closed {
+			if f != nil {
+				f(t, compilation_tries, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&compilation_tries)
+		if f != nil {
+			f(t, compilation_tries, err)
+		}
+	}
+}
+
+func (b *JudgingSetSubmissionCompilationBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingSetUserTestCompilation = `-- name: JudgingSetUserTestCompilation :batchone
+UPDATE user_test_results SET
+    compilation_outcome = $1::text,
+    compilation_text = coalesce($2::text[], '{}'),
+    compilation_tries = greatest(compilation_tries, $3::integer),
+    compilation_stdout = $4,
+    compilation_stderr = $5,
+    compilation_time = $6,
+    compilation_wall_clock_time = $7,
+    compilation_memory = $8,
+    compilation_sandbox_paths = $9,
+    compilation_sandbox_digests = $10
+WHERE user_test_id = $11 AND dataset_id = $12
+  AND generation = $13 AND compilation_outcome IS NULL
+RETURNING compilation_tries
+`
+
+type JudgingSetUserTestCompilationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingSetUserTestCompilationParams struct {
+	CompilationOutcome        string
+	CompilationText           []string
+	Attempt                   int32
+	CompilationStdout         *string
+	CompilationStderr         *string
+	CompilationTime           *float64
+	CompilationWallClockTime  *float64
+	CompilationMemory         *int64
+	CompilationSandboxPaths   []string
+	CompilationSandboxDigests []string
+	UserTestID                int32
+	DatasetID                 int32
+	Generation                int64
+}
+
+// As JudgingSetSubmissionCompilation for user tests.
+func (q *Queries) JudgingSetUserTestCompilation(ctx context.Context, arg []JudgingSetUserTestCompilationParams) *JudgingSetUserTestCompilationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.CompilationOutcome,
+			a.CompilationText,
+			a.Attempt,
+			a.CompilationStdout,
+			a.CompilationStderr,
+			a.CompilationTime,
+			a.CompilationWallClockTime,
+			a.CompilationMemory,
+			a.CompilationSandboxPaths,
+			a.CompilationSandboxDigests,
+			a.UserTestID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingSetUserTestCompilation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingSetUserTestCompilationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingSetUserTestCompilationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var compilation_tries int32
+		if b.closed {
+			if f != nil {
+				f(t, compilation_tries, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&compilation_tries)
+		if f != nil {
+			f(t, compilation_tries, err)
+		}
+	}
+}
+
+func (b *JudgingSetUserTestCompilationBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const judgingSetUserTestEvaluation = `-- name: JudgingSetUserTestEvaluation :batchone
+UPDATE user_test_results SET
+    evaluation_outcome = 'ok',
+    evaluation_text = coalesce($1::text[], '{}'),
+    evaluation_tries = greatest(evaluation_tries, $2::integer),
+    output = $3,
+    execution_time = $4,
+    execution_wall_clock_time = $5,
+    execution_memory = $6,
+    evaluation_sandbox_paths = $7,
+    evaluation_sandbox_digests = $8
+WHERE user_test_id = $9 AND dataset_id = $10
+  AND generation = $11 AND compilation_outcome = 'ok' AND evaluation_outcome IS NULL
+RETURNING evaluation_tries
+`
+
+type JudgingSetUserTestEvaluationBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type JudgingSetUserTestEvaluationParams struct {
+	EvaluationText           []string
+	Attempt                  int32
+	Output                   *string
+	ExecutionTime            *float64
+	ExecutionWallClockTime   *float64
+	ExecutionMemory          *int64
+	EvaluationSandboxPaths   []string
+	EvaluationSandboxDigests []string
+	UserTestID               int32
+	DatasetID                int32
+	Generation               int64
+}
+
+// Stores the execution of a user test compiled in this generation
+// (upstream EvaluationJob.to_user_test: the outcome is always "ok").
+// Nothing for a stale or repeated result.
+func (q *Queries) JudgingSetUserTestEvaluation(ctx context.Context, arg []JudgingSetUserTestEvaluationParams) *JudgingSetUserTestEvaluationBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range arg {
+		vals := []interface{}{
+			a.EvaluationText,
+			a.Attempt,
+			a.Output,
+			a.ExecutionTime,
+			a.ExecutionWallClockTime,
+			a.ExecutionMemory,
+			a.EvaluationSandboxPaths,
+			a.EvaluationSandboxDigests,
+			a.UserTestID,
+			a.DatasetID,
+			a.Generation,
+		}
+		batch.Queue(judgingSetUserTestEvaluation, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &JudgingSetUserTestEvaluationBatchResults{br, len(arg), false}
+}
+
+func (b *JudgingSetUserTestEvaluationBatchResults) QueryRow(f func(int, int32, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var evaluation_tries int32
+		if b.closed {
+			if f != nil {
+				f(t, evaluation_tries, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&evaluation_tries)
+		if f != nil {
+			f(t, evaluation_tries, err)
+		}
+	}
+}
+
+func (b *JudgingSetUserTestEvaluationBatchResults) Close() error {
 	b.closed = true
 	return b.br.Close()
 }
