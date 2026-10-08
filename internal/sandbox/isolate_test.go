@@ -205,7 +205,8 @@ func TestRunBasics(t *testing.T) {
 		if string(out) != "/tmp /tmp bar\n" {
 			t.Errorf("seccomp=%v: environment %q", seccomp, out)
 		}
-		if res.CPUTime < 0 || res.WallTime <= 0 || res.MemoryKiB <= 0 {
+		// isolate reports milliseconds: a run this short can take 0.000 s.
+		if res.CPUTime < 0 || res.WallTime < 0 || res.MemoryKiB <= 0 {
 			t.Errorf("seccomp=%v: stats %+v", seccomp, res)
 		}
 	}
