@@ -231,6 +231,29 @@ func TestValkeyHubIgnoresLocalPublish(t *testing.T) {
 	}
 }
 
+// TestHubDropsMessagesBeforeItsBase: a message published between the
+// subscription and the read of the counter arrives after the resync that
+// covers it; delivering it would move the client's Last-Event-ID back.
+func TestHubDropsMessagesBeforeItsBase(t *testing.T) {
+	h := NewHub(kv.New(nil, "t:"), quiet, nil, HubOptions{})
+	s := h.Subscribe([]Topic{"p:1"}, "")
+	defer s.Close()
+	h.connect(100)
+	if m := nextWithin(t, s, time.Second); m.Event != EventResync || m.Reason != ReasonReconnect || m.Seq != 100 {
+		t.Fatalf("got %s %s %d, want the resync of the connection", m.Event, m.Reason, m.Seq)
+	}
+	h.receive("t:live:p:1", "99\n0\nx\nlate")
+	h.receive("t:live:p:1", "100\n0\nx\nlate")
+	expectNothing(t, s, 20*time.Millisecond)
+	h.receive("t:live:p:1", "101\n0\nx\nnew")
+	if m := nextWithin(t, s, time.Second); m.Seq != 101 || string(m.Data) != "new" {
+		t.Errorf("got %s %d %s", m.Event, m.Seq, m.Data)
+	}
+	if h.LastID() != FormatID(101) {
+		t.Errorf("LastID %s", h.LastID())
+	}
+}
+
 // TestLocalHubAcceptsLaterTimes: cmsranking connects with the time of its
 // data as last_event_id, usually later than the last event.
 func TestLocalHubAcceptsLaterTimes(t *testing.T) {

@@ -615,6 +615,13 @@ func (h *Hub) receive(channel, payload string) {
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	if seq <= h.last {
+		// Published between the subscription and the read of the counter
+		// (connect): the resync marker, or the data of a page that read
+		// LastID afterwards, already covers it. Dropping it keeps the ids
+		// of every stream increasing, so Last-Event-ID never goes back.
+		return
+	}
 	if h.last != 0 && seq > h.last+1 {
 		// Events were published that this hub never received.
 		h.log.Warn("live events: events lost, resyncing", "after", FormatID(h.last), "next", FormatID(seq))

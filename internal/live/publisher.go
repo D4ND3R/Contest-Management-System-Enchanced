@@ -310,7 +310,10 @@ func (p *Publisher) due(out []Event, now time.Time, flush bool) ([]Event, time.T
 	return out, next
 }
 
-// send publishes evs, one script call per maxPerCall messages.
+// send publishes evs, one script call per maxPerCall messages. After a
+// failed call the rest of evs is counted as lost without trying: an
+// unreachable Valkey costs one Timeout per batch (and at shutdown), not
+// one per call.
 func (p *Publisher) send(ctx context.Context, evs []Event) {
 	if len(evs) == 0 {
 		return
@@ -318,14 +321,19 @@ func (p *Publisher) send(ctx context.Context, evs []Event) {
 	args := make([]any, 1, 1+3*min(maxPerCall, 4*len(evs)))
 	args[0] = nowMicros()
 	var names []string
+	var failed error
 	flush := func() {
 		if len(names) == 0 {
 			return
 		}
-		cctx, cancel := context.WithTimeout(ctx, p.opts.Timeout)
-		err := publishScript.Run(cctx, p.kv.Redis(), []string{p.seqKey}, args...).Err()
-		cancel()
+		err := failed
+		if err == nil {
+			cctx, cancel := context.WithTimeout(ctx, p.opts.Timeout)
+			err = publishScript.Run(cctx, p.kv.Redis(), []string{p.seqKey}, args...).Err()
+			cancel()
+		}
 		if err != nil {
+			failed = err
 			p.m.errors.Add(float64(len(names)))
 			if time.Since(p.lastErrLog) > 10*time.Second {
 				p.lastErrLog = time.Now()

@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 )
 
 // TestEventContract pins the names, topics and payloads documented in the
@@ -42,6 +43,8 @@ func TestEventContract(t *testing.T) {
 			[]Topic{"a:1"}, `{"v":1,"contest":1,"participation":2,"question":9,"change":"new"}`},
 		{ContestChange{Contest: 1}.Event(),
 			[]Topic{"c:1", "a:1"}, `{"v":1,"contest":1}`},
+		{ParticipationChange{Contest: 1, Participation: 2}.Event(),
+			[]Topic{"p:2", "a:1"}, `{"v":1,"contest":1,"participation":2}`},
 		{ScoreboardChange{Contest: 1, Participations: []int64{5, 2, 5}}.Event(),
 			[]Topic{"s:1"}, `{"v":1,"contest":1,"participations":[2,5]}`},
 		{Judging{Counters: counters}.Event(),
@@ -163,5 +166,28 @@ func TestNoDatabaseAccess(t *testing.T) {
 			strings.HasSuffix(dep, "/internal/store") {
 			t.Errorf("live depends on %s", dep)
 		}
+	}
+}
+
+func TestResyncSpread(t *testing.T) {
+	for _, c := range []struct {
+		reason  string
+		streams int
+		want    time.Duration
+	}{
+		{ReasonOverflow, 1500, 2 * time.Second},
+		{ReasonReconnect, 1, 2 * time.Second},
+		{ReasonReconnect, 1500, 7500 * time.Millisecond},
+		{ReasonGap, 1500, 7500 * time.Millisecond},
+		{ReasonReconnect, 100000, 30 * time.Second},
+	} {
+		if got := ResyncSpread(c.reason, c.streams); got != c.want {
+			t.Errorf("ResyncSpread(%s, %d) = %v, want %v", c.reason, c.streams, got, c.want)
+		}
+	}
+	var p ResyncPayload
+	if err := json.Unmarshal(resyncData(ReasonGap, 7500*time.Millisecond), &p); err != nil ||
+		p != (ResyncPayload{V: 1, Reason: ReasonGap, Spread: 7500}) {
+		t.Errorf("resync data: %+v %v", p, err)
 	}
 }

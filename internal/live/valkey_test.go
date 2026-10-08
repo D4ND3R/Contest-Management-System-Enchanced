@@ -8,9 +8,12 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"io"
+	"net"
 	"net/http"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -215,6 +218,52 @@ func TestPublishNeverBlocks(t *testing.T) {
 	}
 }
 
+// TestPublisherGivesUpOnSilentValkey: a Valkey that accepts connections
+// and never answers (a network black hole) costs one timeout per batch,
+// also when Run flushes the queue at shutdown, not one per script call.
+func TestPublisherGivesUpOnSilentValkey(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	var conns atomic.Int32
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			conns.Add(1)
+			go func() { _, _ = io.Copy(io.Discard, c); _ = c.Close() }()
+		}
+	}()
+	const timeout = 200 * time.Millisecond
+	rdb := redis.NewClient(&redis.Options{Addr: ln.Addr().String(), MaxRetries: -1,
+		ReadTimeout: timeout, WriteTimeout: timeout, DialTimeout: timeout})
+	defer rdb.Close()
+	reg := prometheus.NewRegistry()
+	const n = 16 * maxPerCall // 16 script calls if each were tried
+	p := NewPublisher(kv.New(rdb, "x:"), quiet, reg, PublisherOptions{Queue: n, Timeout: timeout})
+	for i := range n {
+		p.Publish(TaskScore{Contest: 1, Participation: int64(i), Task: 1}.Event())
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	start := time.Now()
+	if err := p.Run(ctx); err != nil {
+		t.Fatal(err)
+	}
+	// Run takes at most 4*maxPerCall events per batch before it sees the
+	// cancellation, then the rest in one final batch: at most 5 batches.
+	if d, c := time.Since(start), conns.Load(); d > 10*timeout || c > 5 {
+		t.Errorf("Run took %v and %d connections to give up", d, c)
+	}
+	if got := metric(t, reg, "cms_live_publish_errors_total", nil); got != n {
+		t.Errorf("lost %v events, want %d", got, n)
+	}
+}
+
 // killSubscription closes the pub/sub connection of the clients named
 // name, as a Valkey restart or a network cut would.
 func killSubscription(t testing.TB, admin *kv.Client, name string) {
@@ -345,7 +394,7 @@ func TestStreamReportsValkeyOutage(t *testing.T) {
 		t.Errorf("the outage was reported after %v", d)
 	}
 	ev := readWithin(t, 3*time.Second, func() (sseEvent, error) { return rd.nextEvent(true) })
-	if ev.Event != EventResync || ev.Data != `{"v":1,"reason":"reconnect"}` || ev.ID != h.LastID() {
+	if ev.Event != EventResync || ev.Data != `{"v":1,"reason":"reconnect","spread":2000}` || ev.ID != h.LastID() {
 		t.Errorf("got %v, want a resync", ev)
 	}
 	if !ping() {

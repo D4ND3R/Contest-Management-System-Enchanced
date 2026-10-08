@@ -90,9 +90,11 @@ func fanoutServer(in io.Reader, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	prefix := os.Getenv(envFanoutPrefix)
+	opt.ClientName = fanoutClientName(prefix) // the test kills its subscription
 	rdb := redis.NewClient(opt)
 	defer rdb.Close()
-	h := NewHub(kv.New(rdb, os.Getenv(envFanoutPrefix)), quiet, nil, HubOptions{})
+	h := NewHub(kv.New(rdb, prefix), quiet, nil, HubOptions{})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go func() { _ = h.Run(ctx) }()
@@ -144,6 +146,11 @@ func fanoutServer(in io.Reader, out io.Writer) error {
 	return <-served
 }
 
+// fanoutClientName names the Valkey connections of the server process.
+func fanoutClientName(prefix string) string {
+	return "live-fanout-" + strings.ReplaceAll(prefix, ":", "-")
+}
+
 // selfRSS returns the resident memory of the process.
 func selfRSS() uint64 {
 	b, err := os.ReadFile("/proc/self/status")
@@ -172,20 +179,22 @@ type fanout struct {
 	stdin io.WriteCloser
 	lines chan string
 	addr  string
+	kv    *kv.Client
 	pub   *Publisher
 	conns []net.Conn
 
-	hello   atomic.Int64 // clients that got their first ping
-	resyncs atomic.Int64
-	got     []atomic.Int32 // deliveries of event n
-	mu      sync.Mutex
-	lat     []time.Duration
+	hello    atomic.Int64 // clients that got their first ping
+	resyncs  atomic.Int64
+	resyncOK atomic.Int64   // reconnect markers with the expected spread
+	got      []atomic.Int32 // deliveries of event n
+	mu       sync.Mutex
+	lat      []time.Duration
 }
 
 func startFanout(t testing.TB, n int) *fanout {
 	t.Helper()
 	kvc := testutil.Redis(t)
-	f := &fanout{t: t, n: n, lines: make(chan string, 16), got: make([]atomic.Int32, 1<<16)}
+	f := &fanout{t: t, n: n, kv: kvc, lines: make(chan string, 16), got: make([]atomic.Int32, 1<<16)}
 
 	args := []string{"-test.run=^TestFanoutServer$"}
 	if path, err := exec.LookPath("taskset"); err == nil && runtime.NumCPU() >= 2*fanoutCPUs {
@@ -315,6 +324,11 @@ func (f *fanout) read(c net.Conn) {
 			}
 		case EventResync:
 			f.resyncs.Add(1)
+			var p ResyncPayload
+			if json.Unmarshal([]byte(ev.Data), &p) == nil && p.Reason == ReasonReconnect &&
+				p.Spread == ResyncSpread(ReasonReconnect, f.n).Milliseconds() {
+				f.resyncOK.Add(1)
+			}
 		case "bench":
 			var p benchPayload
 			if json.Unmarshal([]byte(ev.Data), &p) == nil && p.N < int64(len(f.got)) {
@@ -440,6 +454,20 @@ func TestFanout(t *testing.T) {
 			t.Errorf("%s p95 latency %v > 2 s (N1)", name, p95)
 		}
 	}
+
+	// The server loses its Valkey subscription: every stream gets a
+	// resync (spread for n pages), and events flow again.
+	killed := time.Now()
+	killSubscription(t, f.kv, fanoutClientName(f.kv.Prefix()))
+	f.wait("the resyncs", func() bool { return f.resyncs.Load() >= int64(n) })
+	t.Logf("Valkey disconnect: %d streams resynced %v after the kill (spread %v)",
+		n, time.Since(killed).Round(time.Millisecond), ResyncSpread(ReasonReconnect, n))
+	if ok := f.resyncOK.Load(); ok != int64(n) {
+		t.Errorf("%d of %d resync markers said reconnect with the expected spread", ok, n)
+	}
+	last := int64(events + n)
+	f.publish(last, ContestTopic(1))
+	f.wait("a broadcast after the reconnection", func() bool { return f.got[last].Load() == int32(n) })
 }
 
 // BenchmarkFanout: one broadcast to 1500 streams per iteration (publish,

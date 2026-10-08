@@ -200,7 +200,7 @@ func TestStreamLastEventID(t *testing.T) {
 	// An unknown id is a gap: resync (named as the site asks).
 	_, rd = open(t, srv.URL+"/events?t=p:1", http.Header{"Last-Event-Id": {"zzz"}})
 	evs := collect(rd)
-	if len(evs) != 1 || evs[0].Event != "reload" || evs[0].ID != last || evs[0].Data != `{"v":1,"reason":"gap"}` {
+	if len(evs) != 1 || evs[0].Event != "reload" || evs[0].ID != last || evs[0].Data != `{"v":1,"reason":"gap","spread":2000}` {
 		t.Errorf("got %v, want a reload marker", evs)
 	}
 }
@@ -304,7 +304,7 @@ func TestStreamSlowClientGetsResync(t *testing.T) {
 		switch {
 		case ev.Event == EventResync:
 			resync = id
-			if ev.Data != `{"v":1,"reason":"overflow"}` {
+			if ev.Data != `{"v":1,"reason":"overflow","spread":2000}` {
 				t.Errorf("resync data %s", ev.Data)
 			}
 		case resync != 0:

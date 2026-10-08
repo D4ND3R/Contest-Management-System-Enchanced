@@ -68,6 +68,8 @@
 //	question      a:<c>     {"v":1,"contest":1,"participation":2,"question":9,"change":"new"}
 //	              change: new | answered | ignored | claimed | released
 //	contest       c:<c>, a:<c>  {"v":1,"contest":1}   (times, tasks or settings changed)
+//	participation p:<p>, a:<c>  {"v":1,"contest":1,"participation":2}
+//	              (extra time, delay, starting time... of one contestant changed)
 //	scoreboard    s:<c>, throttled  {"v":1,"contest":1,"participations":[2,5]}
 //	              or {"v":1,"contest":1,"all":true}: reload the whole scoreboard
 //	judging       a or a:<c>, throttled  {"v":1,"contest":1,"counters":{"queued":3,...}}
@@ -81,8 +83,11 @@
 //	ping    {"v":1,"interval":15000,"live":true,"time":1767225600000}
 //	        interval: ms between pings; live: false while this server
 //	        receives no events (Valkey down); time: server clock (ms).
-//	resync  {"v":1,"reason":"overflow"}   reason: overflow | reconnect | gap
-//	        (the ranking names it "reload", which its CMS JavaScript knows)
+//	resync  {"v":1,"reason":"reconnect","spread":7500}
+//	        reason: overflow | reconnect | gap; spread: ms (ResyncSpread:
+//	        2 s for overflow, otherwise 5 ms per open stream of the
+//	        server, 2–30 s). The ranking names it "reload", which its CMS
+//	        JavaScript knows.
 //
 // # Ids and Last-Event-ID
 //
@@ -136,10 +141,17 @@
 // While not green, the page polls its live regions (jittered, every
 // 15–30 s); it stops polling at the next ping with live: true (a resync
 // comes first if needed). On resync it reloads every live region after a
-// random delay of 0–2 s; on an event it reloads the affected regions,
+// random delay below spread; on an event it reloads the affected regions,
 // grouped (at most once per second). Regions are marked with data-live
 // attributes naming the events that refresh them; events of other
 // regions are ignored.
+//
+// Browsers open at most 6 HTTP/1.1 connections per host, and every open
+// stream holds one: a contestant with many tabs would leave the pages
+// without connections. Serve the sites over HTTP/2 (the reverse proxy
+// does it with TLS), or let live.js close the stream of a hidden tab
+// (visibilitychange) and reopen it with ?last_event_id= when the tab is
+// shown again.
 //
 // # Serving
 //

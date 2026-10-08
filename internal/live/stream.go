@@ -203,7 +203,8 @@ func (st *stream) pump(limit int) {
 			return
 		}
 		if m.marker {
-			st.buf = appendFrame(st.buf[:0], m.Seq, st.opts.ResyncEvent, resyncData(m.Reason))
+			spread := ResyncSpread(m.Reason, st.hub.Subscribers())
+			st.buf = appendFrame(st.buf[:0], m.Seq, st.opts.ResyncEvent, resyncData(m.Reason, spread))
 			st.write(st.buf)
 		} else {
 			st.write(m.frame)
@@ -229,6 +230,7 @@ func (st *stream) ping(id uint64) {
 	st.write(st.buf)
 }
 
-func resyncData(reason string) []byte {
-	return []byte(`{"v":` + strconv.Itoa(Version) + `,"reason":"` + reason + `"}`)
+func resyncData(reason string, spread time.Duration) []byte {
+	return []byte(`{"v":` + strconv.Itoa(Version) + `,"reason":"` + reason +
+		`","spread":` + strconv.FormatInt(spread.Milliseconds(), 10) + `}`)
 }

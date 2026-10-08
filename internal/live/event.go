@@ -54,17 +54,18 @@ const (
 	// the state of its live regions (ResyncPayload).
 	EventResync = "resync"
 
-	EventSubmission   = "submission"
-	EventUserTest     = "user_test"
-	EventTaskScore    = "task_score"
-	EventAnnouncement = "announcement"
-	EventMessage      = "message"
-	EventAnswer       = "answer"
-	EventQuestion     = "question"
-	EventContest      = "contest"
-	EventScoreboard   = "scoreboard"
-	EventJudging      = "judging"
-	EventWorker       = "worker"
+	EventSubmission    = "submission"
+	EventUserTest      = "user_test"
+	EventTaskScore     = "task_score"
+	EventAnnouncement  = "announcement"
+	EventMessage       = "message"
+	EventAnswer        = "answer"
+	EventQuestion      = "question"
+	EventContest       = "contest"
+	EventParticipation = "participation"
+	EventScoreboard    = "scoreboard"
+	EventJudging       = "judging"
+	EventWorker        = "worker"
 )
 
 // Event is one live event: an event name, the topics it goes to and a
@@ -259,6 +260,23 @@ func (p ContestChange) Event() Event {
 		Topics: []Topic{ContestTopic(p.Contest), AdminContestTopic(p.Contest)}}
 }
 
+// ParticipationChange: the settings of one participation changed (extra
+// time, delay, starting time, hidden, unrestricted...). The contestant's
+// pages reload what depends on them (the timer, the task list).
+type ParticipationChange struct {
+	V             int   `json:"v"`
+	Contest       int64 `json:"contest"`
+	Participation int64 `json:"participation"`
+}
+
+// Event returns the event "participation" for the contestant and the
+// administrators of the contest.
+func (p ParticipationChange) Event() Event {
+	p.V = Version
+	return Event{Name: EventParticipation, Data: p,
+		Topics: []Topic{ParticipationTopic(p.Participation), AdminContestTopic(p.Contest)}}
+}
+
 // MaxScoreboardIDs bounds the participations listed in one scoreboard
 // event; beyond it the event says All.
 const MaxScoreboardIDs = 256
@@ -400,6 +418,31 @@ const (
 type ResyncPayload struct {
 	V      int    `json:"v"`
 	Reason string `json:"reason"`
+	// Spread is in milliseconds: the page reloads its live regions after
+	// a random delay below it, so that the pages of a server that
+	// reconnected (or restarted) do not all reload at once. It grows with
+	// the number of open streams (ResyncSpread).
+	Spread int64 `json:"spread"`
+}
+
+// Resync spread: MinResyncSpread, or ResyncSpreadPerStream for every open
+// stream of the hub when every page may get the marker at once (reasons
+// reconnect and gap), up to MaxResyncSpread. 5 ms per stream keeps the
+// reloads after a reconnection of 1500 pages around 200 per second (7.5 s).
+const (
+	MinResyncSpread       = 2 * time.Second
+	ResyncSpreadPerStream = 5 * time.Millisecond
+	MaxResyncSpread       = 30 * time.Second
+)
+
+// ResyncSpread returns the spread of a resync marker for a hub with
+// streams open streams.
+func ResyncSpread(reason string, streams int) time.Duration {
+	if reason == ReasonOverflow {
+		// One page that did not keep up.
+		return MinResyncSpread
+	}
+	return min(max(MinResyncSpread, time.Duration(streams)*ResyncSpreadPerStream), MaxResyncSpread)
 }
 
 // validName reports whether s can be an event name.
