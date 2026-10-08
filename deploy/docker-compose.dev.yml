@@ -101,9 +101,21 @@ services:
       test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9191/healthz"]
       interval: 5s
 
-  # Placeholder until F2: the judging image (isolate, compilers) replaces it.
   worker:
     <<: *cms
+    # isolate and the compilers (deploy/docker/Dockerfile.worker).
+    image: cms-worker:dev
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.worker
+    # isolate needs namespaces and its own cgroup tree.
+    privileged: true
+    cgroup: private
+    environment:
+      <<: *cms-env
+      # scripts/dev-compose.sh sets false on hosts without cgroups v2.
+      CMS_SANDBOX_CGROUPS: ${CMS_SANDBOX_CGROUPS:-true}
+      CMS_WORKER_WORK_DIR: /var/lib/cms/worker
     command: ["worker"]
     healthcheck:
       test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9192/healthz"]

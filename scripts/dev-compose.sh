@@ -25,6 +25,11 @@ ensure_env() {
 case "${1:-up}" in
 up)
     make -C "$ROOT" build >/dev/null
+    if [[ ! -f /sys/fs/cgroup/cgroup.controllers ]]; then
+        # Without cgroups v2 isolate limits memory per process only.
+        export CMS_SANDBOX_CGROUPS="${CMS_SANDBOX_CGROUPS:-false}"
+        echo "dev-compose: no cgroups v2 on this host, worker runs with CMS_SANDBOX_CGROUPS=false" >&2
+    fi
     ensure_env
     "${COMPOSE[@]}" up -d --build --wait
     "${COMPOSE[@]}" ps

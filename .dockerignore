@@ -2,3 +2,4 @@
 !bin/cms
 !LICENSE.txt
 !AUTHORS.txt
+!deploy/docker/worker-entrypoint.sh

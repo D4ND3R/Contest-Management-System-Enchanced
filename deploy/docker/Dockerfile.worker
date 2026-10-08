@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Image of the judge (`cms worker`): isolate and the compilers of every
+# language in config/languages. Like the main image, the cms binary is
+# built outside and copied in.
+#
+#   make build && docker build -f deploy/docker/Dockerfile.worker -t cms-worker .
+#
+# isolate needs a privileged container with its own cgroup namespace and a
+# host with cgroups v2:
+#
+#   docker run --privileged --cgroupns=private cms-worker worker
+#
+# On development hosts without cgroups v2 set CMS_SANDBOX_CGROUPS=false
+# (memory limits then work per process only; see sandbox.cgroups).
+FROM ubuntu:24.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+# The same packages the CI sandbox job tests with.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl \
+ && install -d -m 0755 /etc/apt/keyrings \
+ && curl -fsSL https://www.ucw.cz/isolate/debian/signing-key.asc -o /etc/apt/keyrings/isolate.asc \
+ && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ noble-isolate main" \
+      >/etc/apt/sources.list.d/isolate.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends isolate \
+      g++ gcc python3 pypy3 default-jdk-headless fp-compiler ghc mono-mcs mono-runtime \
+      rustc golang-go php-cli kotlin \
+ && apt-get purge -y curl \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
+
+# Go compilations use a prebuilt standard library (config/languages/go.yaml):
+# with an empty build cache they would exceed the compilation time limit.
+RUN CGO_ENABLED=0 GODEBUG=installgoroot=all /usr/bin/go install -pkgdir=/var/lib/cms/go-std std \
+ && rm -rf /root/.cache/go-build
+
+COPY bin/cms /usr/local/bin/cms
+COPY deploy/docker/worker-entrypoint.sh /usr/local/bin/cms-worker-entrypoint
+COPY LICENSE.txt AUTHORS.txt /usr/share/doc/cms/
+# isolate runs as root (it drops to its own box users).
+ENTRYPOINT ["/usr/local/bin/cms-worker-entrypoint"]
+CMD ["worker"]

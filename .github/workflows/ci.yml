@@ -118,3 +118,25 @@ jobs:
           make build
           # The runner has SMT and swap: only the report matters here.
           sudo env CMS_WORKER_WORK_DIR=/tmp/cms-worker bin/cms ctl verify-host || true
+
+  worker-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: build the worker image
+        timeout-minutes: 25
+        run: |
+          make build
+          docker build -f deploy/docker/Dockerfile.worker -t cms-worker:ci .
+      - name: isolate with cgroups v2 inside the container
+        run: |
+          set -o pipefail
+          docker run --rm --privileged --cgroupns=private \
+            -e CMS_WORKER_WORK_DIR=/var/lib/cms/worker cms-worker:ci ctl verify-host | tee verify.txt || true
+          # The runner's SMT and swap may fail; the sandbox itself must pass.
+          grep -q '^PASS  isolate cgroup:' verify.txt
+          grep -q '^PASS  sandbox run:' verify.txt
