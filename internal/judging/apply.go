@@ -532,7 +532,7 @@ func (a *applier) finishSubmissions(ctx context.Context, list []*subState) error
 				Generation: st.Generation, Attempt: 1,
 			})
 		case st.compileFailed && st.CompilationOutcome == nil:
-			if st.CompilationTries >= MaxCompilationTries {
+			if st.CompilationTries >= a.j.tries.Compilation {
 				a.giveUp(GaveUp{job.Compilation, k.SubmissionID, k.DatasetID, st.CompilationTries},
 					"Maximum number of failures reached for the compilation of a submission")
 				continue
@@ -543,7 +543,7 @@ func (a *applier) finishSubmissions(ctx context.Context, list []*subState) error
 				Generation: st.Generation, Attempt: int(st.CompilationTries) + 1, Retry: true,
 			})
 		case st.EvaluationOutcome != nil || !compiledOK(st.CompilationOutcome):
-		case len(st.evalFailed) > 0 && st.EvaluationTries >= MaxEvaluationTries:
+		case len(st.evalFailed) > 0 && st.EvaluationTries >= a.j.tries.Evaluation:
 			a.giveUp(GaveUp{job.Evaluation, k.SubmissionID, k.DatasetID, st.EvaluationTries},
 				"Maximum number of failures reached for the evaluation of a submission")
 		case st.compiled || len(st.evalFailed) > 0:
@@ -782,14 +782,14 @@ func (a *applier) userTests(ctx context.Context, results []*job.Result) error {
 		case st.compiled && compiledOK(st.CompilationOutcome):
 			op.Type, op.Priority, op.Attempt = job.UserTestEvaluation, priority(false, st.Active, st.EvaluationTries), int(st.EvaluationTries)+1
 			a.ch.Next = append(a.ch.Next, op)
-		case st.compileFailed && st.CompilationTries >= MaxUserTestCompilationTries:
+		case st.compileFailed && st.CompilationTries >= a.j.tries.UserTestCompilation:
 			a.giveUp(GaveUp{job.UserTestCompilation, k.UserTestID, k.DatasetID, st.CompilationTries},
 				"Maximum number of failures reached for the compilation of a user test")
 		case st.compileFailed:
 			op.Type, op.Priority = job.UserTestCompilation, priority(true, st.Active, st.CompilationTries)
 			op.Attempt, op.Retry = int(st.CompilationTries)+1, true
 			a.ch.Next = append(a.ch.Next, op)
-		case st.evalFailed && st.EvaluationTries >= MaxUserTestEvaluationTries:
+		case st.evalFailed && st.EvaluationTries >= a.j.tries.UserTestEvaluation:
 			a.giveUp(GaveUp{job.UserTestEvaluation, k.UserTestID, k.DatasetID, st.EvaluationTries},
 				"Maximum number of failures reached for the evaluation of a user test")
 		case st.evalFailed:

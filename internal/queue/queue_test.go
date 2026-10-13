@@ -550,6 +550,49 @@ func TestDedup(t *testing.T) {
 	}
 }
 
+func TestHolding(t *testing.T) {
+	c := testutil.Redis(t)
+	q := open(t, c, "jobs", queue.Options{Priorities: 2, BackoffBase: time.Hour, BackoffMax: time.Hour})
+	ctx := context.Background()
+	if h, err := q.Holding(ctx, nil); err != nil || len(h) != 0 {
+		t.Fatalf("no keys: %v %v", h, err)
+	}
+	enqueue(t, q, 0, "a", queue.EnqueueOptions{DedupKey: "queued"})
+	enqueue(t, q, 1, "b", queue.EnqueueOptions{DedupKey: "delayed", Delay: time.Hour})
+	enqueue(t, q, 0, "c", queue.EnqueueOptions{DedupKey: "flight"})
+	enqueue(t, q, 0, "d", queue.EnqueueOptions{DedupKey: "acked"})
+	enqueue(t, q, 0, "e", queue.EnqueueOptions{DedupKey: "retried"})
+	for range 4 {
+		m := consume(t, q, "A", 0)
+		switch string(m.Payload) {
+		case "d":
+			ack(t, q, m)
+		case "e":
+			if _, err := q.Retry(ctx, m, errors.New("failed")); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	keys := []string{"queued", "delayed", "flight", "acked", "retried", "never"}
+	// More keys than one round trip takes.
+	for i := range 2500 {
+		keys = append(keys, fmt.Sprintf("x%d", i))
+	}
+	h, err := q.Holding(ctx, keys)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]bool{"queued": true, "delayed": true, "flight": true, "retried": true}
+	if len(h) != len(keys) {
+		t.Fatalf("%d answers for %d keys", len(h), len(keys))
+	}
+	for i, k := range keys {
+		if h[i] != want[k] {
+			t.Errorf("Holding(%q) = %v", k, h[i])
+		}
+	}
+}
+
 func TestDelayedEnqueue(t *testing.T) {
 	c := testutil.Redis(t)
 	q := open(t, c, "jobs", queue.Options{PollInterval: 10 * time.Second})

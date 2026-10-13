@@ -63,7 +63,7 @@ func (j *Judge) Pending(ctx context.Context, t Targets) (*Work, error) {
 		if err != nil {
 			return nil, err
 		}
-		sw, err := submissionWork(ctx, j.store.Q, rows, t.ArchiveSandbox)
+		sw, err := submissionWork(ctx, j.store.Q, rows, t.ArchiveSandbox, j.tries)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func (j *Judge) Pending(ctx context.Context, t Targets) (*Work, error) {
 		if err != nil {
 			return nil, err
 		}
-		w.add(userTestWork(rows, t.ArchiveSandbox))
+		w.add(userTestWork(rows, t.ArchiveSandbox, j.tries))
 	}
 	return w, nil
 }
@@ -92,13 +92,13 @@ type evalTarget struct {
 // submissionWork turns the states of submission results into work
 // (upstream submission_get_operations, plus the finalization of
 // submission_enqueue_operations and the scoring sweep of ScoringService).
-func submissionWork(ctx context.Context, qq *q.Queries, rows []q.JudgingSubmissionStatesRow, archive bool) (*Work, error) {
+func submissionWork(ctx context.Context, qq *q.Queries, rows []q.JudgingSubmissionStatesRow, archive bool, tries Tries) (*Work, error) {
 	w := &Work{}
 	var toEval []evalTarget
 	for _, r := range rows {
 		key := ResultKey{r.SubmissionID, r.DatasetID}
 		switch {
-		case !r.HasResult || r.CompilationOutcome == nil && r.CompilationTries < MaxCompilationTries:
+		case !r.HasResult || r.CompilationOutcome == nil && r.CompilationTries < tries.Compilation:
 			// submission_to_compile.
 			w.Ops = append(w.Ops, Operation{
 				Operation: job.Operation{Type: job.Compilation, ObjectID: r.SubmissionID, DatasetID: r.DatasetID,
@@ -112,7 +112,7 @@ func submissionWork(ctx context.Context, qq *q.Queries, rows []q.JudgingSubmissi
 		case r.CompilationOutcome == nil:
 			w.GaveUp = append(w.GaveUp, GaveUp{job.Compilation, r.SubmissionID, r.DatasetID, r.CompilationTries})
 		case *r.CompilationOutcome == job.CompilationOK && r.EvaluationOutcome == nil:
-			if r.EvaluationTries >= MaxEvaluationTries {
+			if r.EvaluationTries >= tries.Evaluation {
 				w.GaveUp = append(w.GaveUp, GaveUp{job.Evaluation, r.SubmissionID, r.DatasetID, r.EvaluationTries})
 				continue
 			}
@@ -185,7 +185,7 @@ func evaluationOps(ctx context.Context, qq *q.Queries, targets []evalTarget, arc
 
 // userTestWork turns the states of user test results into operations
 // (upstream user_test_get_operations).
-func userTestWork(rows []q.JudgingUserTestStatesRow, archive bool) *Work {
+func userTestWork(rows []q.JudgingUserTestStatesRow, archive bool, tries Tries) *Work {
 	w := &Work{}
 	for _, r := range rows {
 		op := Operation{
@@ -194,7 +194,7 @@ func userTestWork(rows []q.JudgingUserTestStatesRow, archive bool) *Work {
 			Generation: r.Generation,
 		}
 		switch {
-		case !r.HasResult || r.CompilationOutcome == nil && r.CompilationTries < MaxUserTestCompilationTries:
+		case !r.HasResult || r.CompilationOutcome == nil && r.CompilationTries < tries.UserTestCompilation:
 			op.Type = job.UserTestCompilation
 			op.Priority = priority(true, r.Active, r.CompilationTries)
 			op.Attempt, op.Retry = int(r.CompilationTries)+1, r.CompilationTries > 0
@@ -202,7 +202,7 @@ func userTestWork(rows []q.JudgingUserTestStatesRow, archive bool) *Work {
 			w.GaveUp = append(w.GaveUp, GaveUp{job.UserTestCompilation, r.UserTestID, r.DatasetID, r.CompilationTries})
 			continue
 		case *r.CompilationOutcome == job.CompilationOK && r.EvaluationOutcome == nil:
-			if r.EvaluationTries >= MaxUserTestEvaluationTries {
+			if r.EvaluationTries >= tries.UserTestEvaluation {
 				w.GaveUp = append(w.GaveUp, GaveUp{job.UserTestEvaluation, r.UserTestID, r.DatasetID, r.EvaluationTries})
 				continue
 			}
@@ -280,7 +280,7 @@ func (j *Judge) Sweep(ctx context.Context, opts SweepOptions) (*SweepResult, err
 		to := upto(after, max.MaxSubmissionID)
 		ids, err := j.store.Q.JudgingSweepSubmissions(ctx, q.JudgingSweepSubmissionsParams{
 			After: after, Upto: to, ContestID: opts.ContestID, MaxRows: opts.Limit,
-			MaxCompilationTries: MaxCompilationTries, MaxEvaluationTries: MaxEvaluationTries,
+			MaxCompilationTries: j.tries.Compilation, MaxEvaluationTries: j.tries.Evaluation,
 		})
 		if err != nil {
 			return nil, err
@@ -302,7 +302,7 @@ func (j *Judge) Sweep(ctx context.Context, opts SweepOptions) (*SweepResult, err
 		to := upto(after, max.MaxUserTestID)
 		ids, err := j.store.Q.JudgingSweepUserTests(ctx, q.JudgingSweepUserTestsParams{
 			After: after, Upto: to, ContestID: opts.ContestID, MaxRows: opts.Limit,
-			MaxCompilationTries: MaxUserTestCompilationTries, MaxEvaluationTries: MaxUserTestEvaluationTries,
+			MaxCompilationTries: j.tries.UserTestCompilation, MaxEvaluationTries: j.tries.UserTestEvaluation,
 		})
 		if err != nil {
 			return nil, err

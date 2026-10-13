@@ -96,6 +96,22 @@ func TestSandboxSettings(t *testing.T) {
 	}
 }
 
+func TestDispatcherSettings(t *testing.T) {
+	d := Default().Dispatcher
+	if d.SweepInterval.D() != time.Minute || d.MaxCompilationTries != 3 || d.MaxEvaluationTries != 3 || d.BlobListen != "" {
+		t.Errorf("defaults: %+v", d)
+	}
+	cfg, _, err := load(writeFile(t, "dispatcher:\n  sweep_interval: 30\n"), env(map[string]string{
+		"CMS_DISPATCHER_BLOB_LISTEN": ":8891", "CMS_DISPATCHER_MAX_EVALUATION_TRIES": "5",
+	}), os.ReadFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d := cfg.Dispatcher; d.SweepInterval.D() != 30*time.Second || d.BlobListen != ":8891" || d.MaxEvaluationTries != 5 {
+		t.Errorf("overrides: %+v", d)
+	}
+}
+
 func TestEnvFileVariant(t *testing.T) {
 	secret := filepath.Join(t.TempDir(), "secret")
 	if err := os.WriteFile(secret, []byte("ffeeddccbbaa99887766554433221100\n"), 0o600); err != nil {
@@ -169,6 +185,14 @@ func TestValidation(t *testing.T) {
 		"worker:\n  compilation_cache_ttl: -1h":                            "worker.compilation_cache_ttl",
 		"sandbox:\n  max_file_size_kib: 0":                                 "sandbox.max_file_size_kib",
 		"contest_web:\n  cookie_duration: 3 d":                             "invalid duration",
+		"dispatcher:\n  sweep_interval: 10ms":                              "dispatcher.sweep_interval",
+		"dispatcher:\n  sweep_interval: 48h":                               "dispatcher.sweep_interval",
+		"dispatcher:\n  max_compilation_tries: 0":                          "dispatcher.max_compilation_tries",
+		"dispatcher:\n  max_evaluation_tries: 101":                         "dispatcher.max_evaluation_tries",
+		"dispatcher:\n  result_batch: 0":                                   "dispatcher.result_batch",
+		"dispatcher:\n  blob_listen: nonsense":                             "dispatcher.blob_listen",
+		"dispatcher:\n  blob_listen: \":8891\"\nstorage:\n  backend: remote\n  remote:\n    url: http://d:8891\n    token: " +
+			strings.Repeat("ab", 32): "must be local or s3",
 	}
 	for yml, want := range cases {
 		_, _, err := load(writeFile(t, yml), env(nil), os.ReadFile)

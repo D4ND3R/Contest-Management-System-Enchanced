@@ -39,13 +39,13 @@ type StatusReport struct {
 // contest) by status on each dataset to judge (`cms ctl judging-status`).
 func (j *Judge) Status(ctx context.Context, contestID int32) (*StatusReport, error) {
 	subs, err := j.store.Q.JudgingSubmissionStatusCounts(ctx, q.JudgingSubmissionStatusCountsParams{
-		MaxCompilationTries: MaxCompilationTries, MaxEvaluationTries: MaxEvaluationTries, ContestID: contestID,
+		MaxCompilationTries: j.tries.Compilation, MaxEvaluationTries: j.tries.Evaluation, ContestID: contestID,
 	})
 	if err != nil {
 		return nil, err
 	}
 	uts, err := j.store.Q.JudgingUserTestStatusCounts(ctx, q.JudgingUserTestStatusCountsParams{
-		MaxCompilationTries: MaxUserTestCompilationTries, MaxEvaluationTries: MaxUserTestEvaluationTries, ContestID: contestID,
+		MaxCompilationTries: j.tries.UserTestCompilation, MaxEvaluationTries: j.tries.UserTestEvaluation, ContestID: contestID,
 	})
 	if err != nil {
 		return nil, err
@@ -68,4 +68,34 @@ func (j *Judge) Status(ctx context.Context, contestID int32) (*StatusReport, err
 		})
 	}
 	return r, nil
+}
+
+// Progress counts the unfinished submission results of a contest on its
+// datasets to judge (the live counters of the admin pages).
+type Progress struct {
+	// ContestID is 0 for tasks without a contest.
+	ContestID int32
+	// Compiling, Evaluating and Scoring are the results waiting for a
+	// compilation, for evaluations and for their score; those that gave
+	// up are not counted.
+	Compiling  int64
+	Evaluating int64
+	Scoring    int64
+}
+
+// Progress returns the unfinished results of every contest that has some,
+// in one query that reads only unfinished results (the dispatcher calls
+// it at most once a second while judging).
+func (j *Judge) Progress(ctx context.Context) ([]Progress, error) {
+	rows, err := j.store.Q.JudgingProgress(ctx, q.JudgingProgressParams{
+		MaxCompilationTries: j.tries.Compilation, MaxEvaluationTries: j.tries.Evaluation,
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Progress, len(rows))
+	for i, r := range rows {
+		out[i] = Progress{ContestID: r.ContestID, Compiling: r.Compiling, Evaluating: r.Evaluating, Scoring: r.Scoring}
+	}
+	return out, nil
 }

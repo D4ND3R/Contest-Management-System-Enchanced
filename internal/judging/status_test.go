@@ -64,3 +64,53 @@ func TestStatus(t *testing.T) {
 		t.Errorf("every contest: %+v %v", r, err)
 	}
 }
+
+func TestProgress(t *testing.T) {
+	f := newFx(t)
+	task := f.task(taskOpts{})
+	f.dataset(task.id, dsOpts{autojudge: true})
+	other := f.dataset(task.id, dsOpts{}) // not judged: not counted
+	p := f.participant("alice")
+	var subs []int32
+	for i := 0; i < 5; i++ {
+		subs = append(subs, f.submit(p, task, time.Duration(i)*time.Minute))
+	}
+	// 0: scored; 1: evaluating; 2: compiling (jobs built); 3: scoring; 4:
+	// gave up compiling. Each on the active and the autojudge dataset.
+	f.judgeAll(Targets{SubmissionIDs: subs[:1]}, allCorrect)
+	w, err := f.j.Pending(f.ctx, Targets{SubmissionIDs: subs[1:3]})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := f.j.BuildJobs(f.ctx, w.Ops)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var compiled []*job.Result
+	for _, jb := range b.Jobs {
+		if jb.Operation.ObjectID == subs[1] {
+			compiled = append(compiled, resultOf(jb, job.CompilationOK))
+		}
+	}
+	if _, err := f.j.Apply(f.ctx, compiled); err != nil {
+		t.Fatal(err)
+	}
+	f.judgeAll(Targets{SubmissionIDs: subs[3:4]}, allCorrect)
+	f.exec(`UPDATE submission_results SET score = NULL WHERE submission_id = $1`, subs[3])
+	f.judgeAll(Targets{SubmissionIDs: subs[4:5]}, func(*job.Job) string { return "" })
+	f.exec(`INSERT INTO submission_results (submission_id, dataset_id) VALUES ($1, $2)`, subs[0], other)
+
+	got, err := f.j.Progress(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []Progress{{ContestID: f.contest, Compiling: 2, Evaluating: 2, Scoring: 2}}
+	if len(got) != 1 || got[0] != want[0] {
+		t.Errorf("progress:\n got  %+v\n want %+v", got, want)
+	}
+	// Tries above the default: the result that gave up compiles again.
+	j := New(f.pool, Options{Tries: Tries{Compilation: 5}})
+	if got, err := j.Progress(f.ctx); err != nil || len(got) != 1 || got[0].Compiling != 4 {
+		t.Errorf("progress with 5 compilation tries: %+v %v", got, err)
+	}
+}

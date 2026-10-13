@@ -36,7 +36,9 @@ type TaskScore struct {
 // TaskScoreChange is a cached task score that changed.
 type TaskScoreChange struct {
 	TaskKey
-	Old, New TaskScore
+	// ContestID is the contest of the task (0: none), for the live events.
+	ContestID int32
+	Old, New  TaskScore
 }
 
 // taskScoreChunk bounds the participants and tasks recomputed per round of
@@ -138,7 +140,7 @@ func refreshChunk(ctx context.Context, qq *q.Queries, keys []TaskKey) ([]TaskSco
 		if nw == cur {
 			continue
 		}
-		changes = append(changes, TaskScoreChange{TaskKey: k, Old: cur, New: nw})
+		changes = append(changes, TaskScoreChange{TaskKey: k, ContestID: orZero(first.ContestID), Old: cur, New: nw})
 		upd.ParticipationIds = append(upd.ParticipationIds, k.ParticipationID)
 		upd.TaskIds = append(upd.TaskIds, k.TaskID)
 		upd.DatasetIds = append(upd.DatasetIds, nw.DatasetID)

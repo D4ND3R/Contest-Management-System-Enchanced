@@ -211,7 +211,7 @@ func (q *Queries) JudgingTaskParticipations(ctx context.Context, taskID int32) (
 
 const judgingTaskScoreInputs = `-- name: JudgingTaskScoreInputs :many
 SELECT x.participation_id::integer AS participation_id, x.task_id::integer AS task_id,
-       t.score_mode, t.score_precision, t.active_dataset_id,
+       t.score_mode, t.score_precision, t.active_dataset_id, t.contest_id,
        s.id AS submission_id, s.timestamp, s.official,
        (tk.submission_id IS NOT NULL)::boolean AS tokened,
        (sr.score IS NOT NULL AND sr.score_details IS NOT NULL AND sr.public_score IS NOT NULL
@@ -239,6 +239,7 @@ type JudgingTaskScoreInputsRow struct {
 	ScoreMode           string
 	ScorePrecision      int32
 	ActiveDatasetID     *int32
+	ContestID           *int32
 	SubmissionID        *int32
 	Timestamp           *time.Time
 	Official            *bool
@@ -253,7 +254,8 @@ type JudgingTaskScoreInputsRow struct {
 // Everything upstream task_score reads for the given participants and
 // tasks: the score mode and precision of the task, and every submission
 // (ix_submissions_participation_id_task_id) with whether a token was
-// played and its result on the active dataset. Of the details, only the
+// played and its result on the active dataset (and the contest of the
+// task, for the live events of the changes). Of the details, only the
 // subtask scores, and only for the max_subtask mode. A pair without
 // submissions gives one row with a NULL submission_id.
 func (q *Queries) JudgingTaskScoreInputs(ctx context.Context, arg JudgingTaskScoreInputsParams) ([]JudgingTaskScoreInputsRow, error) {
@@ -271,6 +273,7 @@ func (q *Queries) JudgingTaskScoreInputs(ctx context.Context, arg JudgingTaskSco
 			&i.ScoreMode,
 			&i.ScorePrecision,
 			&i.ActiveDatasetID,
+			&i.ContestID,
 			&i.SubmissionID,
 			&i.Timestamp,
 			&i.Official,

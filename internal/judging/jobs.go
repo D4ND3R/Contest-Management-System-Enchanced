@@ -244,7 +244,7 @@ func (j *Judge) buildSubmissionJobs(ctx context.Context, b *Built, ops []Operati
 		}
 		switch op.Type {
 		case job.Compilation:
-			if r.CompilationOutcome != nil || r.CompilationTries >= MaxCompilationTries {
+			if r.CompilationOutcome != nil || r.CompilationTries >= j.tries.Compilation {
 				b.skip(op, SkipDone, nil)
 				continue
 			}
@@ -257,7 +257,7 @@ func (j *Judge) buildSubmissionJobs(ctx context.Context, b *Built, ops []Operati
 				b.skip(op, SkipGone, nil)
 				continue
 			case orZero(r.CompilationOutcome) != job.CompilationOK || r.EvaluationOutcome != nil ||
-				r.EvaluationTries >= MaxEvaluationTries || !missing[tcKey{op.DatasetID, op.TestcaseCodename}][op.ObjectID]:
+				r.EvaluationTries >= j.tries.Evaluation || !missing[tcKey{op.DatasetID, op.TestcaseCodename}][op.ObjectID]:
 				b.skip(op, SkipDone, nil)
 				continue
 			}
@@ -365,7 +365,7 @@ func (j *Judge) buildUserTestJobs(ctx context.Context, b *Built, ops []Operation
 		}
 		switch op.Type {
 		case job.UserTestCompilation:
-			if r.CompilationOutcome != nil || r.CompilationTries >= MaxUserTestCompilationTries {
+			if r.CompilationOutcome != nil || r.CompilationTries >= j.tries.UserTestCompilation {
 				b.skip(op, SkipDone, nil)
 				continue
 			}
@@ -373,7 +373,7 @@ func (j *Judge) buildUserTestJobs(ctx context.Context, b *Built, ops []Operation
 			jb.Info = fmt.Sprintf("compile user test %d", op.ObjectID)
 		case job.UserTestEvaluation:
 			if orZero(r.CompilationOutcome) != job.CompilationOK || r.EvaluationOutcome != nil ||
-				r.EvaluationTries >= MaxUserTestEvaluationTries {
+				r.EvaluationTries >= j.tries.UserTestEvaluation {
 				b.skip(op, SkipDone, nil)
 				continue
 			}

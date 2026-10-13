@@ -177,9 +177,31 @@ type RankingWeb struct {
 }
 
 // Dispatcher configures the service that replaces EvaluationService,
-// ScoringService and ProxyService.
+// ScoringService and ProxyService. Several dispatchers may run (on other
+// machines, for failover): one is active and the others wait as hot
+// standbys.
 type Dispatcher struct {
 	OpsListen string `yaml:"ops_listen"`
+	// BlobListen serves the blob store over HTTP to judges on other
+	// machines, whose storage.backend is remote with storage.remote.url
+	// pointing here and storage.remote.token printed by `cms ctl
+	// blob-token`. Empty disables it. It needs secret_key and the local or
+	// s3 storage backend.
+	BlobListen string `yaml:"blob_listen"`
+	// SweepInterval is how often the dispatcher looks in the database for
+	// work it was not told about (a lost notification, a crash): such work
+	// waits at most this long. A sweep only reads unfinished results.
+	SweepInterval Duration `yaml:"sweep_interval"`
+	// MaxCompilationTries and MaxEvaluationTries bound the failed attempts
+	// (failures of the judging infrastructure, never a contestant's error)
+	// of a compilation, and of the evaluations, of a submission or a user
+	// test (CMS MAX_*_TRIES). After them the dispatcher gives up until an
+	// admin reevaluates it. The admin site and `cms ctl` read them too.
+	MaxCompilationTries int `yaml:"max_compilation_tries"`
+	MaxEvaluationTries  int `yaml:"max_evaluation_tries"`
+	// ResultBatch is the largest number of results stored in one
+	// transaction.
+	ResultBatch int `yaml:"result_batch"`
 }
 
 // Worker configures a judging host. Workers never connect to PostgreSQL:
@@ -296,7 +318,13 @@ func Default() *Config {
 			OpsListen: "127.0.0.1:9190",
 			DataDir:   "/var/lib/cms/ranking",
 		},
-		Dispatcher: Dispatcher{OpsListen: "127.0.0.1:9191"},
+		Dispatcher: Dispatcher{
+			OpsListen:           "127.0.0.1:9191",
+			SweepInterval:       Duration(time.Minute),
+			MaxCompilationTries: 3,
+			MaxEvaluationTries:  3,
+			ResultBatch:         128,
+		},
 		Worker: Worker{
 			OpsListen:   "127.0.0.1:9192",
 			Concurrency: 1,
@@ -401,6 +429,7 @@ func (c *Config) Validate() error {
 		errs = append(errs, errors.New("worker.concurrency must be at least 1"))
 	}
 	errs = append(errs, c.validateSandbox()...)
+	errs = append(errs, c.validateDispatcher()...)
 	for name, addr := range map[string]string{
 		"contest_web.listen":     c.ContestWeb.Listen,
 		"contest_web.ops_listen": c.ContestWeb.OpsListen,
@@ -409,6 +438,7 @@ func (c *Config) Validate() error {
 		"ranking_web.listen":     c.RankingWeb.Listen,
 		"ranking_web.ops_listen": c.RankingWeb.OpsListen,
 		"dispatcher.ops_listen":  c.Dispatcher.OpsListen,
+		"dispatcher.blob_listen": c.Dispatcher.BlobListen,
 		"worker.ops_listen":      c.Worker.OpsListen,
 		"monitor.listen":         c.Monitor.Listen,
 	} {
@@ -456,6 +486,36 @@ func (s *Storage) validate() []error {
 	// The local backend is never cached (see blob.Open).
 	if s.Backend != "local" && s.CacheSizeMB > 0 && s.CacheDir == "" {
 		errs = append(errs, errors.New("storage.cache_dir must be set when storage.cache_size_mb is not 0"))
+	}
+	return errs
+}
+
+// Bounds of the dispatcher settings.
+const (
+	MinSweepInterval = time.Second
+	MaxSweepInterval = 24 * time.Hour
+	MaxTries         = 100
+	MaxResultBatch   = 10000
+)
+
+func (c *Config) validateDispatcher() []error {
+	var errs []error
+	d := &c.Dispatcher
+	if d.SweepInterval.D() < MinSweepInterval || d.SweepInterval.D() > MaxSweepInterval {
+		errs = append(errs, fmt.Errorf("dispatcher.sweep_interval must be between %v and %v", MinSweepInterval, MaxSweepInterval))
+	}
+	if d.MaxCompilationTries < 1 || d.MaxCompilationTries > MaxTries {
+		errs = append(errs, fmt.Errorf("dispatcher.max_compilation_tries must be between 1 and %d", MaxTries))
+	}
+	if d.MaxEvaluationTries < 1 || d.MaxEvaluationTries > MaxTries {
+		errs = append(errs, fmt.Errorf("dispatcher.max_evaluation_tries must be between 1 and %d", MaxTries))
+	}
+	if d.ResultBatch < 1 || d.ResultBatch > MaxResultBatch {
+		errs = append(errs, fmt.Errorf("dispatcher.result_batch must be between 1 and %d", MaxResultBatch))
+	}
+	if d.BlobListen != "" && c.Storage.Backend == "remote" {
+		errs = append(errs, errors.New("dispatcher.blob_listen serves the blob store of the dispatcher, "+
+			"so its storage.backend must be local or s3, not remote"))
 	}
 	return errs
 }

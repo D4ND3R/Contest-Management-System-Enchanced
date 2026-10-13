@@ -122,7 +122,8 @@ finds the work at its next sweep.`,
 			if scope.TestcaseID, err = lookupTestcase(ctx, pool, testcase, int32(dataset)); err != nil {
 				return err
 			}
-			j := judging.New(pool, judging.Options{Logger: slog.New(slog.DiscardHandler)})
+			j := judging.New(pool, judging.Options{Logger: slog.New(slog.DiscardHandler),
+				Tries: judging.TriesFrom(cfg.Dispatcher)})
 			inv, err := j.Invalidate(ctx, scope, lv)
 			switch {
 			case errors.Is(err, judging.ErrEmptyScope):
@@ -169,7 +170,7 @@ allowed: like CMS, they stay compiling or evaluating until reevaluated.`,
 			if err := noArgs(args); err != nil {
 				return err
 			}
-			_, pool, err := openJudgingDB(ctx, env)
+			cfg, pool, err := openJudgingDB(ctx, env)
 			if err != nil {
 				return err
 			}
@@ -178,7 +179,8 @@ allowed: like CMS, they stay compiling or evaluating until reevaluated.`,
 			if err != nil {
 				return err
 			}
-			r, err := judging.New(pool, judging.Options{Logger: slog.New(slog.DiscardHandler)}).Status(ctx, id)
+			r, err := judging.New(pool, judging.Options{Logger: slog.New(slog.DiscardHandler),
+				Tries: judging.TriesFrom(cfg.Dispatcher)}).Status(ctx, id)
 			if err != nil {
 				return err
 			}

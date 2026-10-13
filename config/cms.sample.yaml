@@ -106,6 +106,23 @@ ranking_web:
 
 dispatcher:
   ops_listen: 127.0.0.1:9191
+  # Serve the blob store to judges on other machines (their storage.backend
+  # is remote, storage.remote.url points here and storage.remote.token is
+  # printed by `cms ctl blob-token`). Empty: disabled. Needs secret_key and
+  # the local or s3 backend. Put it behind TLS if judges reach it over an
+  # untrusted network.
+  blob_listen: ""
+  # How often to look in the database for work nobody asked for (a lost
+  # notification, a crash). Only unfinished results are read.
+  sweep_interval: 1m0s
+  # Failed attempts (judging infrastructure failures, never a contestant's
+  # error) of a compilation or of the evaluations before giving up until an
+  # admin reevaluates (CMS MAX_*_TRIES). The admin site and cmsctl read
+  # them too.
+  max_compilation_tries: 3
+  max_evaluation_tries: 3
+  # Largest number of results stored in one transaction.
+  result_batch: 128
 
 worker:
   ops_listen: 127.0.0.1:9192

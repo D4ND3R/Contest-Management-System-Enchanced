@@ -145,6 +145,16 @@ func TestSweepAndScorePlans(t *testing.T) {
 		[]string{"ix_submissions_participation_id_task_id", "participation_opaque_unique"},
 		[]string{"submission_results_pkey"}, []string{"tokens_submission_id_key"})
 
+	// The progress counters the dispatcher publishes every second while
+	// judging: the unfinished results only.
+	c = &capture{DBTX: f.pool}
+	if _, err := q.New(c).JudgingProgress(f.ctx, q.JudgingProgressParams{
+		MaxCompilationTries: 3, MaxEvaluationTries: 3,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	check("the progress counters", c, []string{"ix_submission_results_unfinished"})
+
 	// A whole sweep stays fast (the time is reported, not checked).
 	start := time.Now()
 	opts := SweepOptions{ContestID: f.contest}

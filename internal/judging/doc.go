@@ -40,8 +40,9 @@
 //   - Failed jobs (an infrastructure failure, never a verdict) count tries
 //     as in upstream EvaluationService, with D23's rule: the tries of a
 //     result are the highest attempt that failed, so a failure delivered
-//     twice counts once. After MaxCompilationTries (MaxEvaluationTries...)
-//     the operation is not scheduled again (GaveUp) and, as in CMS, the
+//     twice counts once. After Options.Tries (by default the upstream
+//     MaxCompilationTries, MaxEvaluationTries...) failures the operation
+//     is not scheduled again (GaveUp) and, as in CMS, the
 //     submission keeps showing "Compiling..." or "Evaluating..." until an
 //     admin reevaluates it; `cms ctl judging-status` counts them.
 //     Differences with upstream: an evaluation that failed because a file

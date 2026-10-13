@@ -21,7 +21,8 @@ import (
 )
 
 // Maximum numbers of failed attempts of an operation before the
-// dispatcher gives up (upstream MAX_*_TRIES).
+// dispatcher gives up (upstream MAX_*_TRIES): the defaults of
+// Options.Tries.
 const (
 	MaxCompilationTries         = 3
 	MaxEvaluationTries          = 3

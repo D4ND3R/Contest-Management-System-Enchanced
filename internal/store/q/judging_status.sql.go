@@ -12,6 +12,67 @@ import (
 	"context"
 )
 
+const judgingProgress = `-- name: JudgingProgress :many
+SELECT coalesce(t.contest_id, 0)::integer AS contest_id,
+       count(*) FILTER (WHERE sr.compilation_outcome IS NULL
+           AND sr.compilation_tries < $1::integer)::bigint AS compiling,
+       count(*) FILTER (WHERE sr.compilation_outcome = 'ok' AND sr.evaluation_outcome IS NULL
+           AND sr.evaluation_tries < $2::integer)::bigint AS evaluating,
+       count(*) FILTER (WHERE sr.compilation_outcome = 'ok' AND sr.evaluation_outcome IS NOT NULL)::bigint AS scoring
+FROM submission_results sr
+JOIN submissions s ON s.id = sr.submission_id
+JOIN tasks t ON t.id = s.task_id
+JOIN datasets d ON d.id = sr.dataset_id AND (d.id = t.active_dataset_id OR d.autojudge)
+WHERE sr.score IS NULL OR sr.score_details IS NULL OR sr.public_score IS NULL
+   OR sr.public_score_details IS NULL OR sr.ranking_score_details IS NULL
+GROUP BY coalesce(t.contest_id, 0)
+ORDER BY 1
+`
+
+type JudgingProgressParams struct {
+	MaxCompilationTries int32
+	MaxEvaluationTries  int32
+}
+
+type JudgingProgressRow struct {
+	ContestID  int32
+	Compiling  int64
+	Evaluating int64
+	Scoring    int64
+}
+
+// The progress counters of the admin pages, which the dispatcher publishes
+// at most once a second while judging: the unfinished submission results
+// on the datasets to judge, by contest (0: tasks without a contest). The
+// WHERE clause is the predicate of ix_submission_results_unfinished, so
+// only unfinished results are read, never the scored ones (almost every
+// row during a contest). Submissions received a moment ago, which have no
+// result row until their compilation job is built, are not counted.
+func (q *Queries) JudgingProgress(ctx context.Context, arg JudgingProgressParams) ([]JudgingProgressRow, error) {
+	rows, err := q.db.Query(ctx, judgingProgress, arg.MaxCompilationTries, arg.MaxEvaluationTries)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []JudgingProgressRow{}
+	for rows.Next() {
+		var i JudgingProgressRow
+		if err := rows.Scan(
+			&i.ContestID,
+			&i.Compiling,
+			&i.Evaluating,
+			&i.Scoring,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const judgingSubmissionStatusCounts = `-- name: JudgingSubmissionStatusCounts :many
 SELECT t.id AS task_id, t.name AS task_name, d.id AS dataset_id, d.description AS dataset_description,
        coalesce(d.id = t.active_dataset_id, false)::boolean AS active,

@@ -28,11 +28,12 @@ FOR UPDATE OF ts;
 -- Everything upstream task_score reads for the given participants and
 -- tasks: the score mode and precision of the task, and every submission
 -- (ix_submissions_participation_id_task_id) with whether a token was
--- played and its result on the active dataset. Of the details, only the
+-- played and its result on the active dataset (and the contest of the
+-- task, for the live events of the changes). Of the details, only the
 -- subtask scores, and only for the max_subtask mode. A pair without
 -- submissions gives one row with a NULL submission_id.
 SELECT x.participation_id::integer AS participation_id, x.task_id::integer AS task_id,
-       t.score_mode, t.score_precision, t.active_dataset_id,
+       t.score_mode, t.score_precision, t.active_dataset_id, t.contest_id,
        s.id AS submission_id, s.timestamp, s.official,
        (tk.submission_id IS NOT NULL)::boolean AS tokened,
        (sr.score IS NOT NULL AND sr.score_details IS NOT NULL AND sr.public_score IS NOT NULL

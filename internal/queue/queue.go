@@ -368,6 +368,26 @@ func (q *Queue) EnqueueBatch(ctx context.Context, items []Item) ([]Enqueued, err
 	return out, nil
 }
 
+// Holding reports, for each dedup key, whether a message holding it is
+// queued, in flight or waiting for a retry (Enqueue with that key would
+// add nothing), in one round trip per 1000 keys. The answer can change
+// right after: a producer that is the only one to enqueue those keys
+// uses it to skip building messages that are already there.
+func (q *Queue) Holding(ctx context.Context, keys []string) ([]bool, error) {
+	out := make([]bool, 0, len(keys))
+	for start := 0; start < len(keys); start += 1000 {
+		chunk := keys[start:min(start+1000, len(keys))]
+		vals, err := q.rdb.HMGet(ctx, q.dedup, chunk...).Result()
+		if err != nil {
+			return nil, fmt.Errorf("queue %s: reading dedup keys: %w", q.name, err)
+		}
+		for _, v := range vals {
+			out = append(out, v != nil)
+		}
+	}
+	return out, nil
+}
+
 // delayMs rounds a positive delay up to whole milliseconds.
 func delayMs(d time.Duration) int64 {
 	if d <= 0 {

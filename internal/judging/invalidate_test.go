@@ -36,7 +36,7 @@ func TestInvalidateLevels(t *testing.T) {
 	// Rescore: only the score goes, the generation stays.
 	inv := f.invalidate(Scope{SubmissionIDs: []int32{s}}, LevelScore)
 	if !slices.Equal(inv.Results, []ResultKey{key}) || !slices.Equal(inv.Submissions, []int32{s}) ||
-		len(inv.TaskScores) != 1 || !inv.TaskScores[0].New.Partial {
+		len(inv.TaskScores) != 1 || !inv.TaskScores[0].New.Partial || inv.TaskScores[0].ContestID != f.contest {
 		t.Fatalf("invalidation %+v", inv)
 	}
 	r := f.result(s, task.dataset)
