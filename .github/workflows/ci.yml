@@ -80,7 +80,8 @@ jobs:
   sandbox:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
-    # The end-to-end tests of the worker (and later the dispatcher) need them.
+    # The end-to-end tests of the worker and of the dispatcher, and the chaos
+    # test (the cms binary killed with SIGKILL while judging), need them.
     services:
       postgres:
         image: postgres:16
@@ -130,7 +131,7 @@ jobs:
           test -f /sys/fs/cgroup/cgroup.controllers
           cat /sys/fs/cgroup/cgroup.controllers
           cat "$(cat /run/isolate/cgroup)/cgroup.controllers"
-      - name: make test-sandbox (cgroups on)
+      - name: make test-sandbox (cgroups on; includes the dispatcher end to end and chaos tests)
         run: |
           go mod download
           sudo env "PATH=$PATH" "GOCACHE=$(go env GOCACHE)" "GOMODCACHE=$(go env GOMODCACHE)" \

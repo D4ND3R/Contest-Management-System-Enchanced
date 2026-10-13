@@ -8,15 +8,19 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"runtime/pprof"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"testing"
 	"time"
 
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/job"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/judging"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/live"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/queue"
 )
 
 // envInt reads a positive integer from the environment.
@@ -33,9 +37,12 @@ func envInt(name string, def int) int {
 // (default 30), then 20/s for CMS_TEST_LOAD_BURST seconds (default 60),
 // on a task of 20 testcases. It reports the time from the last
 // evaluation of a submission to its verdict (target: under 2s), from the
-// notification to the verdict, the throughput and the CPU used. It runs
-// only with CMS_TEST_LOAD=1; to emulate the 2 vCPU target, run it with
-// taskset -c 0,1 and GOMAXPROCS=2 (and pin PostgreSQL and Valkey too).
+// notification to the verdict, the throughput, the CPU used and, for
+// each phase, the round trips of the dispatcher alone (its own pool and
+// Valkey client) per submission. It runs only with CMS_TEST_LOAD=1; to
+// emulate the 2 vCPU target, run it with taskset -c 0,1 and GOMAXPROCS=2
+// (and pin PostgreSQL and Valkey too). CMS_TEST_LOAD_CPUPROFILE=file
+// writes a CPU profile of the whole process (go tool pprof).
 func TestLoad(t *testing.T) {
 	if os.Getenv("CMS_TEST_LOAD") != "1" {
 		t.Skip("set CMS_TEST_LOAD=1 to run the load test")
@@ -69,8 +76,33 @@ func TestLoad(t *testing.T) {
 	opts.IdleWait = 100 * time.Millisecond
 	opts.ProgressInterval = time.Second
 	opts.Log = e.log
-	e.start(opts)
+	// The dispatcher's own pool and Valkey client count its round trips.
+	dpool, dqc := countingPool(t, e.pool)
+	dkv, dkc := countingKV(t, e.kv)
+	djobs, err := queue.Open(e.ctx, dkv, job.JobQueue, e.jobs.Options())
+	if err != nil {
+		t.Fatal(err)
+	}
+	dresults, err := queue.Open(e.ctx, dkv, job.ResultQueue, e.results.Options())
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := New(dpool, dkv, djobs, dresults, judging.New(dpool, judging.Options{Logger: e.log}), opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.run(d)
 	w := e.startWorkers(nWorkers, allCorrect)
+	if path := os.Getenv("CMS_TEST_LOAD_CPUPROFILE"); path != "" {
+		f, err := os.Create(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			t.Fatal(err)
+		}
+		defer func() { pprof.StopCPUProfile(); f.Close() }()
+	}
 
 	// The contestant site: insert the submission and notify, at the
 	// given rate.
@@ -97,16 +129,24 @@ func TestLoad(t *testing.T) {
 		}
 		return n
 	}
+	// trips is a snapshot of the round trips of the dispatcher.
+	type trips struct{ db, kv int64 }
+	snap := func() trips { return trips{dqc.Count(), dkc.RoundTrips()} }
 	var ru0 syscall.Rusage
 	_ = syscall.Getrusage(syscall.RUSAGE_SELF, &ru0)
 	start := time.Now()
-	total := submit(e.ctx, 2, sustained)
+	t0 := snap()
+	nSustained := submit(e.ctx, 2, sustained)
+	e.waitScored(ds, nSustained, time.Minute)
 	burstStart := time.Now()
-	total += submit(e.ctx, 20, burst)
+	t1 := snap()
+	nBurst := submit(e.ctx, 20, burst)
+	total := nSustained + nBurst
 	sent := time.Now()
 	e.waitScored(ds, total, 10*time.Minute)
 	drained := time.Since(sent)
 	elapsed := time.Since(start)
+	t2 := snap()
 	var ru1 syscall.Rusage
 	_ = syscall.Getrusage(syscall.RUSAGE_SELF, &ru1)
 	cpu := time.Duration(syscall.TimevalToNsec(ru1.Utime) - syscall.TimevalToNsec(ru0.Utime) +
@@ -121,7 +161,7 @@ func TestLoad(t *testing.T) {
 			}
 		}
 	}
-	var verdict, endToEnd, burstEnd []time.Duration
+	var verdict, endToEnd, burstEnd, sustainedEnd []time.Duration
 	w.mu.Lock()
 	for s, at := range scoredAt {
 		if last, ok := w.lastResult[s]; ok {
@@ -131,6 +171,8 @@ func TestLoad(t *testing.T) {
 			endToEnd = append(endToEnd, at.Sub(n))
 			if n.After(burstStart) {
 				burstEnd = append(burstEnd, at.Sub(n))
+			} else {
+				sustainedEnd = append(sustainedEnd, at.Sub(n))
 			}
 		}
 	}
@@ -147,8 +189,17 @@ func TestLoad(t *testing.T) {
 		total, testcases, jobs, elapsed.Round(time.Millisecond), float64(jobs)/elapsed.Seconds(), drained.Round(time.Millisecond))
 	t.Logf("last evaluation -> verdict: p50 %v p95 %v p99 %v max %v", pct(verdict, .5), pct(verdict, .95),
 		pct(verdict, .99), pct(verdict, 1))
-	t.Logf("notification -> verdict: p50 %v p95 %v p99 %v max %v (burst only: p50 %v p95 %v)", pct(endToEnd, .5),
-		pct(endToEnd, .95), pct(endToEnd, .99), pct(endToEnd, 1), pct(burstEnd, .5), pct(burstEnd, .95))
+	t.Logf("notification -> verdict: p50 %v p95 %v p99 %v max %v", pct(endToEnd, .5),
+		pct(endToEnd, .95), pct(endToEnd, .99), pct(endToEnd, 1))
+	t.Logf("  2/s for %v: p50 %v p95 %v; 20/s for %v: p50 %v p95 %v", sustained, pct(sustainedEnd, .5), pct(sustainedEnd, .95),
+		burst, pct(burstEnd, .5), pct(burstEnd, .95))
+	perSub := func(a, b trips, n int) string {
+		return fmt.Sprintf("%.1f database queries and %.1f Valkey round trips per submission (%d and %d for %d submissions)",
+			float64(b.db-a.db)/float64(n), float64(b.kv-a.kv)/float64(n), b.db-a.db, b.kv-a.kv, n)
+	}
+	t.Logf("dispatcher round trips (idle polling included), 2/s: %s", perSub(t0, t1, nSustained))
+	t.Logf("dispatcher round trips, 20/s: %s", perSub(t1, t2, nBurst))
+	t.Logf("dispatcher Valkey round trips by kind (whole test): %s", strings.Join(dkc.Breakdown(12), ", "))
 	t.Logf("CPU of this process (dispatcher, simulated workers and site): %v, %.2f ms per job; GOMAXPROCS %s",
 		cpu.Round(time.Millisecond), float64(cpu.Microseconds())/1000/float64(jobs), os.Getenv("GOMAXPROCS"))
 	t.Logf("apply: %.0f transactions, mean %.2f ms; jobs run twice: %d",

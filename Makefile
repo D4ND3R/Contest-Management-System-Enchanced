@@ -35,15 +35,37 @@ test: ## run every test against disposable PostgreSQL and Valkey
 test-short: ## unit tests only (no PostgreSQL/Valkey: those tests are skipped)
 	$(GO) test $(GOFLAGS) ./...
 
-# Packages with sandbox-tagged tests (those that exist yet).
-SANDBOX_PKGS := $(foreach d,sandbox grading worker,$(if $(wildcard internal/$(d)),./internal/$(d)/...))
+# Packages with sandbox-tagged tests (those that exist yet). The ones of
+# internal/dispatcher (end to end and chaos) also need PostgreSQL and Valkey
+# and run after the others: the chaos test keeps several judges busy, and
+# next to the language suite it made slow compilers (GHC) time out.
+SANDBOX_PKGS := $(foreach d,sandbox grading worker dispatcher,$(if $(wildcard internal/$(d)),./internal/$(d)/...))
+SANDBOX_LAST := $(filter ./internal/dispatcher/...,$(SANDBOX_PKGS))
 
 .PHONY: test-sandbox
-test-sandbox: ## as root: isolate, malicious battery, example solutions (CMS_SANDBOX_CGROUPS=0 without cgroups v2)
+test-sandbox: ## as root: isolate, malicious battery, example solutions, dispatcher end to end and chaos (CMS_SANDBOX_CGROUPS=0 without cgroups v2)
 	@if [[ "$$(id -u)" != "0" ]]; then echo "make test-sandbox must run as root (isolate)"; exit 1; fi
+	@if [[ -z "$$CMS_TEST_DATABASE_URL" ]]; then scripts/infra.sh up >/dev/null; fi
 	@echo "CMS_SANDBOX_CGROUPS=$${CMS_SANDBOX_CGROUPS:-1}"
-	CMS_SANDBOX_CGROUPS="$${CMS_SANDBOX_CGROUPS:-1}" \
-		$(GO) test $(GOFLAGS) -tags sandbox -count=1 -timeout 30m -v $(SANDBOX_PKGS)
+	@if [[ -z "$$CMS_TEST_DATABASE_URL" ]]; then source .infra/env; fi; \
+	export CMS_SANDBOX_CGROUPS="$${CMS_SANDBOX_CGROUPS:-1}" CMS_TEST_REQUIRE_INFRA=1; \
+	$(GO) test $(GOFLAGS) -tags sandbox -count=1 -timeout 30m -v $(filter-out $(SANDBOX_LAST),$(SANDBOX_PKGS)) && \
+	$(if $(SANDBOX_LAST),$(GO) test $(GOFLAGS) -tags sandbox -count=1 -timeout 30m -v $(SANDBOX_LAST),true)
+
+.PHONY: chaos
+chaos: ## as root: the chaos test alone (kill -9 of the dispatcher and the workers; CMS_TEST_CHAOS_SEED, CMS_TEST_CHAOS_SUBMISSIONS)
+	@if [[ "$$(id -u)" != "0" ]]; then echo "make chaos must run as root (isolate)"; exit 1; fi
+	@if [[ -z "$$CMS_TEST_DATABASE_URL" ]]; then scripts/infra.sh up >/dev/null; fi
+	@if [[ -z "$$CMS_TEST_DATABASE_URL" ]]; then source .infra/env; fi; \
+	CMS_SANDBOX_CGROUPS="$${CMS_SANDBOX_CGROUPS:-1}" CMS_TEST_REQUIRE_INFRA=1 \
+		$(GO) test $(GOFLAGS) -tags sandbox -count=1 -timeout 30m -v -run 'TestChaos$$' ./internal/dispatcher/
+
+.PHONY: load
+load: ## load test of the dispatcher (N1): 2 submissions/s, then 20/s for 60s, with simulated workers
+	@if [[ -z "$$CMS_TEST_DATABASE_URL" ]]; then scripts/infra.sh up >/dev/null; fi
+	@if [[ -z "$$CMS_TEST_DATABASE_URL" ]]; then source .infra/env; fi; \
+	CMS_TEST_LOAD=1 CMS_TEST_REQUIRE_INFRA=1 \
+		$(GO) test $(GOFLAGS) -count=1 -timeout 30m -v -run 'TestLoad$$' ./internal/dispatcher/
 
 .PHONY: bench
 bench: ## benchmarks of the hot paths
