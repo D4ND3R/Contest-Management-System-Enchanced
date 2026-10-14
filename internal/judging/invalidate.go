@@ -107,7 +107,9 @@ type Invalidation struct {
 // of the results, so the results of the jobs in flight for them are
 // dropped when they arrive. The task score cache is updated. Notify the
 // dispatcher with inv.Events() afterwards: it computes and enqueues the
-// work (Pending) and scores again.
+// work (Pending) and scores again; at the score level on every dataset, as
+// upstream ScoringService does, also those that are not judged (the
+// periodic sweep only finds work on the datasets to judge).
 func (j *Judge) Invalidate(ctx context.Context, scope Scope, level Level) (*Invalidation, error) {
 	if !level.Valid() || scope.TestcaseID != 0 && level != LevelEvaluation {
 		return nil, fmt.Errorf("%w: %q", ErrLevel, level)

@@ -335,11 +335,12 @@ func (a *applier) submissions(ctx context.Context, results []*job.Result) error 
 				a.drop(r, DropDuplicate)
 				continue
 			}
+			// compilation_tries keeps counting the failed attempts only
+			// (D35; upstream resets it to 0).
 			outcome := r.CompilationOutcome
 			st.CompilationOutcome, st.compiled = &outcome, true
-			st.CompilationTries = max(st.CompilationTries, attempt)
 			setComp = append(setComp, q.JudgingSetSubmissionCompilationParams{
-				CompilationOutcome: outcome, CompilationText: r.Text, Attempt: attempt,
+				CompilationOutcome: outcome, CompilationText: r.Text,
 				CompilationStdout: stdout, CompilationStderr: stderr,
 				CompilationTime: t, CompilationWallClockTime: wall, CompilationMemory: mem,
 				CompilationSandboxPaths: paths, CompilationSandboxDigests: digests,
@@ -680,7 +681,7 @@ func (a *applier) userTests(ctx context.Context, results []*job.Result) error {
 			outcome := r.CompilationOutcome
 			st.CompilationOutcome, st.compiled = &outcome, true
 			setComp = append(setComp, q.JudgingSetUserTestCompilationParams{
-				CompilationOutcome: outcome, CompilationText: r.Text, Attempt: attempt,
+				CompilationOutcome: outcome, CompilationText: r.Text,
 				CompilationStdout: stdout, CompilationStderr: stderr,
 				CompilationTime: t, CompilationWallClockTime: wall, CompilationMemory: mem,
 				CompilationSandboxPaths: paths, CompilationSandboxDigests: digests,
@@ -716,7 +717,7 @@ func (a *applier) userTests(ctx context.Context, results []*job.Result) error {
 			ok := job.CompilationOK
 			st.EvaluationOutcome = &ok
 			setEval = append(setEval, q.JudgingSetUserTestEvaluationParams{
-				EvaluationText: r.Text, Attempt: attempt, Output: nonEmpty(r.UserOutput),
+				EvaluationText: r.Text, Output: nonEmpty(r.UserOutput),
 				ExecutionTime: t, ExecutionWallClockTime: wall, ExecutionMemory: mem,
 				EvaluationSandboxPaths: paths, EvaluationSandboxDigests: digests,
 				UserTestID: k.UserTestID, DatasetID: k.DatasetID, Generation: st.Generation,

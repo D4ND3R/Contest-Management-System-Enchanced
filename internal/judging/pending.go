@@ -30,6 +30,14 @@ type Targets struct {
 	// ArchiveSandbox asks the workers to archive the sandboxes of the
 	// operations (the "Rerun and archive" buttons of the admin).
 	ArchiveSandbox bool
+	// ScoreAllDatasets also returns in ToScore the results ready to score
+	// on the datasets that are not judged (neither active nor autojudge):
+	// the work of an invalidation at the score level, which upstream
+	// ScoringService.invalidate_submission rescores on any dataset (the
+	// admin compares datasets before activating one). Operations are
+	// still only for the datasets to judge, and the sweep, as upstream's,
+	// does not look at the other datasets.
+	ScoreAllDatasets bool
 }
 
 // Work is what is left to do for some submissions and user tests.
@@ -43,23 +51,45 @@ type Work struct {
 	ToScore []ResultKey
 	// GaveUp are results that reached the maximum number of tries.
 	GaveUp []GaveUp
+	// MissingSubmissions and MissingUserTests are the ids Pending was
+	// given and found nothing for: not visible yet (notified before the
+	// transaction that inserts them committed), deleted, or of a task with
+	// no dataset to judge.
+	MissingSubmissions, MissingUserTests []int32
 }
 
 func (w *Work) add(o *Work) {
 	w.Ops = append(w.Ops, o.Ops...)
 	w.ToScore = append(w.ToScore, o.ToScore...)
 	w.GaveUp = append(w.GaveUp, o.GaveUp...)
+	w.MissingSubmissions = append(w.MissingSubmissions, o.MissingSubmissions...)
+	w.MissingUserTests = append(w.MissingUserTests, o.MissingUserTests...)
+}
+
+// notFound returns the ids that found returns false for.
+func notFound(ids []int32, found func(int32) bool) []int32 {
+	var out []int32
+	for _, id := range ids {
+		if !found(id) {
+			out = append(out, id)
+		}
+	}
+	return out
 }
 
 // Pending returns the work left for the given submissions and user tests
 // on each of their datasets to judge (upstream
 // submission_enqueue_operations and user_test_enqueue_operations, without
-// the enqueueing). It only reads, in at most three queries whatever the
+// the enqueueing), and with t.ScoreAllDatasets the results to score on the
+// other datasets. It only reads, in at most three queries whatever the
 // number of submissions.
 func (j *Judge) Pending(ctx context.Context, t Targets) (*Work, error) {
 	w := &Work{}
 	if len(t.SubmissionIDs) > 0 {
-		rows, err := j.store.Q.JudgingSubmissionStates(ctx, uniq(t.SubmissionIDs))
+		ids := uniq(t.SubmissionIDs)
+		rows, err := j.store.Q.JudgingSubmissionStates(ctx, q.JudgingSubmissionStatesParams{
+			SubmissionIds: ids, AllDatasets: t.ScoreAllDatasets,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -68,13 +98,24 @@ func (j *Judge) Pending(ctx context.Context, t Targets) (*Work, error) {
 			return nil, err
 		}
 		w.add(sw)
+		found := make(map[int32]bool, len(rows))
+		for _, r := range rows {
+			found[r.SubmissionID] = true
+		}
+		w.MissingSubmissions = notFound(ids, func(id int32) bool { return found[id] })
 	}
 	if len(t.UserTestIDs) > 0 {
-		rows, err := j.store.Q.JudgingUserTestStates(ctx, uniq(t.UserTestIDs))
+		ids := uniq(t.UserTestIDs)
+		rows, err := j.store.Q.JudgingUserTestStates(ctx, ids)
 		if err != nil {
 			return nil, err
 		}
 		w.add(userTestWork(rows, t.ArchiveSandbox, j.tries))
+		found := make(map[int32]bool, len(rows))
+		for _, r := range rows {
+			found[r.UserTestID] = true
+		}
+		w.MissingUserTests = notFound(ids, func(id int32) bool { return found[id] })
 	}
 	return w, nil
 }
@@ -98,6 +139,10 @@ func submissionWork(ctx context.Context, qq *q.Queries, rows []q.JudgingSubmissi
 	for _, r := range rows {
 		key := ResultKey{r.SubmissionID, r.DatasetID}
 		switch {
+		case !r.ToJudge:
+			// A dataset not judged (ScoreAllDatasets): the query only
+			// returns results ready to score and not scored.
+			w.ToScore = append(w.ToScore, key)
 		case !r.HasResult || r.CompilationOutcome == nil && r.CompilationTries < tries.Compilation:
 			// submission_to_compile.
 			w.Ops = append(w.Ops, Operation{
@@ -243,6 +288,11 @@ type SweepOptions struct {
 // SweepResult is the outcome of a step.
 type SweepResult struct {
 	Work
+	// MissingTaskScores are the participants and tasks of the submissions
+	// looked at that have no row in the task score cache (a database
+	// migrated from before it, an import that did not call RecomputeTask):
+	// pass them to RefreshTaskScoresFor, which creates the rows.
+	MissingTaskScores []TaskKey
 	// Next is the cursor of the next step; Done is set once every
 	// submission and user test that existed at the start of the step has
 	// been looked at.
@@ -253,9 +303,10 @@ type SweepResult struct {
 // Sweep is one step of a keyset sweep over the submissions, then the user
 // tests, of a contest (upstream _missing_operations of EvaluationService
 // and ScoringService): the work of the next submissions that have some,
-// found without reading the finished results (migration 0004). Call it
-// with the returned cursor until Done; the dispatcher runs a sweep at
-// start and periodically, so lost notifications only delay work.
+// found without reading the finished results (migration 0004), and the
+// rows missing in the task score cache. Call it with the returned cursor
+// until Done; the dispatcher runs a sweep at start and periodically, so
+// lost notifications only delay work.
 func (j *Judge) Sweep(ctx context.Context, opts SweepOptions) (*SweepResult, error) {
 	if opts.Window <= 0 {
 		opts.Window = 5000
@@ -289,6 +340,15 @@ func (j *Judge) Sweep(ctx context.Context, opts SweepOptions) (*SweepResult, err
 		if int32(len(ids)) == opts.Limit {
 			// More may be left in the window: continue after the last.
 			res.Next.SubmissionID = ids[len(ids)-1]
+		}
+		missing, err := j.store.Q.JudgingSweepMissingTaskScores(ctx, q.JudgingSweepMissingTaskScoresParams{
+			After: after, Upto: res.Next.SubmissionID, ContestID: opts.ContestID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, m := range missing {
+			res.MissingTaskScores = append(res.MissingTaskScores, TaskKey{m.ParticipationID, m.TaskID})
 		}
 		if len(ids) > 0 {
 			w, err := j.Pending(ctx, Targets{SubmissionIDs: ids, ArchiveSandbox: opts.ArchiveSandbox})

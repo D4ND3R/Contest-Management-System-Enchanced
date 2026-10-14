@@ -519,16 +519,15 @@ const judgingSetSubmissionCompilation = `-- name: JudgingSetSubmissionCompilatio
 UPDATE submission_results SET
     compilation_outcome = $1::text,
     compilation_text = coalesce($2::text[], '{}'),
-    compilation_tries = greatest(compilation_tries, $3::integer),
-    compilation_stdout = $4,
-    compilation_stderr = $5,
-    compilation_time = $6,
-    compilation_wall_clock_time = $7,
-    compilation_memory = $8,
-    compilation_sandbox_paths = $9,
-    compilation_sandbox_digests = $10
-WHERE submission_id = $11 AND dataset_id = $12
-  AND generation = $13 AND compilation_outcome IS NULL
+    compilation_stdout = $3,
+    compilation_stderr = $4,
+    compilation_time = $5,
+    compilation_wall_clock_time = $6,
+    compilation_memory = $7,
+    compilation_sandbox_paths = $8,
+    compilation_sandbox_digests = $9
+WHERE submission_id = $10 AND dataset_id = $11
+  AND generation = $12 AND compilation_outcome IS NULL
 RETURNING compilation_tries
 `
 
@@ -541,7 +540,6 @@ type JudgingSetSubmissionCompilationBatchResults struct {
 type JudgingSetSubmissionCompilationParams struct {
 	CompilationOutcome        string
 	CompilationText           []string
-	Attempt                   int32
 	CompilationStdout         *string
 	CompilationStderr         *string
 	CompilationTime           *float64
@@ -555,15 +553,15 @@ type JudgingSetSubmissionCompilationParams struct {
 }
 
 // Stores the outcome of a compilation built for this generation. Nothing
-// (pgx.ErrNoRows) for a duplicate or a stale result. compilation_tries
-// becomes the highest attempt seen (D23).
+// (pgx.ErrNoRows) for a duplicate or a stale result. compilation_tries is
+// left alone: it counts the failed attempts (D35; the admin shows it as
+// "Failures during compilation"), so a first try that succeeds keeps 0.
 func (q *Queries) JudgingSetSubmissionCompilation(ctx context.Context, arg []JudgingSetSubmissionCompilationParams) *JudgingSetSubmissionCompilationBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
 		vals := []interface{}{
 			a.CompilationOutcome,
 			a.CompilationText,
-			a.Attempt,
 			a.CompilationStdout,
 			a.CompilationStderr,
 			a.CompilationTime,
@@ -608,16 +606,15 @@ const judgingSetUserTestCompilation = `-- name: JudgingSetUserTestCompilation :b
 UPDATE user_test_results SET
     compilation_outcome = $1::text,
     compilation_text = coalesce($2::text[], '{}'),
-    compilation_tries = greatest(compilation_tries, $3::integer),
-    compilation_stdout = $4,
-    compilation_stderr = $5,
-    compilation_time = $6,
-    compilation_wall_clock_time = $7,
-    compilation_memory = $8,
-    compilation_sandbox_paths = $9,
-    compilation_sandbox_digests = $10
-WHERE user_test_id = $11 AND dataset_id = $12
-  AND generation = $13 AND compilation_outcome IS NULL
+    compilation_stdout = $3,
+    compilation_stderr = $4,
+    compilation_time = $5,
+    compilation_wall_clock_time = $6,
+    compilation_memory = $7,
+    compilation_sandbox_paths = $8,
+    compilation_sandbox_digests = $9
+WHERE user_test_id = $10 AND dataset_id = $11
+  AND generation = $12 AND compilation_outcome IS NULL
 RETURNING compilation_tries
 `
 
@@ -630,7 +627,6 @@ type JudgingSetUserTestCompilationBatchResults struct {
 type JudgingSetUserTestCompilationParams struct {
 	CompilationOutcome        string
 	CompilationText           []string
-	Attempt                   int32
 	CompilationStdout         *string
 	CompilationStderr         *string
 	CompilationTime           *float64
@@ -643,14 +639,14 @@ type JudgingSetUserTestCompilationParams struct {
 	Generation                int64
 }
 
-// As JudgingSetSubmissionCompilation for user tests.
+// As JudgingSetSubmissionCompilation for user tests (compilation_tries
+// keeps the failed attempts).
 func (q *Queries) JudgingSetUserTestCompilation(ctx context.Context, arg []JudgingSetUserTestCompilationParams) *JudgingSetUserTestCompilationBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
 		vals := []interface{}{
 			a.CompilationOutcome,
 			a.CompilationText,
-			a.Attempt,
 			a.CompilationStdout,
 			a.CompilationStderr,
 			a.CompilationTime,
@@ -695,15 +691,14 @@ const judgingSetUserTestEvaluation = `-- name: JudgingSetUserTestEvaluation :bat
 UPDATE user_test_results SET
     evaluation_outcome = 'ok',
     evaluation_text = coalesce($1::text[], '{}'),
-    evaluation_tries = greatest(evaluation_tries, $2::integer),
-    output = $3,
-    execution_time = $4,
-    execution_wall_clock_time = $5,
-    execution_memory = $6,
-    evaluation_sandbox_paths = $7,
-    evaluation_sandbox_digests = $8
-WHERE user_test_id = $9 AND dataset_id = $10
-  AND generation = $11 AND compilation_outcome = 'ok' AND evaluation_outcome IS NULL
+    output = $2,
+    execution_time = $3,
+    execution_wall_clock_time = $4,
+    execution_memory = $5,
+    evaluation_sandbox_paths = $6,
+    evaluation_sandbox_digests = $7
+WHERE user_test_id = $8 AND dataset_id = $9
+  AND generation = $10 AND compilation_outcome = 'ok' AND evaluation_outcome IS NULL
 RETURNING evaluation_tries
 `
 
@@ -715,7 +710,6 @@ type JudgingSetUserTestEvaluationBatchResults struct {
 
 type JudgingSetUserTestEvaluationParams struct {
 	EvaluationText           []string
-	Attempt                  int32
 	Output                   *string
 	ExecutionTime            *float64
 	ExecutionWallClockTime   *float64
@@ -729,13 +723,13 @@ type JudgingSetUserTestEvaluationParams struct {
 
 // Stores the execution of a user test compiled in this generation
 // (upstream EvaluationJob.to_user_test: the outcome is always "ok").
-// Nothing for a stale or repeated result.
+// Nothing for a stale or repeated result. evaluation_tries keeps the
+// failed attempts ("Failures during evaluation").
 func (q *Queries) JudgingSetUserTestEvaluation(ctx context.Context, arg []JudgingSetUserTestEvaluationParams) *JudgingSetUserTestEvaluationBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
 		vals := []interface{}{
 			a.EvaluationText,
-			a.Attempt,
 			a.Output,
 			a.ExecutionTime,
 			a.ExecutionWallClockTime,

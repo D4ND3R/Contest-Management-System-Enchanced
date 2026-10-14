@@ -421,3 +421,73 @@ trabajos en paralelo no se bloqueen entre sí.
   instalaciones con `bin/` y `lib/` (JDK, kotlinc, mono). Tras actualizar
   un compilador hay que reiniciar los workers; la JVM que kotlinc toma del
   PATH no está cubierta (vaciar `compcache:*` tras actualizarla).
+
+## D34 — Caché de puntajes por participación y tarea
+
+**Decisión.** La tabla `task_scores` (migración 0004) guarda por
+participación y tarea el puntaje, el puntaje público, el de envíos con
+token y una marca de parcial (las tres vistas de CMS comparten esa marca),
+más los puntajes por subtarea que necesita `max_subtask`. Se recalcula
+desde cero en la misma transacción que cada cambio que la afecta
+(resultado puntuado, token, cambio de dataset activo, invalidación,
+cambio de modo de puntaje), con las tareas bloqueadas en modo compartido
+para que el dataset activo no cambie a mitad. Sin fila = 0, no parcial.
+
+**Por qué.** El sitio del concursante, el ranking del admin y el
+scoreboard leen el puntaje sin recalcularlo por pedido (500 concursantes
+en 2 vCPU). Recalcular una tarea de 13 000 envíos cuesta 60 ms.
+
+## D35 — Generaciones y reintentos de resultados
+
+**Decisión.** Amplía D23: recompilar o reevaluar incrementa `generation`
+del resultado (repuntuar no); los trabajos la llevan y las escrituras la
+comparan, así un resultado de un trabajo creado antes de una invalidación
+se descarta en SQL. La clave de deduplicación de la cola es
+`operación@generación`. `tries` es el mayor intento fallido, de modo que
+un fallo entregado dos veces cuenta una vez, y un éxito no lo toca (solo
+cuenta fallos, como muestra el admin; CMS lo vuelve a 0). Repuntuar cubre
+todos los datasets al llegar la notificación, como CMS; el barrido solo
+recorre los datasets que se juzgan y crea las filas faltantes de
+`task_scores` (bases migradas, importaciones, restauraciones). A diferencia de CMS, un caso
+de prueba faltante cuenta como intento y un ejecutable faltante provoca
+recompilar. Los trabajos ya encolados de un resultado invalidado no se
+quitan de la cola: corren y su resultado se descarta por viejo.
+
+## D36 — Un dispatcher activo con lease
+
+**Decisión.** El dispatcher activo tiene un lease en Valkey (`SET NX PX`
+de 10 s, renovado cada tercio, con un número de fencing que crece en cada
+toma); deja de trabajar cuando vence su plazo local, antes de que la clave
+expire en el servidor, y lo libera al apagarse. Las instancias de reserva
+esperan y lo toman. La corrección no depende del lease: toda escritura es
+idempotente y compara la generación. Un solo bucle guarda resultados y
+encola trabajos; antes de encolar lo leído de la base descarta lo que ya
+está en cola, corriendo o esperando reintento.
+
+Los trabajos que siguen a un lote ya confirmado se encolan aunque el lease
+se haya perdido (los duplicados caen por la clave y los resultados viejos
+por la generación). Si no alcanza PostgreSQL durante 3 TTL, el activo
+suelta el lease para que una reserva que sí lo alcanza siga juzgando.
+Los sitios notifican después del commit; si el dispatcher todavía no ve
+un envío notificado, lo revisa de nuevo (100 ms, duplicando hasta 6,4 s) y
+después lo deja al barrido. Los resultados se consumen y confirman por
+lotes (12,8 viajes a Valkey por envío a 20 envíos/s).
+
+**Prioridades** (de mayor a menor): primera compilación de un envío de
+concursante; sus evaluaciones y compilaciones que fallaron una vez;
+pruebas de usuario, reevaluaciones y lo encontrado por barridos;
+evaluaciones que ya fallaron; datasets no activos. Dentro de cada
+prioridad, el más antiguo primero.
+
+## D37 — Eventos en vivo con una secuencia global
+
+**Decisión.** `internal/live` numera cada mensaje con un contador de Valkey
+(un script Lua incrementa y publica) y cada proceso web mantiene una sola
+suscripción a `live:*` con historial de 4096 eventos: todas las réplicas
+ven los mismos ids, detectan pérdidas exactas (salto en la secuencia) y
+mandan *resync*. Los pings son eventos `ping` reales (EventSource no ve
+comentarios) que dicen si la suscripción está viva. Un cliente lento
+recibe una sola marca de resync en lugar de acumular memoria; las marcas
+llevan un `spread` para que 1500 páginas no recarguen a la vez. Los
+eventos llevan ids, nunca puntajes: la página consulta los detalles con
+sus permisos.

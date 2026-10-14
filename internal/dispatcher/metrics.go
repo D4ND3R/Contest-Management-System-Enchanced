@@ -31,6 +31,7 @@ type metrics struct {
 	latency     prometheus.Histogram
 
 	events       *prometheus.CounterVec
+	rechecks     *prometheus.CounterVec
 	sweeps       prometheus.Counter
 	sweepTime    prometheus.Histogram
 	sweepFound   *prometheus.CounterVec
@@ -51,7 +52,7 @@ func newMetrics(reg prometheus.Registerer) *metrics {
 		}),
 		leaseEvent: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "cms_dispatcher_lease_changes_total",
-			Help: "Lease changes of this dispatcher: acquired, lost (renewal failed or expired) and released (shutdown).",
+			Help: "Lease changes of this dispatcher: acquired, lost (renewal failed or expired), released (shutdown) and given_up (judging kept failing).",
 		}, []string{"change"}),
 		enqueued: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "cms_dispatcher_jobs_enqueued_total",
@@ -104,6 +105,10 @@ func newMetrics(reg prometheus.Registerer) *metrics {
 			Name: "cms_dispatcher_events_total",
 			Help: "Notifications handled, by kind.",
 		}, []string{"kind"}),
+		rechecks: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "cms_dispatcher_rechecks_total",
+			Help: "Notified submissions and user tests looked at again because they were not visible yet (notified before their transaction committed).",
+		}, []string{"kind"}),
 		sweeps: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "cms_dispatcher_sweeps_total",
 			Help: "Complete sweeps of the unfinished results.",
@@ -115,7 +120,7 @@ func newMetrics(reg prometheus.Registerer) *metrics {
 		}),
 		sweepFound: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "cms_dispatcher_sweep_found_total",
-			Help: "What sweeps found that nobody had asked for: operations enqueued, results scored.",
+			Help: "What sweeps found that nobody had asked for: operations enqueued, results scored, cached task scores missing.",
 		}, []string{"kind"}),
 		deadLetters: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "cms_dispatcher_dead_letters_total",
@@ -133,7 +138,7 @@ func newMetrics(reg prometheus.Registerer) *metrics {
 	if reg != nil {
 		reg.MustRegister(m.leader, m.epoch, m.leaseEvent, m.enqueued, m.duplicates, m.held, m.skipped,
 			m.results, m.applyErrors, m.applyTime, m.batchSize, m.gaveUp, m.scoreErrors, m.latency,
-			m.events, m.sweeps, m.sweepTime, m.sweepFound, m.deadLetters, m.loopErrors, m.scoreUpdates)
+			m.events, m.rechecks, m.sweeps, m.sweepTime, m.sweepFound, m.deadLetters, m.loopErrors, m.scoreUpdates)
 	}
 	return m
 }

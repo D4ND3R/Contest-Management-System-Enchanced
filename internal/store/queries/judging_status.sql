@@ -60,8 +60,13 @@ ORDER BY t.contest_id, t.num, t.id, d.id;
 -- on the datasets to judge, by contest (0: tasks without a contest). The
 -- WHERE clause is the predicate of ix_submission_results_unfinished, so
 -- only unfinished results are read, never the scored ones (almost every
--- row during a contest). Submissions received a moment ago, which have no
--- result row until their compilation job is built, are not counted.
+-- row during a contest). The task is reached through the dataset, not the
+-- submission: a result row is only created for a dataset of the task of
+-- its submission (JudgingEnsureSubmissionResults), and a join to the
+-- submissions made the planner read all of them as soon as a few hundred
+-- results were unfinished, i.e. while judging (TestSweepAndScorePlans).
+-- Submissions received a moment ago, which have no result row until their
+-- compilation job is built, are not counted.
 SELECT coalesce(t.contest_id, 0)::integer AS contest_id,
        count(*) FILTER (WHERE sr.compilation_outcome IS NULL
            AND sr.compilation_tries < sqlc.arg(max_compilation_tries)::integer)::bigint AS compiling,
@@ -69,9 +74,8 @@ SELECT coalesce(t.contest_id, 0)::integer AS contest_id,
            AND sr.evaluation_tries < sqlc.arg(max_evaluation_tries)::integer)::bigint AS evaluating,
        count(*) FILTER (WHERE sr.compilation_outcome = 'ok' AND sr.evaluation_outcome IS NOT NULL)::bigint AS scoring
 FROM submission_results sr
-JOIN submissions s ON s.id = sr.submission_id
-JOIN tasks t ON t.id = s.task_id
-JOIN datasets d ON d.id = sr.dataset_id AND (d.id = t.active_dataset_id OR d.autojudge)
+JOIN datasets d ON d.id = sr.dataset_id
+JOIN tasks t ON t.id = d.task_id AND (d.id = t.active_dataset_id OR d.autojudge)
 WHERE sr.score IS NULL OR sr.score_details IS NULL OR sr.public_score IS NULL
    OR sr.public_score_details IS NULL OR sr.ranking_score_details IS NULL
 GROUP BY coalesce(t.contest_id, 0)

@@ -51,9 +51,10 @@ const taskScoreChunk = 2000
 // tokened score and, in the max_tokened_last mode, the score change) or a
 // submission (the scores become partial, and the last submission counts
 // as 0 until scored in max_tokened_last); otherwise the dispatcher fixes
-// the cache when it handles the notification. The rows stay locked until
-// tx ends, so concurrent refreshes of the same participant and task run
-// one after the other.
+// the cache when it handles the notification, which the site sends (Notify)
+// after tx commits, not inside it. The rows stay locked until tx ends, so
+// concurrent refreshes of the same participant and task run one after the
+// other.
 func RefreshTaskScores(ctx context.Context, tx pgx.Tx, keys []TaskKey) ([]TaskScoreChange, error) {
 	return refreshTaskScores(ctx, q.New(tx), keys)
 }
@@ -240,10 +241,20 @@ func (j *Judge) RefreshTaskScoresOf(ctx context.Context, submissionIDs []int32) 
 	return j.refreshInChunks(ctx, keys)
 }
 
+// RefreshTaskScoresFor recomputes the cached scores of the given
+// participants and tasks, creating the missing rows, each chunk of at most
+// taskScoreChunk pairs in its own transaction, and returns those that
+// changed. The dispatcher calls it with the MissingTaskScores of each
+// sweep step.
+func (j *Judge) RefreshTaskScoresFor(ctx context.Context, keys []TaskKey) ([]TaskScoreChange, error) {
+	return j.refreshInChunks(ctx, keys)
+}
+
 // RepairTaskScores recomputes the cached scores computed on a dataset that
 // is not the active one any more (the active dataset changed outside
 // ActivateDataset and RecomputeTask, e.g. by a dump import), at most 2000
-// per call. The dispatcher calls it with each sweep.
+// per call. The dispatcher calls it at the end of each sweep (the steps
+// create the rows that are missing, Sweep).
 func (j *Judge) RepairTaskScores(ctx context.Context, contestID int32) ([]TaskScoreChange, error) {
 	rows, err := j.store.Q.JudgingStaleTaskScores(ctx, q.JudgingStaleTaskScoresParams{
 		ContestID: contestID, MaxRows: taskScoreChunk,

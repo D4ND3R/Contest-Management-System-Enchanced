@@ -159,3 +159,46 @@ trabajos reales.
   sitio del concursante (F5).
 - Interactores de testlib y códigos de "parcialmente correcto" de testlib
   (16 en adelante): no soportados, como en CMS.
+
+---
+
+## F4 — Dispatcher (hecha)
+
+### Hecho
+
+- Migración 0004: generación en los resultados (D35), caché `task_scores`
+  por participación y tarea (D34) e índices parciales para el barrido.
+- `internal/judging` (port de `esoperations.py` y del cálculo de
+  ScoringService): operaciones pendientes con las prioridades e intentos
+  de CMS, barrido por ventanas, armado de trabajos, aplicación de
+  resultados por lotes con puntaje y caché en la misma transacción,
+  invalidación por alcance (concurso, tarea, dataset, participación,
+  envío, caso) y nivel (compilación, evaluación, puntaje), cambio de
+  dataset activo y un stream durable de notificaciones.
+- `internal/dispatcher`: un activo con lease y reservas (D36), consumo de
+  notificaciones y resultados, encolado sin duplicados, reintentos,
+  servidor de blobs para jueces remotos (`dispatcher.blob_listen`) y un
+  gancho para el scoreboard (F7).
+- `internal/live`: eventos en vivo por Valkey con secuencia global, hub por
+  proceso y SSE (D37).
+- `cms ctl reevaluate` y `cms ctl judging-status`.
+
+### Pruebas
+
+| Área | Pruebas |
+|---|---|
+| Judging | estados pendientes, intentos máximos, consultas constantes (N = 1 y 50), resultados repetidos y viejos, puntajes Sum/GroupMin con los detalles JSON de CMS, caché con los tres modos y tokens, invalidaciones, carrera con el cambio de dataset, planes de consulta con 30 000 envíos |
+| Dispatcher | compilar → evaluar → puntuar con eventos, reintentos, intentos máximos, invalidación durante la evaluación, notificación perdida, toma del lease sin trabajo doble, reinicio a mitad de lote |
+| Punta a punta | `TestEndToEnd` (isolate real): 11 envíos C++/Python y 2 pruebas de usuario |
+| Caos | `TestChaos`: binario real, 4–5 `kill -9` del dispatcher a mitad de lote, 5 de workers y un `CLIENT KILL`: cada trabajo corrió una sola vez y los puntajes coinciden con una corrida limpia |
+| Carga | `TestLoad` con 2 CPU: 20 envíos/s durante 60 s con 20 casos; veredicto p95 < 30 ms tras la última evaluación; 0,3 ms de CPU del dispatcher por trabajo |
+| Eventos | 1500 SSE: p95 ≈ 20 ms por difusión, ~34 KiB por conexión |
+
+### Pendiente
+
+- El scoreboard público recibe los cambios en F7 (hoy el gancho no hace
+  nada).
+- Un evento en vivo puede perderse si el dispatcher muere entre el commit
+  y la publicación: el sitio del concursante conserva el sondeo de CMS de
+  los envíos pendientes (F5).
+- k6 sobre hardware real de 2 vCPU (las cifras son con `taskset`).

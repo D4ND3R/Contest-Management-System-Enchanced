@@ -44,7 +44,9 @@ func TestApplyJudgesASubmission(t *testing.T) {
 	all := f.judgeAll(Targets{SubmissionIDs: []int32{s}}, allCorrect)
 	r := f.result(s, task.dataset)
 	if r.status() != StatusScored || *r.Score != 30 || *r.PublicScore != 10 || r.Evaluations != 3 ||
-		r.Executables != 1 || *r.EvaluationOutcome != "ok" || r.CompilationTries != 1 || r.EvaluationTries != 0 {
+		r.Executables != 1 || *r.EvaluationOutcome != "ok" || r.CompilationTries != 0 || r.EvaluationTries != 0 {
+		// The tries are the failed attempts ("Failures during
+		// compilation" in the admin): none (D35; upstream resets them).
 		t.Fatalf("result %+v", r)
 	}
 	// What the Changes said along the way.
@@ -370,14 +372,23 @@ func TestApplyUserTests(t *testing.T) {
 		fmt.Sprintf("evaluate_test/%d/%d p%d a1", u, auto, PriorityExtraLow),
 		fmt.Sprintf("evaluate_test/%d/%d p%d a2 retry", u, task.dataset, PriorityLow),
 	})
-	row := scalar[string](f, `SELECT jsonb_build_array(compilation_outcome, compilation_tries, evaluation_outcome,
-			evaluation_tries, evaluation_text, output, execution_time,
-			(SELECT count(*) FROM user_test_executables e WHERE e.user_test_id = r.user_test_id AND e.dataset_id = r.dataset_id))::text
-		FROM user_test_results r WHERE user_test_id = $1 AND dataset_id = $2`, u, auto)
-	want := mustJSON([]any{"ok", 2, "ok", 1, []string{"Execution completed successfully"},
-		digestOf(fmt.Sprintf("output of evaluate_test/%d/%d", u, auto)), 0.25, 1})
-	if !sameJSON(row, want) {
-		t.Errorf("user test result %s, want %s", row, want)
+	// The tries are the failed attempts ("Failures during compilation"
+	// and "Failures during evaluation" in the admin): one failed
+	// compilation on each dataset, one failed execution on the active
+	// dataset only.
+	for _, c := range []struct {
+		ds              int32
+		comp, evalTries int
+	}{{task.dataset, 1, 1}, {auto, 1, 0}} {
+		row := scalar[string](f, `SELECT jsonb_build_array(compilation_outcome, compilation_tries, evaluation_outcome,
+				evaluation_tries, evaluation_text, output, execution_time,
+				(SELECT count(*) FROM user_test_executables e WHERE e.user_test_id = r.user_test_id AND e.dataset_id = r.dataset_id))::text
+			FROM user_test_results r WHERE user_test_id = $1 AND dataset_id = $2`, u, c.ds)
+		want := mustJSON([]any{"ok", c.comp, "ok", c.evalTries, []string{"Execution completed successfully"},
+			digestOf(fmt.Sprintf("output of evaluate_test/%d/%d", u, c.ds)), 0.25, 1})
+		if !sameJSON(row, want) {
+			t.Errorf("user test result on dataset %d: %s, want %s", c.ds, row, want)
+		}
 	}
 	// Repeated results change nothing.
 	bj := f.build([]Operation{{Operation: job.Operation{Type: job.UserTestEvaluation, ObjectID: u, DatasetID: auto}}})

@@ -3,8 +3,13 @@
 -- of the given submissions on each dataset to judge (the active dataset of
 -- their task and the autojudge ones, upstream get_datasets_to_judge),
 -- whether or not the result row exists (a missing row is "compiling").
+-- With all_datasets, also the results ready to score and not scored on the
+-- other datasets of the task (a rescore: upstream
+-- ScoringService.invalidate_submission scores what it invalidated on any
+-- dataset).
 SELECT s.id AS submission_id, s.participation_id, s.task_id, s.timestamp,
        d.id AS dataset_id, coalesce(d.id = t.active_dataset_id, false)::boolean AS active,
+       coalesce(d.id = t.active_dataset_id OR d.autojudge, false)::boolean AS to_judge,
        (sr.submission_id IS NOT NULL)::boolean AS has_result,
        sr.compilation_outcome, coalesce(sr.compilation_tries, 0)::integer AS compilation_tries,
        sr.evaluation_outcome, coalesce(sr.evaluation_tries, 0)::integer AS evaluation_tries,
@@ -13,9 +18,14 @@ SELECT s.id AS submission_id, s.participation_id, s.task_id, s.timestamp,
         AND sr.public_score_details IS NOT NULL AND sr.ranking_score_details IS NOT NULL)::boolean AS scored
 FROM submissions s
 JOIN tasks t ON t.id = s.task_id
-JOIN datasets d ON d.task_id = s.task_id AND (d.id = t.active_dataset_id OR d.autojudge)
+JOIN datasets d ON d.task_id = s.task_id
 LEFT JOIN submission_results sr ON sr.submission_id = s.id AND sr.dataset_id = d.id
 WHERE s.id = ANY(sqlc.arg(submission_ids)::integer[])
+  AND (d.id = t.active_dataset_id OR d.autojudge
+       OR sqlc.arg(all_datasets)::boolean
+          AND (sr.compilation_outcome = 'fail' OR sr.evaluation_outcome IS NOT NULL)
+          AND (sr.score IS NULL OR sr.score_details IS NULL OR sr.public_score IS NULL
+               OR sr.public_score_details IS NULL OR sr.ranking_score_details IS NULL))
 ORDER BY s.id, d.id;
 
 -- name: JudgingMissingEvaluations :many
@@ -31,6 +41,27 @@ WHERE NOT EXISTS (
     SELECT 1 FROM evaluations e
     WHERE e.submission_id = x.submission_id AND e.dataset_id = x.dataset_id AND e.testcase_id = tc.id)
 ORDER BY x.submission_id, x.dataset_id, tc.codename;
+
+-- name: JudgingSweepMissingTaskScores :many
+-- A sweep step (internal/judging Sweep) also looks for the participants
+-- and tasks of the submissions with an id in (after, upto] of a contest
+-- (0: of every contest) that have no row in the task score cache: a
+-- database migrated from before it (0004), or submissions and results
+-- written without RecomputeTask (an import, a restore). Every
+-- recomputation creates the row, so once repaired nothing is found. No
+-- new index: the submissions of the window are read through their primary
+-- key (the first arm of JudgingSweepSubmissions reads them too), and the
+-- cache is hashed while small and probed through its primary key once
+-- much larger than the window (TestSweepAndScorePlans).
+SELECT DISTINCT s.participation_id, s.task_id
+FROM submissions s
+JOIN tasks t ON t.id = s.task_id
+WHERE s.id > sqlc.arg(after)::integer AND s.id <= sqlc.arg(upto)::integer
+  AND (sqlc.arg(contest_id)::integer = 0 OR t.contest_id = sqlc.arg(contest_id)::integer)
+  AND NOT EXISTS (
+      SELECT 1 FROM task_scores ts
+      WHERE ts.participation_id = s.participation_id AND ts.task_id = s.task_id)
+ORDER BY s.participation_id, s.task_id;
 
 -- name: JudgingUserTestStates :many
 -- As JudgingSubmissionStates for user tests (upstream

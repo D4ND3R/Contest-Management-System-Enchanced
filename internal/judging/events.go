@@ -23,6 +23,12 @@ import (
 // consumer group and acknowledges them once handled. Losing one is
 // harmless: the periodic Sweep finds the work anyway, the notification
 // only makes it immediate.
+//
+// Events are sent after the transaction that wrote what they name commits
+// (as upstream, which commits and then calls new_submission): the
+// dispatcher may read an event at once, before an uncommitted row is
+// visible. It looks again, for a few seconds, for the new submissions and
+// user tests it could not see, but other kinds act on what they see.
 const (
 	// EventsStream is the stream key, under the key prefix of the
 	// installation (kv.Client.Key).
@@ -43,18 +49,23 @@ type EventKind string
 
 // The kinds of events.
 const (
-	// EventSubmission: new submissions (SubmissionIDs). The dispatcher
-	// refreshes their task scores (RefreshTaskScoresOf) and enqueues
-	// their work (Pending).
+	// EventSubmission: new submissions (SubmissionIDs), sent once the
+	// transaction that inserted them committed. The dispatcher refreshes
+	// their task scores (RefreshTaskScoresOf) and enqueues their work
+	// (Pending).
 	EventSubmission EventKind = "submission"
-	// EventUserTest: new user tests (UserTestIDs).
+	// EventUserTest: new user tests (UserTestIDs), sent once the
+	// transaction that inserted them committed.
 	EventUserTest EventKind = "user_test"
-	// EventToken: tokens played on SubmissionIDs (the site refreshed the
-	// task scores in its transaction); the dispatcher sends them to the
-	// scoreboard.
+	// EventToken: tokens played on SubmissionIDs. The dispatcher
+	// refreshes their task scores (RefreshTaskScoresOf: the site should
+	// have done it in its transaction, this repairs the cache if it did
+	// not) and sends them to the scoreboard.
 	EventToken EventKind = "token"
 	// EventInvalidate: results were invalidated (Invalidation.Events):
 	// SubmissionIDs and UserTestIDs need work again, with ArchiveSandbox.
+	// At the score Level the results are scored again on every dataset,
+	// not only on the datasets to judge (Targets.ScoreAllDatasets).
 	EventInvalidate EventKind = "invalidate"
 	// EventDataset: the active dataset of TaskID changed, or the
 	// autojudge flag of DatasetID, or the task or its active dataset was
@@ -99,7 +110,11 @@ func (inv *Invalidation) Events(archiveSandbox bool) []Event {
 }
 
 // Notify sends events to the dispatcher in one round trip. Events with
-// more than 1000 ids are split.
+// more than 1000 ids are split. Call it after the transaction that wrote
+// what the events name commits, never inside it (not in a Store.InTx
+// closure, which may also run again): an event about rows the dispatcher
+// cannot see yet waits for a sweep, except the new submissions and user
+// tests it looks for again for a few seconds.
 func Notify(ctx context.Context, c *kv.Client, events ...Event) error {
 	if len(events) == 0 {
 		return nil

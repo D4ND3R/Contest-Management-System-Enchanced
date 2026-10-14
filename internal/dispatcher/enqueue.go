@@ -95,13 +95,20 @@ func (l *leader) notHeld(ctx context.Context, ops []judging.Operation) ([]judgin
 
 // enqueue builds the jobs of ops and adds them to the job queue, each with
 // its priority, attempt and dedup key, after a backoff for retries. It
-// returns the number of jobs added.
+// returns the number of jobs added. It is fenced: it is for work read from
+// the database, which a leader that lost its lease must leave to the next
+// one (the operations that follow a commit go through enqueueOrKeep).
 func (l *leader) enqueue(ctx context.Context, ops []judging.Operation, background bool) (int, error) {
+	return l.enqueueJobs(ctx, ops, background, true)
+}
+
+// enqueueJobs is enqueue, fenced or not.
+func (l *leader) enqueueJobs(ctx context.Context, ops []judging.Operation, background, fenced bool) (int, error) {
 	if len(ops) == 0 {
 		return 0, nil
 	}
 	d := l.d
-	if err := l.fence(); err != nil {
+	if err := l.fenceIf(fenced); err != nil {
 		return 0, err
 	}
 	b, err := d.judge.BuildJobs(ctx, ops)
@@ -158,7 +165,7 @@ func (l *leader) enqueue(ctx context.Context, ops []judging.Operation, backgroun
 	for i := range entries {
 		items[i] = entries[i].item
 	}
-	if err := l.fence(); err != nil {
+	if err := l.fenceIf(fenced); err != nil {
 		return 0, err
 	}
 	res, err := d.jobs.EnqueueBatch(ctx, items)

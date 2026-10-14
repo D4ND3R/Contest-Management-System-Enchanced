@@ -307,4 +307,5 @@ return {id, added}
 var allScripts = []*redis.Script{
 	enqueueScript, pickScript, ackScript, ackEnqueueScript, retryScript,
 	extendScript, nackScript, releaseScript, requeueDeadScript,
+	pickBatchScript, ackBatchScript, // batch.go
 }

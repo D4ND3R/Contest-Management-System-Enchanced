@@ -56,8 +56,11 @@ type Options struct {
 	IdleWait time.Duration
 	// LeaseTTL is the lifetime of the lease without renewal (default 10s):
 	// a standby takes over at most that long after the active dispatcher
-	// died. LeaseRetry is how often a standby tries to take it (default
-	// 1s).
+	// died. An active dispatcher whose judging keeps failing for 3 TTLs
+	// (it cannot reach PostgreSQL, say) gives the lease up and waits a TTL
+	// before trying to take it again, so that a standby that can judge
+	// takes over. LeaseRetry is how often a standby tries to take it
+	// (default 1s).
 	LeaseTTL   time.Duration
 	LeaseRetry time.Duration
 	// DeadLetterInterval is how often dead letters are handled (default
@@ -144,6 +147,8 @@ type Dispatcher struct {
 	leading      bool
 	failing      error
 	failingSince time.Time
+	// failingGrace is how long judging may fail before Health says so.
+	failingGrace time.Duration
 
 	hooks testHooks
 }
@@ -176,6 +181,8 @@ func New(pool *pgxpool.Pool, kvc *kv.Client, jobs, results *queue.Queue, judge *
 		scores: opts.Scores,
 		log:    opts.Log.With("instance", opts.Instance),
 		m:      newMetrics(opts.Metrics),
+
+		failingGrace: 30 * time.Second,
 	}
 	return d, nil
 }
@@ -190,13 +197,14 @@ func (d *Dispatcher) Leading() bool {
 // Epoch returns the fencing epoch of the lease held or last held.
 func (d *Dispatcher) Epoch() int64 { return d.lease.Epoch() }
 
-// Health fails while the main loop of the active dispatcher keeps failing
-// (database or Valkey trouble) for more than 30 seconds. A standby is
-// healthy.
+// Health fails while judging keeps failing (database or Valkey trouble)
+// for more than 30 seconds: the main loop of the active dispatcher, and
+// then, if it gave the lease up, this dispatcher until another one is
+// active. A standby is healthy.
 func (d *Dispatcher) Health(context.Context) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	if d.failing != nil && time.Since(d.failingSince) > 30*time.Second {
+	if d.failing != nil && time.Since(d.failingSince) > d.failingGrace {
 		return fmt.Errorf("judging has been failing since %s: %w", d.failingSince.UTC().Format(time.RFC3339), d.failing)
 	}
 	return nil
@@ -205,7 +213,6 @@ func (d *Dispatcher) Health(context.Context) error {
 func (d *Dispatcher) setLeading(v bool) {
 	d.mu.Lock()
 	d.leading = v
-	d.failing = nil
 	d.mu.Unlock()
 	if v {
 		d.m.leader.Set(1)
@@ -224,11 +231,36 @@ func (d *Dispatcher) noteError(err error) {
 	d.failing = err
 }
 
+// noteOK records that judging works, or that another dispatcher judges.
 func (d *Dispatcher) noteOK() {
 	d.mu.Lock()
 	d.failing = nil
 	d.mu.Unlock()
 }
+
+// failingFor returns how long judging has been failing (0: it works).
+func (d *Dispatcher) failingFor() time.Duration {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.failing == nil {
+		return 0
+	}
+	return time.Since(d.failingSince)
+}
+
+// giveUp returns errGiveUp once judging has been failing for 3 lease
+// TTLs: the leader then gives the lease up (Run).
+func (d *Dispatcher) giveUp(err error) error {
+	if since := d.failingFor(); since >= 3*d.opts.LeaseTTL {
+		return fmt.Errorf("%w (failing for %s): %w", errGiveUp, since.Round(time.Millisecond), err)
+	}
+	return nil
+}
+
+// errGiveUp ends the leadership of a dispatcher whose judging keeps
+// failing while it can renew the lease: it cannot reach PostgreSQL, but a
+// standby may.
+var errGiveUp = errors.New("dispatcher: judging keeps failing, giving the lease up")
 
 // Run campaigns for the lease and judges while holding it, until ctx
 // ends. A dispatcher that loses the lease goes back to waiting.
@@ -251,12 +283,21 @@ func (d *Dispatcher) Run(ctx context.Context) error {
 			}
 		case ok:
 			lastHolder = ""
-			d.lead(ctx)
+			err := d.lead(ctx)
 			if ctx.Err() != nil {
 				return nil
 			}
+			if errors.Is(err, errGiveUp) {
+				// Long enough for a standby to take the lease.
+				select {
+				case <-ctx.Done():
+					return nil
+				case <-time.After(d.opts.LeaseTTL):
+				}
+			}
 		case holder != lastHolder:
 			lastHolder = holder
+			d.noteOK() // judging is the business of the active one
 			d.log.Info("another dispatcher is active: waiting as a standby", "holder", holder)
 		}
 		select {
@@ -267,8 +308,9 @@ func (d *Dispatcher) Run(ctx context.Context) error {
 	}
 }
 
-// lead judges while the lease is held, then gives it up.
-func (d *Dispatcher) lead(parent context.Context) {
+// lead judges while the lease is held, then gives it up. It returns why
+// the work stopped.
+func (d *Dispatcher) lead(parent context.Context) error {
 	epoch := d.lease.Epoch()
 	d.m.epoch.Set(float64(epoch))
 	d.m.leaseEvent.WithLabelValues("acquired").Inc()
@@ -299,17 +341,21 @@ func (d *Dispatcher) lead(parent context.Context) {
 	case parent.Err() != nil:
 		d.m.leaseEvent.WithLabelValues("released").Inc()
 		d.log.Info("stopped judging", "epoch", epoch)
+	case errors.Is(err, errGiveUp):
+		d.m.leaseEvent.WithLabelValues("given_up").Inc()
+		d.log.Error("judging keeps failing: lease given up for a standby", "epoch", epoch, "err", err)
 	default:
 		d.m.leaseEvent.WithLabelValues("released").Inc()
 		d.log.Error("judging stopped", "epoch", epoch, "err", err)
 	}
 	if d.hooks.keepLease {
-		return
+		return err
 	}
 	// Give the lease up (if still ours) so a standby takes over at once.
 	rctx, rcancel := context.WithTimeout(context.WithoutCancel(parent), 2*time.Second)
 	defer rcancel()
-	if err := d.lease.Release(rctx); err != nil {
-		d.log.Warn("cannot release the lease", "err", err)
+	if rerr := d.lease.Release(rctx); rerr != nil {
+		d.log.Warn("cannot release the lease", "err", rerr)
 	}
+	return err
 }

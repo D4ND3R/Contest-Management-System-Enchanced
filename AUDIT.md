@@ -4,7 +4,7 @@ Cada requisito de SPEC.md con su código, su prueba y su estado:
 **hecho**, **parcial**, **falta** o **requiere hardware** (necesita una
 máquina que esta VM no ofrece, p. ej. cgroups v2 para isolate).
 
-Actualizada al cerrar F2 y F3.
+Actualizada al cerrar F4.
 
 ## F0 — Cimientos
 
@@ -40,7 +40,12 @@ Actualizada al cerrar F2 y F3.
 | R3.2 Checkers | hecho — `internal/grading/checker`, casos dorados contra CMS |
 | R3.3 Tipos de puntaje | hecho — `internal/grading/{scoretype,scoring}`, pruebas de CMS portadas |
 | R3.4 Lenguajes en YAML | hecho — `config/languages`, `internal/grading/language`, `TestUpstreamCommands` |
-| R4.1–R4.6 Dispatcher | falta |
+| R4.1 Colas con prioridades | hecho — `internal/dispatcher` (D36), prueba de prioridades y orden en `dispatcher_test.go` |
+| R4.2 Resultados idempotentes, reintentos, barrido | hecho — `internal/judging`, `internal/dispatcher`; pruebas de repetidos, viejos, reintentos y barrido |
+| R4.3 Puntajes y agregados por tarea | hecho — `internal/judging` + caché `task_scores` (D34); pruebas con los tres modos y tokens |
+| R4.4 Reevaluación | hecho — `judging.Invalidate`, `cms ctl reevaluate`; pruebas por alcance y nivel |
+| R4.5 Datasets en segundo plano y cambio en vivo | hecho — autojudge y `ActivateDataset`; prueba de carrera con resultados |
+| R4.6 Caos | hecho — `TestChaos` (binario real, `kill -9`) |
 | R5.1–R5.9 Sitio del concursante | falta (esqueleto: `/healthz`, `/source`) |
 | R6.1–R6.9 Administración | falta (esqueleto) |
 | R7.1–R7.4 Scoreboard público | falta (esqueleto) |
@@ -51,9 +56,9 @@ Actualizada al cerrar F2 y F3.
 
 | Req. | Estado |
 |---|---|
-| N1 Rendimiento (k6) | falta |
+| N1 Rendimiento (k6) | parcial: dispatcher (`TestLoad`, 2 CPU) y SSE (1500 conexiones) medidos; las páginas, con F5–F7; k6 en hardware real pendiente |
 | N2 Sin N+1 | parcial: consultas probadas con `QueryCounter`; las páginas se prueban al construirlas |
-| N3 Durabilidad | falta (F4) |
+| N3 Durabilidad | hecho: colas durables, ACK tras commit, resultados idempotentes con generación, lease con fencing; `TestChaos` |
 | N4 Seguridad del juez | hecho: seccomp, batería maliciosa, entorno del worker fuera de la caja, sin `/etc` en compilaciones (D28–D30) |
 | N5 Seguridad web | parcial: CSP con nonce, cabeceras, límites de cuerpo; CSRF, cookies y límites de frecuencia en F5 |
 | N6 Observabilidad | hecho para los esqueletos |

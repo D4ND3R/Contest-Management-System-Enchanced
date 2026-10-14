@@ -40,10 +40,13 @@
 //   - Failed jobs (an infrastructure failure, never a verdict) count tries
 //     as in upstream EvaluationService, with D23's rule: the tries of a
 //     result are the highest attempt that failed, so a failure delivered
-//     twice counts once. After Options.Tries (by default the upstream
+//     twice counts once. A success leaves them alone: they are the
+//     failures the admin shows ("Failures during compilation"; upstream
+//     resets them to 0 when a compilation, or the execution of a user
+//     test, succeeds). After Options.Tries (by default the upstream
 //     MaxCompilationTries, MaxEvaluationTries...) failures the operation
-//     is not scheduled again (GaveUp) and, as in CMS, the
-//     submission keeps showing "Compiling..." or "Evaluating..." until an
+//     is not scheduled again (GaveUp) and, as in CMS, the submission
+//     keeps showing "Compiling..." or "Evaluating..." until an
 //     admin reevaluates it; `cms ctl judging-status` counts them.
 //     Differences with upstream: an evaluation that failed because a file
 //     is gone (a tombstone) counts as a try unless the executable is the
@@ -64,13 +67,16 @@
 // invalidation (Invalidate), a token played (RefreshTaskScores, called by
 // the contestant site in the transaction that inserts the token), the
 // active dataset changed (ActivateDataset, RecomputeTask). The sweep
-// repairs rows computed on a dataset that is not the active one any more
-// (RepairTaskScores).
+// creates the rows missing for participants with submissions (a database
+// migrated from before the cache, an import that did not call
+// RecomputeTask: Sweep, RefreshTaskScoresFor) and repairs rows computed on
+// a dataset that is not the active one any more (RepairTaskScores).
 //
 // # Datasets
 //
 // As in CMS, a submission is judged on the active dataset of its task and
 // on every dataset with autojudge set (the "datasets to judge"); results
-// on other datasets are only kept. Operations on datasets that are not
-// active have the lowest priority.
+// on other datasets are only kept, but rescoring (Invalidate at the score
+// level) scores them again on every dataset. Operations on datasets that
+// are not active have the lowest priority.
 package judging

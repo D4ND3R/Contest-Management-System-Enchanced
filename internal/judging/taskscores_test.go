@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -285,6 +286,73 @@ func TestRepairAndRecomputeTaskScores(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.checkCache(parts[2], task, TaskScore{DatasetID: other, Score: 60, PublicScore: 20, Partial: true})
+}
+
+// TestSweepCreatesMissingTaskScores: participants with scored submissions
+// and no row in the cache (a database migrated from before it, an import
+// that did not call RecomputeTask) would show 0: the sweep finds them, in
+// its window and contest only, and RefreshTaskScoresFor creates the rows.
+func TestSweepCreatesMissingTaskScores(t *testing.T) {
+	f := newFx(t)
+	task := f.task(taskOpts{})
+	var parts, subs []int32
+	for i := 0; i < 3; i++ {
+		p := f.participant(fmt.Sprintf("user%d", i))
+		parts = append(parts, p)
+		subs = append(subs, f.submit(p, task, time.Minute), f.submit(p, task, 2*time.Minute))
+	}
+	f.judgeAll(Targets{SubmissionIDs: subs}, allCorrect)
+	// Another contest, swept separately.
+	other := f.id(`INSERT INTO contests (name, description) VALUES ('other', 'Other') RETURNING id`)
+	otherTask := f.task(taskOpts{})
+	f.exec(`UPDATE tasks SET contest_id = $1 WHERE id = $2`, other, otherTask.id)
+	elsewhere := f.submit(parts[0], otherTask, time.Minute)
+	f.judgeAll(Targets{SubmissionIDs: []int32{elsewhere}}, allCorrect)
+	f.exec(`DELETE FROM task_scores`)
+
+	sweep := func(contest int32) []TaskKey {
+		t.Helper()
+		var missing []TaskKey
+		opts := SweepOptions{ContestID: contest, Window: 2}
+		for i := 0; ; i++ {
+			if i > 100 {
+				t.Fatal("the sweep does not end")
+			}
+			res, err := f.j.Sweep(f.ctx, opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(res.Ops) != 0 || len(res.ToScore) != 0 {
+				t.Errorf("sweep found work: %+v", res.Work)
+			}
+			missing = append(missing, res.MissingTaskScores...)
+			if res.Done {
+				return missing
+			}
+			opts.Cursor = res.Next
+		}
+	}
+	missing := sweep(f.contest)
+	want := []TaskKey{{parts[0], task.id}, {parts[1], task.id}, {parts[2], task.id}}
+	if !slices.Equal(missing, want) {
+		t.Fatalf("missing task scores %v, want %v", missing, want)
+	}
+	ch, err := f.j.RefreshTaskScoresFor(f.ctx, missing)
+	if err != nil || len(ch) != 3 || ch[0].New.Score != 30 || ch[0].ContestID != f.contest {
+		t.Fatalf("refresh: %+v %v", ch, err)
+	}
+	for _, p := range parts {
+		f.checkCache(p, task, TaskScore{DatasetID: task.dataset, Score: 30, PublicScore: 10})
+	}
+	if f.cached(parts[0], otherTask) != nil {
+		t.Error("the other contest was swept")
+	}
+	if missing := sweep(f.contest); len(missing) != 0 {
+		t.Errorf("found again: %v", missing)
+	}
+	if missing := sweep(0); !slices.Equal(missing, []TaskKey{{parts[0], otherTask.id}}) {
+		t.Errorf("sweep of every contest: %v", missing)
+	}
 }
 
 // TestTaskScoreReads covers the queries the pages use to read the cache.

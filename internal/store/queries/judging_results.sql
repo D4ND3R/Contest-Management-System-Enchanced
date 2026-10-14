@@ -28,12 +28,12 @@ FOR UPDATE OF sr FOR SHARE OF t;
 
 -- name: JudgingSetSubmissionCompilation :batchone
 -- Stores the outcome of a compilation built for this generation. Nothing
--- (pgx.ErrNoRows) for a duplicate or a stale result. compilation_tries
--- becomes the highest attempt seen (D23).
+-- (pgx.ErrNoRows) for a duplicate or a stale result. compilation_tries is
+-- left alone: it counts the failed attempts (D35; the admin shows it as
+-- "Failures during compilation"), so a first try that succeeds keeps 0.
 UPDATE submission_results SET
     compilation_outcome = sqlc.arg(compilation_outcome)::text,
     compilation_text = coalesce(sqlc.arg(compilation_text)::text[], '{}'),
-    compilation_tries = greatest(compilation_tries, sqlc.arg(attempt)::integer),
     compilation_stdout = sqlc.narg(compilation_stdout),
     compilation_stderr = sqlc.narg(compilation_stderr),
     compilation_time = sqlc.narg(compilation_time),
@@ -176,11 +176,11 @@ ORDER BY r.user_test_id, r.dataset_id
 FOR UPDATE OF r;
 
 -- name: JudgingSetUserTestCompilation :batchone
--- As JudgingSetSubmissionCompilation for user tests.
+-- As JudgingSetSubmissionCompilation for user tests (compilation_tries
+-- keeps the failed attempts).
 UPDATE user_test_results SET
     compilation_outcome = sqlc.arg(compilation_outcome)::text,
     compilation_text = coalesce(sqlc.arg(compilation_text)::text[], '{}'),
-    compilation_tries = greatest(compilation_tries, sqlc.arg(attempt)::integer),
     compilation_stdout = sqlc.narg(compilation_stdout),
     compilation_stderr = sqlc.narg(compilation_stderr),
     compilation_time = sqlc.narg(compilation_time),
@@ -214,11 +214,11 @@ ON CONFLICT (user_test_id, dataset_id, filename) DO NOTHING;
 -- name: JudgingSetUserTestEvaluation :batchone
 -- Stores the execution of a user test compiled in this generation
 -- (upstream EvaluationJob.to_user_test: the outcome is always "ok").
--- Nothing for a stale or repeated result.
+-- Nothing for a stale or repeated result. evaluation_tries keeps the
+-- failed attempts ("Failures during evaluation").
 UPDATE user_test_results SET
     evaluation_outcome = 'ok',
     evaluation_text = coalesce(sqlc.arg(evaluation_text)::text[], '{}'),
-    evaluation_tries = greatest(evaluation_tries, sqlc.arg(attempt)::integer),
     output = sqlc.narg(output),
     execution_time = sqlc.narg(execution_time),
     execution_wall_clock_time = sqlc.narg(execution_wall_clock_time),

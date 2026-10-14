@@ -271,6 +271,65 @@ func TestInvalidateUserTests(t *testing.T) {
 	}
 }
 
+// TestRescoreDatasetNotJudged: rescoring scores again the results on a
+// dataset that is neither active nor autojudge, as upstream
+// ScoringService.invalidate_submission does (the admin compares datasets
+// before activating one); judging them stays for the datasets to judge.
+func TestRescoreDatasetNotJudged(t *testing.T) {
+	f := newFx(t)
+	task := f.task(taskOpts{})
+	other := f.dataset(task.id, dsOpts{autojudge: true, scoreParams: "20"})
+	p := f.participant("alice")
+	s := f.submit(p, task, time.Minute)
+	f.judgeAll(Targets{SubmissionIDs: []int32{s}}, allCorrect)
+	f.exec(`UPDATE datasets SET autojudge = false WHERE id = $1`, other)
+	// Two more datasets that are not judged: one with a result still
+	// compiling, one without results.
+	compiling := f.dataset(task.id, dsOpts{})
+	f.dataset(task.id, dsOpts{})
+	f.exec(`INSERT INTO submission_results (submission_id, dataset_id) VALUES ($1, $2)`, s, compiling)
+
+	inv := f.invalidate(Scope{DatasetID: other}, LevelScore)
+	if !slices.Equal(inv.Results, []ResultKey{{s, other}}) || len(inv.TaskScores) != 0 {
+		t.Fatalf("invalidation %+v", inv)
+	}
+	if ev := inv.Events(false); len(ev) != 1 || ev[0].Level != LevelScore || !slices.Equal(ev[0].SubmissionIDs, []int32{s}) {
+		t.Fatalf("events %+v", ev)
+	}
+	// The work of judging (and of the sweep) ignores the dataset...
+	w, err := f.j.Pending(f.ctx, Targets{SubmissionIDs: inv.Submissions})
+	if err != nil || len(w.Ops) != 0 || len(w.ToScore) != 0 {
+		t.Fatalf("pending %+v %v", w, err)
+	}
+	// ... the work of a rescore does not.
+	w, err = f.j.Pending(f.ctx, Targets{SubmissionIDs: inv.Submissions, ScoreAllDatasets: true})
+	if err != nil || len(w.Ops) != 0 || !slices.Equal(w.ToScore, []ResultKey{{s, other}}) {
+		t.Fatalf("pending to rescore %+v %v", w, err)
+	}
+	ch, err := f.j.Score(f.ctx, w.ToScore)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := f.result(s, other); r.status() != StatusScored || *r.Score != 60 || len(ch.Next) != 0 {
+		t.Errorf("rescored on the dataset not judged: %+v, next %v", r, opKeys(ch.Next))
+	}
+	if r := f.result(s, compiling); r.status() != StatusCompiling {
+		t.Errorf("the result still compiling: %+v", r)
+	}
+	f.checkCache(p, task, TaskScore{DatasetID: task.dataset, Score: 30, PublicScore: 10})
+
+	// A rescore of the whole task: the active dataset as before, the other
+	// one too.
+	inv = f.invalidate(Scope{TaskID: task.id}, LevelScore)
+	if len(inv.Results) != 2 {
+		t.Fatalf("invalidation %+v", inv)
+	}
+	w, err = f.j.Pending(f.ctx, Targets{SubmissionIDs: inv.Submissions, ScoreAllDatasets: true})
+	if err != nil || len(w.Ops) != 0 || !slices.Equal(w.ToScore, []ResultKey{{s, task.dataset}, {s, other}}) {
+		t.Fatalf("pending to rescore the task %+v %v", w, err)
+	}
+}
+
 func TestInvalidationEvents(t *testing.T) {
 	inv := &Invalidation{Level: LevelEvaluation}
 	for i := int32(1); i <= 2500; i++ {

@@ -170,10 +170,11 @@ func TestRetryThenSuccess(t *testing.T) {
 	})
 	e.notify(judging.Event{Kind: judging.EventSubmission, SubmissionIDs: []int32{sub}})
 	e.waitScored(ds, 1, 10*time.Second)
-	// compilation_tries is the attempt that compiled (as upstream counts
-	// every attempt), evaluation_tries the one that failed.
+	// The tries are the failed attempts (D35; the admin shows them as
+	// "Failures during compilation/evaluation"): one of each. The
+	// successful second compilation does not count.
 	r := e.result(sub, ds)
-	if r.CompilationTries != 2 || r.EvaluationTries != 1 || *r.Score != 100 || r.Evaluations != 3 {
+	if r.CompilationTries != 1 || r.EvaluationTries != 1 || *r.Score != 100 || r.Evaluations != 3 {
 		t.Errorf("result %+v", r)
 	}
 	if n := counter(t, opts.Metrics, "cms_dispatcher_results_total", "outcome", "failed"); n != 2 {
@@ -346,6 +347,121 @@ func TestSweepFindsLostNotification(t *testing.T) {
 	})
 }
 
+// TestRescoreDatasetNotJudged: rescoring (the admin "S" buttons, cms ctl
+// reevaluate --level score) scores again the results on a dataset that is
+// neither active nor autojudge, as upstream ScoringService does, without
+// running any job; before, they stayed "scoring" for good.
+func TestRescoreDatasetNotJudged(t *testing.T) {
+	e := newEnv(t)
+	task, ds := e.task(2)
+	other := e.dataset(task, 4, true)
+	sub := e.submit(e.participant("rita"), task, 1)[0]
+	e.start(e.options("a"))
+	w := e.startWorkers(1, allCorrect)
+	e.notify(judging.Event{Kind: judging.EventSubmission, SubmissionIDs: []int32{sub}})
+	e.waitScored(ds, 1, 10*time.Second)
+	e.waitScored(other, 1, 10*time.Second)
+	e.exec(`UPDATE datasets SET autojudge = false WHERE id = $1`, other)
+	jobs := w.count()
+	for _, scope := range []judging.Scope{{DatasetID: other}, {TaskID: task}} {
+		inv, err := e.judge().Invalidate(e.ctx, scope, judging.LevelScore)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if e.scored(other) != 0 {
+			t.Fatalf("%+v: not invalidated", scope)
+		}
+		e.notify(inv.Events(false)...)
+		e.waitScored(other, 1, 10*time.Second)
+		e.waitScored(ds, 1, 10*time.Second)
+	}
+	if r := e.result(sub, other); *r.Score != 100 || r.Generation != 0 {
+		t.Errorf("result on the dataset not judged %+v", r)
+	}
+	if n := w.count(); n != jobs {
+		t.Errorf("rescoring ran %d jobs", n-jobs)
+	}
+}
+
+// TestTokenRefreshesTaskScores: a token whose task score the site did not
+// refresh in its transaction is fixed when the dispatcher handles the
+// notification (the tokened score, here), and the change published.
+func TestTokenRefreshesTaskScores(t *testing.T) {
+	e := newEnv(t)
+	task, ds := e.task(2)
+	p := e.participant("tom")
+	sub := e.submit(p, task, 1)[0]
+	e.start(e.options("a"))
+	e.startWorkers(1, allCorrect)
+	e.notify(judging.Event{Kind: judging.EventSubmission, SubmissionIDs: []int32{sub}})
+	e.waitScored(ds, 1, 10*time.Second)
+	cache := func() (score, tokened float64) {
+		if err := e.pool.QueryRow(e.ctx, `SELECT score, tokened_score FROM task_scores
+			WHERE participation_id = $1 AND task_id = $2`, p, task).Scan(&score, &tokened); err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+	if s, tk := cache(); s != 100 || tk != 0 {
+		t.Fatalf("task score %v, tokened %v", s, tk)
+	}
+	e.exec(`INSERT INTO tokens (submission_id, timestamp) VALUES ($1, $2)`, sub, time.Now()) // no refresh
+	e.notify(judging.Event{Kind: judging.EventToken, SubmissionIDs: []int32{sub}})
+	e.eventually(10*time.Second, "the tokened score", func() bool {
+		_, tk := cache()
+		return tk == 100
+	})
+	e.eventually(5*time.Second, "the scoreboard update", func() bool {
+		tokens, changed := false, false
+		for _, u := range e.scores.all() {
+			tokens = tokens || slices.Contains(u.Tokens, sub)
+			for _, c := range u.TaskScores {
+				changed = changed || c.ParticipationID == p && c.TaskID == task && c.New.TokenedScore == 100
+			}
+		}
+		return tokens && changed
+	})
+}
+
+// TestSweepCreatesMissingTaskScores: a participant with scored
+// submissions and no cached task score (a database migrated from before
+// the cache, an import) would show 0: the sweep creates the row.
+func TestSweepCreatesMissingTaskScores(t *testing.T) {
+	e := newEnv(t)
+	task, ds := e.task(2)
+	p := e.participant("ursula")
+	e.submit(p, task, 2) // never notified, nor their task score refreshed
+	opts := e.options("a")
+	e.start(opts)
+	e.startWorkers(1, allCorrect)
+	// The sweep at start finds them, and their missing task score.
+	e.waitScored(ds, 2, 10*time.Second)
+	created := func() bool {
+		return scalar[int64](e, `SELECT count(*) FROM task_scores WHERE participation_id = $1 AND task_id = $2
+			AND score = 100 AND dataset_id = $3 AND NOT partial`, p, task, ds) == 1
+	}
+	e.eventually(5*time.Second, "the task score", created)
+	if n := counter(t, opts.Metrics, "cms_dispatcher_sweep_found_total", "kind", "task_scores"); n != 1 {
+		t.Errorf("the sweep at start found %v missing task scores", n)
+	}
+	// The cache is lost (a restore): the next sweep repairs it.
+	e.exec(`DELETE FROM task_scores`)
+	seen := len(e.live.all())
+	e.notify(judging.Event{Kind: judging.EventSweep, ContestID: e.contest})
+	e.eventually(10*time.Second, "the task score created", created)
+	if n := counter(t, opts.Metrics, "cms_dispatcher_sweep_found_total", "kind", "task_scores"); n != 2 {
+		t.Errorf("sweeps found %v missing task scores", n)
+	}
+	e.eventually(5*time.Second, "the live event", func() bool {
+		for _, s := range e.live.all()[seen:] {
+			if ts, ok := s.ev.Data.(live.TaskScore); ok && ts.Participation == int64(p) && ts.Task == int64(task) {
+				return true
+			}
+		}
+		return false
+	})
+}
+
 // TestDatasetChange: a new active dataset is judged after the
 // notification, and the scoreboard hook is told to resend the task.
 func TestDatasetChange(t *testing.T) {
@@ -418,7 +534,9 @@ func TestDeadLetteredJobCountsAsTry(t *testing.T) {
 	}
 	e.startWorkers(1, allCorrect)
 	e.waitScored(ds, 1, 10*time.Second)
-	if r := e.result(sub, ds); r.CompilationTries != 2 || *r.Score != 100 {
+	// One failed attempt: the dead letter (the retry that compiled does
+	// not count).
+	if r := e.result(sub, ds); r.CompilationTries != 1 || *r.Score != 100 {
 		t.Errorf("result %+v", r)
 	}
 	if n := counter(t, opts.Metrics, "cms_dispatcher_dead_letters_total", "queue", "jobs"); n != 1 {

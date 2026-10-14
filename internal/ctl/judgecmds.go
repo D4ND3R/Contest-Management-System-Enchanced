@@ -74,9 +74,9 @@ The selection is every submission that matches all the flags given (at least
 one): a contest, a task, a participation, a user (all their participations),
 submission ids; --dataset limits the results to one dataset (and the
 submissions to its task), --testcase to the evaluations of one testcase (a
-codename of --dataset, or a testcase id). --user-test selects user tests too
-(--level compilation or evaluation). Contests, tasks and users are names or
-ids.
+codename of --dataset, or else a testcase id). --user-test selects user tests
+too (--level compilation or evaluation). Contests, tasks and users are names,
+or else ids (a name made of digits wins over the id).
 
 Jobs in flight for the invalidated results are discarded when their results
 arrive. The dispatcher is notified through Valkey; if it cannot be reached it
@@ -110,16 +110,22 @@ finds the work at its next sweep.`,
 				DatasetID: int32(dataset), ParticipationID: int32(participation),
 				SubmissionIDs: submissions, UserTestIDs: userTests,
 			}
-			if scope.ContestID, err = lookupID(ctx, pool, "contest", contest, `SELECT id FROM contests WHERE name = $1`); err != nil {
+			if scope.ContestID, err = lookupID(ctx, pool, contestLookup, contest); err != nil {
 				return err
 			}
-			if scope.TaskID, err = lookupID(ctx, pool, "task", task, `SELECT id FROM tasks WHERE name = $1`); err != nil {
+			if scope.TaskID, err = lookupID(ctx, pool, taskLookup, task); err != nil {
 				return err
 			}
-			if scope.UserID, err = lookupID(ctx, pool, "user", user, `SELECT id FROM users WHERE username = $1`); err != nil {
+			if scope.UserID, err = lookupID(ctx, pool, userLookup, user); err != nil {
 				return err
 			}
-			if scope.TestcaseID, err = lookupTestcase(ctx, pool, testcase, int32(dataset)); err != nil {
+			if err := checkExists(ctx, pool, "dataset", `SELECT 1 FROM datasets WHERE id = $1`, scope.DatasetID); err != nil {
+				return err
+			}
+			if err := checkExists(ctx, pool, "participation", `SELECT 1 FROM participations WHERE id = $1`, scope.ParticipationID); err != nil {
+				return err
+			}
+			if scope.TestcaseID, err = lookupTestcase(ctx, pool, testcase, scope.DatasetID); err != nil {
 				return err
 			}
 			j := judging.New(pool, judging.Options{Logger: slog.New(slog.DiscardHandler),
@@ -144,6 +150,11 @@ finds the work at its next sweep.`,
 			}
 			if err := notifyDispatcher(ctx, cfg, events); err != nil {
 				fmt.Fprintf(env.Stderr, "warning: could not notify the dispatcher (%v); it will find the work at its next sweep\n", err)
+				if lv == judging.LevelScore {
+					// The sweep only looks at the datasets to judge; running
+					// the command again notifies the same submissions.
+					fmt.Fprintln(env.Stderr, "warning: the results on datasets that are neither active nor autojudge are only rescored when notified: run this command again once Valkey is reachable")
+				}
 				return nil
 			}
 			fmt.Fprintln(env.Stdout, "the dispatcher was notified")
@@ -175,7 +186,7 @@ allowed: like CMS, they stay compiling or evaluating until reevaluated.`,
 				return err
 			}
 			defer pool.Close()
-			id, err := lookupID(ctx, pool, "contest", contest, `SELECT id FROM contests WHERE name = $1`)
+			id, err := lookupID(ctx, pool, contestLookup, contest)
 			if err != nil {
 				return err
 			}
@@ -231,39 +242,87 @@ func openJudgingDB(ctx context.Context, env *cli.Env) (*config.Config, *pgxpool.
 	return cfg, pool, nil
 }
 
-// lookupID resolves a name or an id; "" is 0 (not given).
-func lookupID(ctx context.Context, pool *pgxpool.Pool, what, value, byName string) (int32, error) {
+// lookup says how to find something by name or by id.
+type lookup struct {
+	what         string
+	byName, byID string
+}
+
+// The things given by name or id (names are unique).
+var (
+	contestLookup = lookup{"contest", `SELECT id FROM contests WHERE name = $1`, `SELECT id FROM contests WHERE id = $1`}
+	taskLookup    = lookup{"task", `SELECT id FROM tasks WHERE name = $1`, `SELECT id FROM tasks WHERE id = $1`}
+	userLookup    = lookup{"user", `SELECT id FROM users WHERE username = $1`, `SELECT id FROM users WHERE id = $1`}
+)
+
+// lookupID resolves a name, or else an id that exists; "" is 0 (not
+// given). The name is looked up first, so a contest called "2024" is that
+// contest and not the one with id 2024.
+func lookupID(ctx context.Context, pool *pgxpool.Pool, l lookup, value string) (int32, error) {
 	if value == "" {
 		return 0, nil
 	}
-	if id, err := strconv.ParseInt(value, 10, 32); err == nil && id > 0 {
-		return int32(id), nil
-	}
 	var id int32
-	err := pool.QueryRow(ctx, byName, value).Scan(&id)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return 0, fmt.Errorf("%s %q not found", what, value)
+	err := pool.QueryRow(ctx, l.byName, value).Scan(&id)
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return id, err
 	}
-	return id, err
+	if n, perr := strconv.ParseInt(value, 10, 32); perr == nil && n > 0 {
+		err = pool.QueryRow(ctx, l.byID, int32(n)).Scan(&id)
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return id, err
+		}
+	}
+	return 0, fmt.Errorf("%s %q not found", l.what, value)
 }
 
-// lookupTestcase resolves a testcase id, or a codename of a dataset.
+// checkExists fails if id is set and query (with id as $1) finds nothing.
+func checkExists(ctx context.Context, pool *pgxpool.Pool, what, query string, id int32) error {
+	if id == 0 {
+		return nil
+	}
+	var one int
+	err := pool.QueryRow(ctx, query, id).Scan(&one)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return fmt.Errorf("%s %d not found", what, id)
+	}
+	return err
+}
+
+// lookupTestcase resolves a codename of the dataset (CMS codenames are
+// often numbers: "001"), or else a testcase id, which must belong to the
+// dataset when one is given.
 func lookupTestcase(ctx context.Context, pool *pgxpool.Pool, value string, dataset int32) (int32, error) {
 	if value == "" {
 		return 0, nil
 	}
-	if id, err := strconv.ParseInt(value, 10, 32); err == nil && id > 0 {
-		return int32(id), nil
-	}
-	if dataset == 0 {
-		return 0, cli.UsageError("--testcase %q needs --dataset (or a testcase id)", value)
-	}
 	var id int32
-	err := pool.QueryRow(ctx, `SELECT id FROM testcases WHERE dataset_id = $1 AND codename = $2`, dataset, value).Scan(&id)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if dataset != 0 {
+		err := pool.QueryRow(ctx, `SELECT id FROM testcases WHERE dataset_id = $1 AND codename = $2`, dataset, value).Scan(&id)
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return id, err
+		}
+	}
+	n, perr := strconv.ParseInt(value, 10, 32)
+	if perr != nil || n <= 0 {
+		if dataset == 0 {
+			return 0, cli.UsageError("--testcase %q needs --dataset (or a testcase id)", value)
+		}
 		return 0, fmt.Errorf("testcase %q not found in dataset %d", value, dataset)
 	}
-	return id, err
+	var of int32
+	err := pool.QueryRow(ctx, `SELECT id, dataset_id FROM testcases WHERE id = $1`, int32(n)).Scan(&id, &of)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows) && dataset != 0:
+		return 0, fmt.Errorf("testcase %q not found in dataset %d (neither a codename nor an id)", value, dataset)
+	case errors.Is(err, pgx.ErrNoRows):
+		return 0, fmt.Errorf("testcase %d not found", n)
+	case err != nil:
+		return 0, err
+	case dataset != 0 && of != dataset:
+		return 0, fmt.Errorf("testcase %q not found in dataset %d (testcase %d is in dataset %d)", value, dataset, n, of)
+	}
+	return id, nil
 }
 
 // notifyDispatcher sends events to the dispatcher through Valkey.

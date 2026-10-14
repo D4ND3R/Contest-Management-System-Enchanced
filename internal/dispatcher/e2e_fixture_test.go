@@ -479,11 +479,10 @@ func (c *sumContest) checkJudged(state map[int32]*judged, sol solution) []string
 		if j.Compilation == nil || *j.Compilation != wantComp {
 			errs = append(errs, fmt.Sprintf("dataset %d: compilation %v, want %s", ds, deref(j.Compilation), wantComp))
 		}
-		// compilation_tries is the highest attempt seen (D23; upstream
-		// counts only the failed ones), evaluation_tries the highest
-		// attempt that failed: one attempt each, none failed.
-		if j.CompTries != 1 || j.EvalTries != 0 {
-			errs = append(errs, fmt.Sprintf("dataset %d: compilation attempts %d (want 1), failed evaluation attempts %d",
+		// The tries are the highest attempt that failed (D23, D35): none
+		// failed.
+		if j.CompTries != 0 || j.EvalTries != 0 {
+			errs = append(errs, fmt.Sprintf("dataset %d: failed compilation attempts %d, failed evaluation attempts %d",
 				ds, j.CompTries, j.EvalTries))
 		}
 		alt := ds != c.main.ID

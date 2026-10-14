@@ -719,9 +719,9 @@ func runChaos(t *testing.T, bin string, plan []chaosSubmission, rng *rand.Rand) 
 			byName[name] = j
 			// Failed attempts are retried (and counted): an attempt that
 			// failed because of the chaos is not a wrong verdict.
-			if j.CompTries > 1 || j.EvalTries > 0 {
+			if j.CompTries > 0 || j.EvalTries > 0 {
 				retried++
-				j.CompTries, j.EvalTries = 1, 0
+				j.CompTries, j.EvalTries = 0, 0
 			}
 		}
 		for _, e := range c.checkJudged(state[id], plan[i].sol) {

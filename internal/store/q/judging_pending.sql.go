@@ -124,6 +124,7 @@ func (q *Queries) JudgingStaleTaskScores(ctx context.Context, arg JudgingStaleTa
 const judgingSubmissionStates = `-- name: JudgingSubmissionStates :many
 SELECT s.id AS submission_id, s.participation_id, s.task_id, s.timestamp,
        d.id AS dataset_id, coalesce(d.id = t.active_dataset_id, false)::boolean AS active,
+       coalesce(d.id = t.active_dataset_id OR d.autojudge, false)::boolean AS to_judge,
        (sr.submission_id IS NOT NULL)::boolean AS has_result,
        sr.compilation_outcome, coalesce(sr.compilation_tries, 0)::integer AS compilation_tries,
        sr.evaluation_outcome, coalesce(sr.evaluation_tries, 0)::integer AS evaluation_tries,
@@ -132,11 +133,21 @@ SELECT s.id AS submission_id, s.participation_id, s.task_id, s.timestamp,
         AND sr.public_score_details IS NOT NULL AND sr.ranking_score_details IS NOT NULL)::boolean AS scored
 FROM submissions s
 JOIN tasks t ON t.id = s.task_id
-JOIN datasets d ON d.task_id = s.task_id AND (d.id = t.active_dataset_id OR d.autojudge)
+JOIN datasets d ON d.task_id = s.task_id
 LEFT JOIN submission_results sr ON sr.submission_id = s.id AND sr.dataset_id = d.id
 WHERE s.id = ANY($1::integer[])
+  AND (d.id = t.active_dataset_id OR d.autojudge
+       OR $2::boolean
+          AND (sr.compilation_outcome = 'fail' OR sr.evaluation_outcome IS NOT NULL)
+          AND (sr.score IS NULL OR sr.score_details IS NULL OR sr.public_score IS NULL
+               OR sr.public_score_details IS NULL OR sr.ranking_score_details IS NULL))
 ORDER BY s.id, d.id
 `
+
+type JudgingSubmissionStatesParams struct {
+	SubmissionIds []int32
+	AllDatasets   bool
+}
 
 type JudgingSubmissionStatesRow struct {
 	SubmissionID       int32
@@ -145,6 +156,7 @@ type JudgingSubmissionStatesRow struct {
 	Timestamp          time.Time
 	DatasetID          int32
 	Active             bool
+	ToJudge            bool
 	HasResult          bool
 	CompilationOutcome *string
 	CompilationTries   int32
@@ -158,8 +170,12 @@ type JudgingSubmissionStatesRow struct {
 // of the given submissions on each dataset to judge (the active dataset of
 // their task and the autojudge ones, upstream get_datasets_to_judge),
 // whether or not the result row exists (a missing row is "compiling").
-func (q *Queries) JudgingSubmissionStates(ctx context.Context, submissionIds []int32) ([]JudgingSubmissionStatesRow, error) {
-	rows, err := q.db.Query(ctx, judgingSubmissionStates, submissionIds)
+// With all_datasets, also the results ready to score and not scored on the
+// other datasets of the task (a rescore: upstream
+// ScoringService.invalidate_submission scores what it invalidated on any
+// dataset).
+func (q *Queries) JudgingSubmissionStates(ctx context.Context, arg JudgingSubmissionStatesParams) ([]JudgingSubmissionStatesRow, error) {
+	rows, err := q.db.Query(ctx, judgingSubmissionStates, arg.SubmissionIds, arg.AllDatasets)
 	if err != nil {
 		return nil, err
 	}
@@ -174,6 +190,7 @@ func (q *Queries) JudgingSubmissionStates(ctx context.Context, submissionIds []i
 			&i.Timestamp,
 			&i.DatasetID,
 			&i.Active,
+			&i.ToJudge,
 			&i.HasResult,
 			&i.CompilationOutcome,
 			&i.CompilationTries,
@@ -182,6 +199,59 @@ func (q *Queries) JudgingSubmissionStates(ctx context.Context, submissionIds []i
 			&i.Generation,
 			&i.Scored,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const judgingSweepMissingTaskScores = `-- name: JudgingSweepMissingTaskScores :many
+SELECT DISTINCT s.participation_id, s.task_id
+FROM submissions s
+JOIN tasks t ON t.id = s.task_id
+WHERE s.id > $1::integer AND s.id <= $2::integer
+  AND ($3::integer = 0 OR t.contest_id = $3::integer)
+  AND NOT EXISTS (
+      SELECT 1 FROM task_scores ts
+      WHERE ts.participation_id = s.participation_id AND ts.task_id = s.task_id)
+ORDER BY s.participation_id, s.task_id
+`
+
+type JudgingSweepMissingTaskScoresParams struct {
+	After     int32
+	Upto      int32
+	ContestID int32
+}
+
+type JudgingSweepMissingTaskScoresRow struct {
+	ParticipationID int32
+	TaskID          int32
+}
+
+// A sweep step (internal/judging Sweep) also looks for the participants
+// and tasks of the submissions with an id in (after, upto] of a contest
+// (0: of every contest) that have no row in the task score cache: a
+// database migrated from before it (0004), or submissions and results
+// written without RecomputeTask (an import, a restore). Every
+// recomputation creates the row, so once repaired nothing is found. No
+// new index: the submissions of the window are read through their primary
+// key (the first arm of JudgingSweepSubmissions reads them too), and the
+// cache is hashed while small and probed through its primary key once
+// much larger than the window (TestSweepAndScorePlans).
+func (q *Queries) JudgingSweepMissingTaskScores(ctx context.Context, arg JudgingSweepMissingTaskScoresParams) ([]JudgingSweepMissingTaskScoresRow, error) {
+	rows, err := q.db.Query(ctx, judgingSweepMissingTaskScores, arg.After, arg.Upto, arg.ContestID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []JudgingSweepMissingTaskScoresRow{}
+	for rows.Next() {
+		var i JudgingSweepMissingTaskScoresRow
+		if err := rows.Scan(&i.ParticipationID, &i.TaskID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

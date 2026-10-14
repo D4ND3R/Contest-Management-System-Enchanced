@@ -86,11 +86,48 @@ func TestJudgeCommands(t *testing.T) {
 		t.Errorf("status of every contest: %q %v", out, err)
 	}
 
+	// Testcase codenames are often numbers: "001" is the codename in
+	// --dataset (testcase 4), not the testcase with id 1 (of dataset 1),
+	// which selected nothing.
+	exec(`INSERT INTO datasets (id, task_id, description, task_type, task_type_parameters, score_type, score_type_parameters)
+		VALUES (2, 1, 'numbered', 'Batch', '["alone", ["", ""], "diff"]', 'Sum', '50')`)
+	exec(`INSERT INTO testcases (id, dataset_id, codename, public, input, output) VALUES (3, 2, '000', true, $1, $1), (4, 2, '001', false, $1, $1)`, d)
+	exec(`INSERT INTO submission_results (submission_id, dataset_id, compilation_outcome, evaluation_outcome,
+			score, score_details, public_score, public_score_details, ranking_score_details)
+		VALUES (1, 2, 'ok', 'ok', 100, '[]', 50, '[]', '{}')`)
+	exec(`INSERT INTO evaluations (submission_id, dataset_id, testcase_id, outcome) VALUES (1, 2, 3, '1.0'), (1, 2, 4, '1.0')`)
+	out, _, err = run("reevaluate", "--dataset", "2", "--testcase", "001", "--level", "evaluation")
+	if err != nil || !strings.HasPrefix(out, "evaluation: 1 results of 1 submissions invalidated") {
+		t.Errorf("numbered codename: %q %v", out, err)
+	}
+	var left string
+	if err := pool.QueryRow(ctx, `SELECT string_agg(testcase_id::text, ',' ORDER BY testcase_id) FROM evaluations`).Scan(&left); err != nil || left != "1,3" {
+		t.Errorf("evaluations left: %q %v (want those of testcases 1 and 3)", left, err)
+	}
+	// A testcase id still works, without --dataset or in it.
+	if out, _, err = run("reevaluate", "--testcase", "3", "--level", "evaluation"); err != nil ||
+		!strings.HasPrefix(out, "evaluation: 1 results of 1 submissions invalidated") {
+		t.Errorf("testcase id: %q %v", out, err)
+	}
+	// A name made of digits is a name before an id: contest "1" is the
+	// contest with id 2 (without submissions), not the contest with id 1.
+	exec(`INSERT INTO contests (id, name, description) VALUES (2, '1', 'Digits')`)
+	if out, _, err = run("reevaluate", "--contest", "1", "--level", "score"); err != nil ||
+		!strings.HasPrefix(out, "score: 0 results of 0 submissions invalidated") {
+		t.Errorf("contest named 1: %q %v", out, err)
+	}
+	// Ids are still accepted (the results are not scored any more: none
+	// is invalidated).
+	if out, _, err = run("reevaluate", "--contest", "ioi", "--task", "1", "--user", "1", "--dataset", "1", "--level", "score"); err != nil ||
+		!strings.HasPrefix(out, "score: 0 results of 1 submissions invalidated") {
+		t.Errorf("ids: %q %v", out, err)
+	}
+
 	// Rescoring a user's submissions; the dispatcher is unreachable.
 	t.Setenv("CMS_REDIS_URL", "redis://127.0.0.1:1/0")
 	out, stderr, err := run("reevaluate", "--user", "alice", "--level", "score")
 	if err != nil || !strings.HasPrefix(out, "score: 0 results of 1 submissions invalidated") ||
-		!strings.Contains(stderr, "could not notify the dispatcher") {
+		!strings.Contains(stderr, "could not notify the dispatcher") || !strings.Contains(stderr, "run this command again") {
 		t.Errorf("unreachable dispatcher: %q %q %v", out, stderr, err)
 	}
 
@@ -108,6 +145,16 @@ func TestJudgeCommands(t *testing.T) {
 		{[]string{"reevaluate", "--task", "nope"}, false, `task "nope" not found`},
 		{[]string{"reevaluate", "--user", "nope"}, false, `user "nope" not found`},
 		{[]string{"reevaluate", "--dataset", "1", "--testcase", "zz", "--level", "evaluation"}, false, `testcase "zz" not found`},
+		// Ids that do not exist, or a testcase of another dataset, are
+		// errors instead of selecting nothing.
+		{[]string{"reevaluate", "--contest", "77"}, false, `contest "77" not found`},
+		{[]string{"reevaluate", "--task", "77"}, false, `task "77" not found`},
+		{[]string{"reevaluate", "--user", "77"}, false, `user "77" not found`},
+		{[]string{"reevaluate", "--dataset", "77"}, false, `dataset 77 not found`},
+		{[]string{"reevaluate", "--participation", "77"}, false, `participation 77 not found`},
+		{[]string{"reevaluate", "--task", "sum", "--testcase", "77", "--level", "evaluation"}, false, `testcase 77 not found`},
+		{[]string{"reevaluate", "--dataset", "1", "--testcase", "3", "--level", "evaluation"}, false, `testcase 3 is in dataset 2`},
+		{[]string{"reevaluate", "--dataset", "1", "--testcase", "77", "--level", "evaluation"}, false, `testcase "77" not found in dataset 1`},
 		{[]string{"reevaluate", "--task", "sum", "extra"}, true, ""},
 		{[]string{"judging-status", "--contest", "nope"}, false, `contest "nope" not found`},
 	} {

@@ -48,6 +48,8 @@ type leader struct {
 	pending    []judging.EventMessage
 	readerCtx  context.Context
 	readerWG   sync.WaitGroup
+	// rechecks are notified ids that were not visible yet.
+	rechecks rechecks
 
 	sweep        sweepState
 	nextDead     time.Time
@@ -77,7 +79,16 @@ func (l *leader) fence() error {
 	return nil
 }
 
-// run is the main loop. It returns when ctx ends (shutdown, lease lost).
+// fenceIf is fence when fenced is set.
+func (l *leader) fenceIf(fenced bool) error {
+	if !fenced {
+		return nil
+	}
+	return l.fence()
+}
+
+// run is the main loop. It returns when ctx ends (shutdown, lease lost),
+// or with errGiveUp when judging keeps failing.
 func (l *leader) run(ctx context.Context) error {
 	d := l.d
 	var stopReader context.CancelFunc
@@ -105,7 +116,13 @@ func (l *leader) run(ctx context.Context) error {
 			break
 		}
 		d.m.loopErrors.WithLabelValues(step).Inc()
+		if errors.Is(err, errGiveUp) {
+			return err
+		}
 		d.noteError(err)
+		if gerr := d.giveUp(err); gerr != nil {
+			return gerr
+		}
 		d.log.Warn("judging step failed, retrying", "step", step, "err", err, "retry_in", delay.String())
 		select {
 		case <-ctx.Done():
@@ -137,6 +154,7 @@ func (l *leader) step(ctx context.Context) (string, error) {
 		}
 	}
 	l.collectEvents()
+	l.pending = append(l.pending, l.rechecks.due(time.Now())...)
 
 	// Results: wait for one only when there is nothing else to do.
 	now := time.Now()
@@ -167,7 +185,7 @@ func (l *leader) step(ctx context.Context) (string, error) {
 
 	now = time.Now()
 	if !now.Before(l.nextDead) {
-		if err := l.deadLetters(ctx); err != nil {
+		if _, err := l.deadLetters(ctx, d.jobs, d.results); err != nil {
 			return "dead letters", err
 		}
 		if err := l.staleEvents(ctx); err != nil {
@@ -196,6 +214,7 @@ func (l *leader) nextWake() time.Time {
 		}
 	}
 	consider(l.nextDead)
+	consider(l.rechecks.next())
 	if !l.sweep.active && len(l.sweep.queued) == 0 {
 		consider(l.sweep.next)
 	}
@@ -207,11 +226,13 @@ func (l *leader) nextWake() time.Time {
 
 // --- results ---
 
-// consumeResults takes up to ResultBatch results (waiting up to block for
-// the first one), stores them and enqueues what follows. It returns how
-// many it took and the dedup keys of their operations. With until set, it
-// stops after a result that entered the queue after until (past is then
-// true: the drain of schedule is over).
+// consumeResults takes up to ResultBatch results, in one round trip per
+// queue.MaxConsumeBatch (waiting up to block for the first one), stores
+// them and enqueues what follows. It returns how many it took and the
+// dedup keys of their operations. With until set, past reports that the
+// drain of schedule is over: a result entered the queue after until, or
+// the queue had no more results (every result that entered it before
+// until was there to take).
 func (l *leader) consumeResults(ctx context.Context, block time.Duration, until time.Time) (n int, keys []string, past bool, err error) {
 	d := l.d
 	// A former leader taking results would hide them from the next one
@@ -220,24 +241,23 @@ func (l *leader) consumeResults(ctx context.Context, block time.Duration, until 
 		return 0, nil, false, err
 	}
 	var msgs []*queue.Message
-	for len(msgs) < d.opts.ResultBatch {
+	more := true
+	for more && len(msgs) < d.opts.ResultBatch {
 		b := time.Duration(0)
 		if len(msgs) == 0 {
 			b = block
 		}
-		m, cerr := d.results.Consume(ctx, ResultsConsumer, b)
+		want := min(d.opts.ResultBatch-len(msgs), queue.MaxConsumeBatch)
+		got, cerr := d.results.ConsumeBatch(ctx, ResultsConsumer, want, b)
 		if cerr != nil {
 			err = cerr
 			break
 		}
-		if m == nil {
-			break
-		}
-		msgs = append(msgs, m)
-		if !until.IsZero() && m.EnqueuedAt.After(until) {
-			past = true
-			break
-		}
+		msgs = append(msgs, got...)
+		more = len(got) == want
+	}
+	if !until.IsZero() {
+		past = !more || slices.ContainsFunc(msgs, func(m *queue.Message) bool { return m.EnqueuedAt.After(until) })
 	}
 	if len(msgs) == 0 {
 		return 0, nil, past, err
@@ -305,10 +325,11 @@ func resultKey(r *job.Result) string {
 // works.
 var errPoison = errors.New("dispatcher: the result cannot be stored")
 
-// apply stores results, retrying while the database fails. When the
-// database works but the batch keeps failing, the results are stored one
-// by one and a result that fails alone is dropped (the sweep schedules
-// its operation again).
+// apply stores results, retrying while the database fails (judging is
+// failing then: Health, and errGiveUp after a while, so that a standby
+// that reaches the database takes over). When the database works but the
+// batch keeps failing, the results are stored one by one and a result
+// that fails alone is dropped (the sweep schedules its operation again).
 func (l *leader) apply(ctx context.Context, results []*job.Result) (*judging.Changes, error) {
 	d := l.d
 	delay := 100 * time.Millisecond
@@ -324,12 +345,16 @@ func (l *leader) apply(ctx context.Context, results []*job.Result) (*judging.Cha
 			return nil, err
 		}
 		d.m.applyErrors.Inc()
+		d.noteError(err)
 		d.log.Warn("cannot store results, retrying", "results", len(results), "attempt", attempt, "err", err)
 		if attempt >= 3 && l.databaseUp(ctx) {
 			if len(results) == 1 {
 				return nil, fmt.Errorf("%w: %w", errPoison, err)
 			}
 			return l.applyOneByOne(ctx, results)
+		}
+		if gerr := d.giveUp(err); gerr != nil {
+			return nil, gerr
 		}
 		select {
 		case <-ctx.Done():
@@ -394,36 +419,37 @@ func (l *leader) countResults(results []*job.Result, ch *judging.Changes) {
 	}
 }
 
-// ack acknowledges messages, several at a time, even during a shutdown
-// (the results are stored). A failure only means the message comes back
-// later, as a duplicate.
+// ack acknowledges messages in one round trip, even during a shutdown
+// (the results are stored). A failure only means the messages come back
+// later, as duplicates.
 func (l *leader) ack(ctx context.Context, msgs []*queue.Message) {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel()
-	const parallel = 8
-	var wg sync.WaitGroup
-	sem := make(chan struct{}, parallel)
-	for _, m := range msgs {
-		sem <- struct{}{}
-		wg.Add(1)
-		go func() {
-			defer func() { <-sem; wg.Done() }()
-			if err := l.d.results.Ack(ctx, m); err != nil && ctx.Err() == nil {
-				l.d.log.Warn("cannot acknowledge a result", "message", m.ID, "err", err)
-			}
-		}()
+	if err := l.d.results.AckBatch(ctx, msgs); err != nil && ctx.Err() == nil {
+		l.d.log.Warn("cannot acknowledge results", "results", len(msgs), "err", err)
 	}
-	wg.Wait()
 }
 
-// enqueueOrKeep enqueues ops and keeps them for the next step if Valkey
+// enqueueOrKeep enqueues the operations that follow a committed
+// transaction (Changes.Next) and keeps them for the next step if Valkey
 // fails.
+//
+// It is not fenced and does not stop with ctx: once the transaction
+// committed nothing else computes them (its results are acknowledged
+// next, and a result received again is a duplicate, which has no next
+// operations), so a leader that has just lost its lease or is stopping
+// still enqueues them. That is harmless (D36): while a job is held its
+// operation@generation dedup key makes a second copy a no-op, and a job
+// of a stale generation, or one the next leader already ran, only
+// produces a result that is dropped.
 func (l *leader) enqueueOrKeep(ctx context.Context, ops []judging.Operation, background bool) error {
 	if len(ops) == 0 {
 		return nil
 	}
-	_, err := l.enqueue(ctx, ops, background)
-	if err != nil && !errors.Is(err, ErrLeaseLost) {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+	defer cancel()
+	_, err := l.enqueueJobs(ctx, ops, background, false)
+	if err != nil {
 		if background {
 			l.retryBackground = append(l.retryBackground, ops...)
 		} else {
@@ -444,9 +470,15 @@ func (l *leader) enqueueOrKeep(ctx context.Context, ops []judging.Operation, bac
 // result waits in the results queue. Such a result entered the queue
 // before Holding answered, so schedule first stores every result that
 // arrived until then (the drain) and drops the operations they were for.
-// Only this goroutine enqueues jobs and stores results, so what is left
-// needs a job: no operation is ever run twice because of a sweep or a
-// repeated notification.
+// The job may also have been dead-lettered (abandoned MaxDeliveries
+// times by workers that died running it), which frees its key at once:
+// those dead letters are stored as failed attempts first, and their
+// operations dropped (the failure enqueues the retry, whose attempt counts
+// the dead one; enqueued again from what was read before, the same
+// attempt would kill MaxDeliveries more workers). Only this goroutine
+// enqueues jobs and stores results, so what is left needs a job: no
+// operation is ever run twice because of a sweep or a repeated
+// notification.
 func (l *leader) schedule(ctx context.Context, w *judging.Work, background bool) (enqueued int, err error) {
 	d := l.d
 	ops, err := l.notHeld(ctx, w.Ops)
@@ -454,11 +486,18 @@ func (l *leader) schedule(ctx context.Context, w *judging.Work, background bool)
 		return 0, err
 	}
 	if len(ops) > 0 {
+		dead, err := l.deadLetters(ctx, d.jobs)
+		if err != nil {
+			return 0, err
+		}
 		until, err := d.kv.Redis().Time(ctx).Result()
 		if err != nil {
 			return 0, err
 		}
 		consumed := map[string]bool{}
+		for _, k := range dead {
+			consumed[k] = true
+		}
 		for {
 			n, keys, past, err := l.consumeResults(ctx, 0, until)
 			if err != nil {
@@ -599,23 +638,28 @@ func (l *leader) collectEvents() {
 }
 
 // handleEvents handles notifications together and acknowledges them. It
-// is idempotent, so a failure retries the whole batch.
+// is idempotent, so a failure retries the whole batch. Messages without an
+// ID are rechecks (not acknowledged).
 func (l *leader) handleEvents(ctx context.Context, msgs []judging.EventMessage) error {
 	d := l.d
 	var (
-		fresh, invalidated, archived         []int32
-		userTests, utInvalidated, utArchived []int32
-		tokens, tasks                        []int32
-		ids                                  []string
+		fresh, invalidated, archived, rescored []int32
+		userTests, utInvalidated, utArchived   []int32
+		tokens, tasks                          []int32
+		ids                                    []string
 	)
 	for _, m := range msgs {
-		ids = append(ids, m.ID)
+		if m.ID != "" {
+			ids = append(ids, m.ID)
+		}
 		if m.Err != nil {
 			d.log.Warn("invalid notification dropped", "id", m.ID, "err", m.Err)
 			continue
 		}
 		e := m.Event
-		d.m.events.WithLabelValues(string(e.Kind)).Inc()
+		if m.ID != "" {
+			d.m.events.WithLabelValues(string(e.Kind)).Inc()
+		}
 		switch e.Kind {
 		case judging.EventSubmission:
 			fresh = append(fresh, e.SubmissionIDs...)
@@ -624,10 +668,16 @@ func (l *leader) handleEvents(ctx context.Context, msgs []judging.EventMessage) 
 		case judging.EventToken:
 			tokens = append(tokens, e.SubmissionIDs...)
 		case judging.EventInvalidate:
-			if e.ArchiveSandbox {
+			switch {
+			case e.Level == judging.LevelScore:
+				// Rescored on every dataset, not only those to judge
+				// (upstream ScoringService.invalidate_submission).
+				rescored = append(rescored, e.SubmissionIDs...)
+				utInvalidated = append(utInvalidated, e.UserTestIDs...)
+			case e.ArchiveSandbox:
 				archived = append(archived, e.SubmissionIDs...)
 				utArchived = append(utArchived, e.UserTestIDs...)
-			} else {
+			default:
 				invalidated = append(invalidated, e.SubmissionIDs...)
 				utInvalidated = append(utInvalidated, e.UserTestIDs...)
 			}
@@ -642,12 +692,14 @@ func (l *leader) handleEvents(ctx context.Context, msgs []judging.EventMessage) 
 			d.log.Warn("unknown notification dropped", "id", m.ID, "kind", string(e.Kind))
 		}
 	}
-	if len(fresh) > 0 {
-		// In case the site did not refresh them in its transaction.
+	if len(fresh)+len(tokens) > 0 {
+		// The task scores of new submissions (partial) and of tokens
+		// (tokened score, and the score in max_tokened_last), in case the
+		// site did not refresh them in its transaction.
 		if err := l.fence(); err != nil {
 			return err
 		}
-		changes, err := d.judge.RefreshTaskScoresOf(ctx, fresh)
+		changes, err := d.judge.RefreshTaskScoresOf(ctx, slices.Concat(fresh, tokens))
 		if err != nil {
 			return err
 		}
@@ -659,24 +711,33 @@ func (l *leader) handleEvents(ctx context.Context, msgs []judging.EventMessage) 
 		}
 	}
 	for _, t := range []struct {
-		subs, uts  []int32
-		archive    bool
-		background bool
+		subs, uts   []int32
+		archive     bool
+		background  bool
+		allDatasets bool
+		// recheck: new ids, which may not be visible yet.
+		recheck bool
 	}{
-		{fresh, nil, false, false},
-		{nil, userTests, false, false},
-		{invalidated, utInvalidated, false, true},
-		{archived, utArchived, true, true},
+		{fresh, nil, false, false, false, true},
+		{nil, userTests, false, false, false, true},
+		{invalidated, utInvalidated, false, true, false, false},
+		{archived, utArchived, true, true, false, false},
+		{rescored, nil, false, true, true, false},
 	} {
 		for len(t.subs)+len(t.uts) > 0 {
 			subs, uts := t.subs[:min(len(t.subs), pendingChunk)], t.uts[:min(len(t.uts), pendingChunk)]
 			t.subs, t.uts = t.subs[len(subs):], t.uts[len(uts):]
-			w, err := d.judge.Pending(ctx, judging.Targets{SubmissionIDs: subs, UserTestIDs: uts, ArchiveSandbox: t.archive})
+			w, err := d.judge.Pending(ctx, judging.Targets{SubmissionIDs: subs, UserTestIDs: uts,
+				ArchiveSandbox: t.archive, ScoreAllDatasets: t.allDatasets})
 			if err != nil {
 				return err
 			}
 			if _, err := l.schedule(ctx, w, t.background); err != nil {
 				return err
+			}
+			if t.recheck {
+				l.recheck(subs, w.MissingSubmissions, false)
+				l.recheck(uts, w.MissingUserTests, true)
 			}
 		}
 	}
@@ -689,6 +750,27 @@ func (l *leader) handleEvents(ctx context.Context, msgs []judging.EventMessage) 
 	return judging.AckEvents(ctx, d.kv, ids...)
 }
 
+// recheck looks again later at the new submissions or user tests that
+// Pending could not see (see rechecks).
+func (l *leader) recheck(asked, missing []int32, userTest bool) {
+	if len(asked) == 0 {
+		return
+	}
+	kind := "submissions"
+	if userTest {
+		kind = "user_tests"
+	}
+	again, givenUp := l.rechecks.note(time.Now(), asked, missing, userTest)
+	if again > 0 {
+		l.d.m.rechecks.WithLabelValues(kind).Add(float64(again))
+		l.d.log.Debug("notified before they were visible: looking again shortly", "kind", kind, "ids", again)
+	}
+	if givenUp > 0 {
+		l.d.log.Warn("notified and never visible (deleted, or the notification was sent before a commit that "+
+			"did not happen): left to the sweep", "kind", kind, "ids", givenUp)
+	}
+}
+
 // --- sweeps ---
 
 // sweepState is the sweep in progress (one step per round of the loop)
@@ -699,6 +781,8 @@ type sweepState struct {
 	cursor  judging.SweepCursor
 	started time.Time
 	found   int
+	// repaired counts the cached task scores created or fixed.
+	repaired int
 	// queued are the contests to sweep next (0: every contest).
 	queued []int32
 	// next is when the next periodic sweep of every contest starts.
@@ -729,7 +813,7 @@ func (l *leader) sweepStep(ctx context.Context) error {
 		if len(s.queued) == 0 {
 			s.queued = append(s.queued, 0) // periodic
 		}
-		s.active, s.contest, s.cursor, s.started, s.found = true, s.queued[0], judging.SweepCursor{}, time.Now(), 0
+		s.active, s.contest, s.cursor, s.started, s.found, s.repaired = true, s.queued[0], judging.SweepCursor{}, time.Now(), 0, 0
 		s.queued = s.queued[1:]
 		if s.contest == 0 {
 			s.next = time.Time{}
@@ -744,6 +828,20 @@ func (l *leader) sweepStep(ctx context.Context) error {
 	n, err := l.schedule(ctx, &res.Work, true)
 	if err != nil {
 		return err
+	}
+	if len(res.MissingTaskScores) > 0 {
+		// Participants with submissions and no cached task score (data
+		// from before the cache, an import): the pages would show 0.
+		if err := l.fence(); err != nil {
+			return err
+		}
+		changes, err := d.judge.RefreshTaskScoresFor(ctx, res.MissingTaskScores)
+		if err != nil {
+			return err
+		}
+		d.m.sweepFound.WithLabelValues("task_scores").Add(float64(len(res.MissingTaskScores)))
+		s.repaired += len(changes)
+		l.published(ctx, &judging.Changes{TaskScores: changes}, ScoreUpdate{})
 	}
 	if n > 0 {
 		d.m.sweepFound.WithLabelValues("operations").Add(float64(n))
@@ -766,14 +864,15 @@ func (l *leader) sweepStep(ctx context.Context) error {
 		return err
 	}
 	l.published(ctx, &judging.Changes{TaskScores: changes}, ScoreUpdate{})
+	s.repaired += len(changes)
 	took := time.Since(s.started)
 	d.m.sweeps.Inc()
 	d.m.sweepTime.Observe(took.Seconds())
 	level := d.log.Debug
-	if s.found > 0 || len(changes) > 0 {
+	if s.found > 0 || s.repaired > 0 {
 		level = d.log.Info
 	}
-	level("sweep done", "contest", s.contest, "found", s.found, "task_scores_repaired", len(changes),
+	level("sweep done", "contest", s.contest, "found", s.found, "task_scores_repaired", s.repaired,
 		"took_ms", took.Milliseconds())
 	if s.contest == 0 {
 		s.next = time.Now().Add(d.opts.SweepInterval)
@@ -784,67 +883,85 @@ func (l *leader) sweepStep(ctx context.Context) error {
 
 // --- dead letters ---
 
-// deadLetters handles the dead letters of both queues. A job abandoned by
+// deadLetters handles the dead letters of queues (the job and result
+// queues), every one present, ResultBatch at a time. A job abandoned by
 // its workers MaxDeliveries times (a job that kills its worker, or
 // workers that keep dying) becomes a failed attempt, so it is retried and
 // eventually given up like any failed job instead of looping through the
 // sweep. A dead result (the dispatcher died that many times holding it) is
-// stored as any other result.
-func (l *leader) deadLetters(ctx context.Context) error {
+// stored as any other result. It returns the dedup keys of the operations
+// whose dead letters it handled.
+func (l *leader) deadLetters(ctx context.Context, queues ...*queue.Queue) ([]string, error) {
 	d := l.d
-	for _, src := range []struct {
-		q     *queue.Queue
-		label string
-	}{{d.jobs, "jobs"}, {d.results, "results"}} {
-		dead, err := src.q.ListDead(ctx, int64(d.opts.ResultBatch))
-		if err != nil {
-			return err
+	var keys []string
+	for _, q := range queues {
+		label := "results"
+		if q == d.jobs {
+			label = "jobs"
 		}
-		if len(dead) == 0 {
-			continue
-		}
-		var results []*job.Result
-		ids := make([]string, 0, len(dead))
-		for _, dl := range dead {
-			ids = append(ids, dl.ID)
-			if src.q == d.jobs {
-				jb, err := job.DecodeJob(dl.Payload)
-				if err != nil {
-					d.log.Error("undecodable dead job dropped", "id", dl.ID, "err", err)
-					continue
-				}
-				r := jb.NewResult("dispatcher")
-				r.Fail(fmt.Errorf("the job was abandoned by its workers: %s", dl.Reason))
-				results = append(results, r)
-				d.log.Warn("job abandoned by its workers counted as a failed attempt", "job", jb.ID, "reason", dl.Reason)
-			} else {
-				r, err := job.DecodeResult(dl.Payload)
-				if err != nil {
-					d.log.Error("undecodable dead result dropped", "id", dl.ID, "err", err)
-					continue
-				}
-				results = append(results, r)
-			}
-		}
-		if len(results) > 0 {
-			ch, err := l.apply(ctx, results)
-			if errors.Is(err, errPoison) {
-				d.log.Error("dead letter dropped: it cannot be stored", "err", err)
-				ch, err = &judging.Changes{}, nil
-			}
+		// Bounded: dead letters keep coming while workers die.
+		for range maxDeadRounds {
+			dead, err := q.ListDead(ctx, int64(d.opts.ResultBatch))
 			if err != nil {
-				return err
+				return keys, err
 			}
-			l.countResults(results, ch)
-			if err := l.enqueueOrKeep(ctx, ch.Next, false); err != nil {
-				d.log.Warn("cannot enqueue the next operations, will retry", "err", err)
+			if len(dead) == 0 {
+				break
 			}
-			l.published(ctx, ch, ScoreUpdate{})
-		}
-		d.m.deadLetters.WithLabelValues(src.label).Add(float64(len(ids)))
-		if err := src.q.DeleteDead(ctx, ids...); err != nil {
-			return err
+			var results []*job.Result
+			ids := make([]string, 0, len(dead))
+			for _, dl := range dead {
+				ids = append(ids, dl.ID)
+				if dl.DedupKey != "" {
+					keys = append(keys, dl.DedupKey)
+				}
+				if q == d.jobs {
+					jb, err := job.DecodeJob(dl.Payload)
+					if err != nil {
+						d.log.Error("undecodable dead job dropped", "id", dl.ID, "err", err)
+						continue
+					}
+					r := jb.NewResult("dispatcher")
+					r.Fail(fmt.Errorf("the job was abandoned by its workers: %s", dl.Reason))
+					results = append(results, r)
+					d.log.Warn("job abandoned by its workers counted as a failed attempt", "job", jb.ID, "reason", dl.Reason)
+				} else {
+					r, err := job.DecodeResult(dl.Payload)
+					if err != nil {
+						d.log.Error("undecodable dead result dropped", "id", dl.ID, "err", err)
+						continue
+					}
+					results = append(results, r)
+					keys = append(keys, resultKey(r))
+				}
+			}
+			if len(results) > 0 {
+				ch, err := l.apply(ctx, results)
+				if errors.Is(err, errPoison) {
+					d.log.Error("dead letter dropped: it cannot be stored", "err", err)
+					ch, err = &judging.Changes{}, nil
+				}
+				if err != nil {
+					return keys, err
+				}
+				l.countResults(results, ch)
+				if err := l.enqueueOrKeep(ctx, ch.Next, false); err != nil {
+					d.log.Warn("cannot enqueue the next operations, will retry", "err", err)
+				}
+				l.published(ctx, ch, ScoreUpdate{})
+			}
+			d.m.deadLetters.WithLabelValues(label).Add(float64(len(ids)))
+			if err := q.DeleteDead(ctx, ids...); err != nil {
+				return keys, err
+			}
+			if len(dead) < d.opts.ResultBatch {
+				break
+			}
 		}
 	}
-	return nil
+	return keys, nil
 }
+
+// maxDeadRounds bounds the batches of dead letters of one queue handled
+// at once.
+const maxDeadRounds = 64

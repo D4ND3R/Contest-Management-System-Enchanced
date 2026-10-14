@@ -95,15 +95,20 @@ func TestSweepAndScorePlans(t *testing.T) {
 		SELECT p.id, $1, $2, 'C++17 / g++', $3 FROM generate_series(1, 100), participations p`, task.id, t0, digestOf("input"))
 	f.exec(`INSERT INTO user_test_results (user_test_id, dataset_id, compilation_outcome, evaluation_outcome)
 		SELECT ut.id, d.id, 'ok', 'ok' FROM user_tests ut JOIN datasets d ON d.task_id = ut.task_id`)
+	// Every participant has a cached task score, as in a contest.
+	f.exec(`INSERT INTO task_scores (participation_id, task_id) SELECT id, $1 FROM participations
+		ON CONFLICT DO NOTHING`, task.id)
 	f.exec(`VACUUM ANALYZE`)
 
-	// check fails if the plan reads a whole table (but the small ones),
-	// or does not use an index of each group of wantIndexes.
-	check := func(name string, c *capture, wantIndexes ...[]string) {
+	// checkPlan fails if the plan reads a whole table (but tasks,
+	// datasets and those in small), or does not use an index of each group
+	// of wantIndexes.
+	checkPlan := func(name string, c *capture, small []string, wantIndexes ...[]string) {
 		t.Helper()
 		used := map[string]bool{}
 		f.explain(c).walk(func(n planNode) {
-			if n.NodeType == "Seq Scan" && n.Relation != "tasks" && n.Relation != "datasets" {
+			if n.NodeType == "Seq Scan" && n.Relation != "tasks" && n.Relation != "datasets" &&
+				!slices.Contains(small, n.Relation) {
 				t.Errorf("%s reads the whole %s table", name, n.Relation)
 			}
 			if n.Index != "" {
@@ -115,6 +120,10 @@ func TestSweepAndScorePlans(t *testing.T) {
 				t.Errorf("%s uses none of %v (uses %v)", name, group, used)
 			}
 		}
+	}
+	check := func(name string, c *capture, wantIndexes ...[]string) {
+		t.Helper()
+		checkPlan(name, c, nil, wantIndexes...)
 	}
 
 	c := &capture{DBTX: f.pool}
@@ -133,6 +142,19 @@ func TestSweepAndScorePlans(t *testing.T) {
 	}
 	check("a sweep step on user tests", c, []string{"ix_user_test_results_unfinished"}, []string{"user_test_results_pkey"})
 
+	// The rows missing in the task score cache, looked for at each step:
+	// the submissions of the window by their primary key. The cache (one
+	// row per participant and task: 300 here) is hashed whole while it is
+	// small; once much larger than the window the planner probes its
+	// primary key instead (seen with 300 000 rows: 5000 probes, 7 ms).
+	c = &capture{DBTX: f.pool}
+	if _, err := q.New(c).JudgingSweepMissingTaskScores(f.ctx, q.JudgingSweepMissingTaskScoresParams{
+		After: 10000, Upto: 15000,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	checkPlan("a sweep step on the task score cache", c, []string{"task_scores"}, []string{"submissions_pkey"})
+
 	c = &capture{DBTX: f.pool}
 	if _, err := q.New(c).JudgingTaskScoreInputs(f.ctx, q.JudgingTaskScoreInputsParams{
 		ParticipationIds: []int32{p, p + 1}, TaskIds: []int32{task.id, task.id},
@@ -146,7 +168,11 @@ func TestSweepAndScorePlans(t *testing.T) {
 		[]string{"submission_results_pkey"}, []string{"tokens_submission_id_key"})
 
 	// The progress counters the dispatcher publishes every second while
-	// judging: the unfinished results only.
+	// judging: the unfinished results only, also with the backlog that
+	// judging implies (600 unfinished results here; with a join to the
+	// submissions, a few hundred made the planner read all of them).
+	f.exec(`UPDATE submission_results SET score = NULL WHERE submission_id % 100 = 0`)
+	f.exec(`ANALYZE submission_results`)
 	c = &capture{DBTX: f.pool}
 	if _, err := q.New(c).JudgingProgress(f.ctx, q.JudgingProgressParams{
 		MaxCompilationTries: 3, MaxEvaluationTries: 3,
