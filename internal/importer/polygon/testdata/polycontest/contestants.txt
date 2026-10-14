@@ -1,0 +1,4 @@
+polyalice;alicepw;Alice;Liddell;0
+polybob ; bobpw ; Bob ; Builder ; 0
+
+polyjury;jurypw;Ju;Ry;1

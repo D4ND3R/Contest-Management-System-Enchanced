@@ -1,0 +1,59 @@
+{
+    "name": "tpsoutput",
+    "title": "Output only",
+    "datasets": [
+        {
+            "managers": {
+                "checker": "07cd2d538ec59f8355ba50cef7f2417939a8db21"
+            },
+            "autojudge": true,
+            "task_type": "OutputOnly",
+            "testcases": [
+                [
+                    "01",
+                    true,
+                    "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e",
+                    "7448d8798a4380162d4b56f9b452e2f6f9e24e7a"
+                ],
+                [
+                    "02",
+                    true,
+                    "5d9474c0309b7ca09a182d888f73b37a8fe1362c",
+                    "4143d3a341877154d6e95211464e1df1015b74bd"
+                ]
+            ],
+            "score_type": "GroupMin",
+            "time_limit": null,
+            "description": "Default",
+            "memory_limit": null,
+            "task_type_parameters": "[\"comparator\"]",
+            "score_type_parameters": "[[40, \"01\"], [60, \"02\"]]"
+        }
+    ],
+    "score_mode": "max_subtask",
+    "statements": {
+    },
+    "token_mode": "disabled",
+    "attachments": {
+    },
+    "token_gen_max": null,
+    "active_dataset": "Default",
+    "feedback_level": "restricted",
+    "score_precision": 2,
+    "token_gen_number": 2,
+    "token_max_number": null,
+    "allowed_languages": null,
+    "submission_format": [
+        "output_01.txt",
+        "output_02.txt"
+    ],
+    "token_gen_initial": 2,
+    "primary_statements": [
+    ],
+    "token_gen_interval": 1800.000000,
+    "token_min_interval": 0.000000,
+    "max_user_test_number": 100,
+    "max_submission_number": 100,
+    "min_user_test_interval": 60.000000,
+    "min_submission_interval": 60.000000
+}

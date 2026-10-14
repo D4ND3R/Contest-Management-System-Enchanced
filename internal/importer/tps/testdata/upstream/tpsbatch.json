@@ -1,0 +1,90 @@
+{
+    "name": "tpsbatch",
+    "title": "Sum of a list",
+    "datasets": [
+        {
+            "managers": {
+                "checker": "07cd2d538ec59f8355ba50cef7f2417939a8db21",
+                "grader.py": "b8983b8262a96eb3ecd82279d0e0b5b8acdf3605",
+                "grader.cpp": "68f547e1df7d475c44322e56e20b8bfb3fd84171",
+                "tpsbatch.h": "32283f6ed2f7f8922807c96a1d90b37df55b9e16",
+                "grader.java": "fa10eb83233a94f4e7ea82caf7f51963b70a1afc"
+            },
+            "autojudge": true,
+            "task_type": "Batch",
+            "testcases": [
+                [
+                    "0-01",
+                    true,
+                    "e37cec58f04e916bae799a3b1bf64ff77abc70c9",
+                    "ccf271b7830882da1791852baeca1737fcbe4b90"
+                ],
+                [
+                    "0-02",
+                    true,
+                    "4602d7a486d619898d7d32cf1f593cc073d73b61",
+                    "e8d23e5f8df22d77c1d830f60c7b8b453d622a19"
+                ],
+                [
+                    "1-01",
+                    true,
+                    "8cda47d1f737e3a067bb47bdac0b3428cd8605e0",
+                    "97ea7ec8a6bb8ab9049d86bc39b5be2b0800b14b"
+                ],
+                [
+                    "1-02",
+                    true,
+                    "fdef37b31cc84b7f22497ba695f96a4930257941",
+                    "9c6b057a2b9d96a4067a749ee3b3b0158d390cf1"
+                ],
+                [
+                    "2-01",
+                    true,
+                    "c60c76cb2a1e8365b69c7d2270847120fed11128",
+                    "002616f1f6a97bc83576d97f8470ea37a698c809"
+                ],
+                [
+                    "2-02",
+                    true,
+                    "0bc734596650596c104ee00e8557be07b0910eb1",
+                    "de24ecf006baac94c0ad4a0ffbfaa9d230c49d70"
+                ]
+            ],
+            "score_type": "GroupMin",
+            "time_limit": 1.5,
+            "description": "Default",
+            "memory_limit": 268435456,
+            "task_type_parameters": "[\"grader\", [\"\", \"\"], \"comparator\"]",
+            "score_type_parameters": "[[0, \"0\\\\-01|0\\\\-02\", \"Samples\"], [30, \"0\\\\-01|1\\\\-01|1\\\\-02\", \"Subtask 1\"], [70, \"0\\\\-01|0\\\\-02|1\\\\-01|1\\\\-02|2\\\\-01|2\\\\-02\", \"Subtask 2\"]]"
+        }
+    ],
+    "score_mode": "max_subtask",
+    "statements": {
+        "es": "bc519c006cec5f5bae718b20f10153b2e901fd27",
+        "en_US": "8a1a4b510a2645a3049ac33ea24bf2d49b605327"
+    },
+    "token_mode": "disabled",
+    "attachments": {
+        "tpsbatch.zip": "b04f3ee8f5e43fa3b162981b50bb72fe1acabb33"
+    },
+    "token_gen_max": null,
+    "active_dataset": "Default",
+    "feedback_level": "restricted",
+    "score_precision": 2,
+    "token_gen_number": 2,
+    "token_max_number": null,
+    "allowed_languages": null,
+    "submission_format": [
+        "tpsbatch.%l"
+    ],
+    "token_gen_initial": 2,
+    "primary_statements": [
+        "en_US"
+    ],
+    "token_gen_interval": 1800.000000,
+    "token_min_interval": 0.000000,
+    "max_user_test_number": 50,
+    "max_submission_number": 50,
+    "min_user_test_interval": 60.000000,
+    "min_submission_interval": 60.000000
+}

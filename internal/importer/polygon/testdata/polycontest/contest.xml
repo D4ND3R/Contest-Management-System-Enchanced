@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<contest url="https://polygon.codeforces.com/c/4242/polycontest">
+    <names>
+        <name language="english" main="true" value="Polygon Test Round"/>
+        <name language="spanish" value="Ronda de prueba de Polygon"/>
+    </names>
+    <statements>
+        <statement language="english" path="statements/english/statements.pdf" type="application/pdf"/>
+    </statements>
+    <problems>
+        <problem index="A" url="https://polygon.codeforces.com/p/judge/polyaplusb"/>
+        <problem index="B" url="https://polygon.codeforces.com/p/judge/polypairs"/>
+    </problems>
+</contest>

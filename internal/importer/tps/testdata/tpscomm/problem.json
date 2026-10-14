@@ -1,0 +1,1 @@
+{"protocol_version": 1, "code": "tpscomm", "name": "Guess the number", "time_limit": "2", "memory_limit": 536870912, "feedback_level": "oi_restricted", "task_type": "communication", "task_type_params": "{\"task_type_parameters_Communication_num_processes\": 2}"}

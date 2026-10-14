@@ -1,0 +1,91 @@
+{
+    "name": "polypairs",
+    "title": "Пары",
+    "datasets": [
+        {
+            "managers": {
+            },
+            "autojudge": false,
+            "task_type": "Batch",
+            "testcases": [
+                [
+                    "000",
+                    true,
+                    "98c520c6fb2f5c57c9a77f48f7c8d20ee89643b2",
+                    "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e"
+                ],
+                [
+                    "001",
+                    true,
+                    "69b981fc1fb54c9826268f667ba26b5a56e452e7",
+                    "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e"
+                ]
+            ],
+            "score_type": "Sum",
+            "time_limit": 2.5,
+            "description": "pretests",
+            "memory_limit": 67108864,
+            "task_type_parameters": "[\"alone\", [\"pairs.in\", \"pairs.out\"], \"diff\"]",
+            "score_type_parameters": "50.0"
+        },
+        {
+            "managers": {
+            },
+            "autojudge": false,
+            "task_type": "Batch",
+            "testcases": [
+                [
+                    "000",
+                    true,
+                    "98c520c6fb2f5c57c9a77f48f7c8d20ee89643b2",
+                    "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e"
+                ],
+                [
+                    "001",
+                    true,
+                    "af9e4b42834947067582ecba6efc2133a074a2d7",
+                    "7448d8798a4380162d4b56f9b452e2f6f9e24e7a"
+                ],
+                [
+                    "002",
+                    true,
+                    "a9c2af7a96b4a4a732e18d15b69f6917565f99e1",
+                    "09d2af8dd22201dd8d48e5dcfcaed281ff9422c7"
+                ]
+            ],
+            "score_type": "Sum",
+            "time_limit": 2.5,
+            "description": "tests",
+            "memory_limit": 67108864,
+            "task_type_parameters": "[\"alone\", [\"pairs.in\", \"pairs.out\"], \"diff\"]",
+            "score_type_parameters": "33.333333333333336"
+        }
+    ],
+    "score_mode": "max_tokened_last",
+    "statements": {
+        "ru": "29d964ab51944c2dff7b418562c8198a71bc901e"
+    },
+    "token_mode": "disabled",
+    "attachments": {
+    },
+    "token_gen_max": null,
+    "active_dataset": "tests",
+    "feedback_level": "restricted",
+    "score_precision": 0,
+    "token_gen_number": 2,
+    "token_max_number": null,
+    "allowed_languages": null,
+    "submission_format": [
+        "polypairs.%l"
+    ],
+    "token_gen_initial": 2,
+    "primary_statements": [
+        "ru"
+    ],
+    "token_gen_interval": 1800.000000,
+    "token_min_interval": 0.000000,
+    "max_user_test_number": null,
+    "max_submission_number": null,
+    "min_user_test_interval": null,
+    "min_submission_interval": null
+}

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<problem revision="12" short-name="polyaplusb" url="https://polygon.codeforces.com/p/judge/polyaplusb">
+    <names>
+        <name language="english" value="A plus B"/>
+        <name language="spanish" value="A más B"/>
+    </names>
+    <statements>
+        <statement charset="UTF-8" language="english" mathjax="true" path="statements/english/problem.tex" type="application/x-tex"/>
+        <statement language="english" path="statements/.pdf/english/problem.pdf" type="application/pdf"/>
+        <statement language="spanish" path="statements/.pdf/spanish/problem.pdf" type="application/pdf"/>
+    </statements>
+    <judging cpu-name="Intel(R) Core(TM) i3-8100 CPU @ 3.60GHz" cpu-speed="3600" input-file="" output-file="">
+        <testset name="tests">
+            <time-limit>1000</time-limit>
+            <memory-limit>268435456</memory-limit>
+            <test-count>5</test-count>
+            <input-path-pattern>tests/%02d</input-path-pattern>
+            <answer-path-pattern>tests/%02d.a</answer-path-pattern>
+            <tests>
+                <test group="0" method="manual" points="0.0" sample="true"/>
+                <test cmd="gen 1 10" group="1" method="generated" points="20.0"/>
+                <test cmd="gen 2 10" group="1" method="generated" points="20.0"/>
+                <test cmd="gen 3 1000000000" group="2" method="generated" points="30.0"/>
+                <test cmd="gen 4 1000000000" group="2" method="generated" points="30.0"/>
+            </tests>
+            <groups>
+                <group feedback-policy="complete" name="0" points="0.0" points-policy="complete-group"/>
+                <group feedback-policy="icpc" name="1" points="40.0" points-policy="complete-group"/>
+                <group feedback-policy="icpc" name="2" points="60.0" points-policy="complete-group">
+                    <dependencies>
+                        <dependency group="1"/>
+                    </dependencies>
+                </group>
+            </groups>
+        </testset>
+    </judging>
+    <files>
+        <resources>
+            <file path="files/olymp.sty"/>
+            <file path="files/problem.tex"/>
+            <file path="files/testlib.h" type="h.g++"/>
+        </resources>
+        <executables>
+            <executable>
+                <source path="files/gen.cpp" type="cpp.g++17"/>
+            </executable>
+        </executables>
+    </files>
+    <assets>
+        <checker name="check.cpp" type="testlib">
+            <source path="files/check.cpp" type="cpp.g++17"/>
+            <copy path="check.cpp"/>
+        </checker>
+        <solutions>
+            <solution tag="main">
+                <source path="solutions/sum.cpp" type="cpp.g++17"/>
+            </solution>
+        </solutions>
+    </assets>
+    <properties>
+        <property name="tests-wellformed" value="true"/>
+    </properties>
+    <tags>
+        <tag value="implementation"/>
+    </tags>
+</problem>

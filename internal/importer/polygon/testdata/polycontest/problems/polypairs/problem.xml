@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<problem revision="3" short-name="polypairs" url="https://polygon.codeforces.com/p/judge/polypairs">
+    <names>
+        <name language="russian" value="Пары"/>
+    </names>
+    <statements>
+        <statement language="russian" path="statements/.pdf/russian/problem.pdf" type="application/pdf"/>
+    </statements>
+    <judging cpu-name="Intel(R) Core(TM) i3-8100 CPU @ 3.60GHz" cpu-speed="3600" input-file="pairs.in" output-file="pairs.out">
+        <testset name="pretests">
+            <time-limit>2500</time-limit>
+            <memory-limit>67108864</memory-limit>
+            <test-count>2</test-count>
+            <input-path-pattern>pretests/%02d</input-path-pattern>
+            <answer-path-pattern>pretests/%02d.a</answer-path-pattern>
+            <tests>
+                <test method="manual" sample="true"/>
+                <test method="manual"/>
+            </tests>
+        </testset>
+        <testset name="tests">
+            <time-limit>2500</time-limit>
+            <memory-limit>67108864</memory-limit>
+            <test-count>3</test-count>
+            <input-path-pattern>tests/%02d</input-path-pattern>
+            <answer-path-pattern>tests/%02d.a</answer-path-pattern>
+            <tests>
+                <test method="manual" sample="true"/>
+                <test method="manual"/>
+                <test method="manual"/>
+            </tests>
+        </testset>
+    </judging>
+</problem>

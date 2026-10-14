@@ -1,0 +1,71 @@
+{
+    "name": "tpsbao",
+    "title": "Batch and output",
+    "datasets": [
+        {
+            "managers": {
+            },
+            "autojudge": true,
+            "task_type": "BatchAndOutput",
+            "testcases": [
+                [
+                    "a1",
+                    true,
+                    "e6d9715dfa5fe5c5f5d9ceaff57a256115e2e91c",
+                    "790211060232b881f424cce875d41e7c02033f0e"
+                ],
+                [
+                    "a2",
+                    true,
+                    "5447c6b8023bbc5a887918cd45c14511e9485c75",
+                    "6a22b7dd3a57ded2aef23148f32bccbecaa8cf63"
+                ],
+                [
+                    "b1",
+                    true,
+                    "b551771aa4ad5b14123fc3bd98d89db2bc0edd4f",
+                    "17a84b0e1645327e7f891b9d3d4a1faf008fb65f"
+                ],
+                [
+                    "s1",
+                    true,
+                    "d0257f733e5e1c54fcf496857e2b4f0e4148c017",
+                    "3307843b6ed9843383ec6a7874864cd7d7c2be98"
+                ]
+            ],
+            "score_type": "GroupMin",
+            "time_limit": 0.5,
+            "description": "Default",
+            "memory_limit": 134217728,
+            "task_type_parameters": "[\"alone\", [\"bao.in\", \"bao.out\"], \"diff\", \"b1\"]",
+            "score_type_parameters": "[[0, \"s1\", \"Samples\"], [50, \"a1|a2\", \"Subtask 1\"], [50, \"b1\", \"Subtask 2\"]]"
+        }
+    ],
+    "score_mode": "max_subtask",
+    "statements": {
+    },
+    "token_mode": "disabled",
+    "attachments": {
+    },
+    "token_gen_max": null,
+    "active_dataset": "Default",
+    "feedback_level": "restricted",
+    "score_precision": 0,
+    "token_gen_number": 2,
+    "token_max_number": null,
+    "allowed_languages": null,
+    "submission_format": [
+        "tpsbao.%l",
+        "output_b1.txt",
+        "output_s1.txt"
+    ],
+    "token_gen_initial": 2,
+    "primary_statements": [
+    ],
+    "token_gen_interval": 1800.000000,
+    "token_min_interval": 0.000000,
+    "max_user_test_number": 50,
+    "max_submission_number": 50,
+    "min_user_test_interval": 60.000000,
+    "min_submission_interval": 60.000000
+}

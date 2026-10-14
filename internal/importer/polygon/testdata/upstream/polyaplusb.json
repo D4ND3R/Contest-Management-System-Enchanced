@@ -1,0 +1,80 @@
+{
+    "name": "polyaplusb",
+    "title": "A plus B",
+    "datasets": [
+        {
+            "managers": {
+                "checker": "24d7b3c9d963f854329cc1ec7465b2ff75ecac0e"
+            },
+            "autojudge": false,
+            "task_type": "Batch",
+            "testcases": [
+                [
+                    "000",
+                    true,
+                    "32d3c3db7c8157c3bb576fa546eb6e41322fb89e",
+                    "a3db5c13ff90a36963278c6a39e4ee3c22e2a436"
+                ],
+                [
+                    "001",
+                    true,
+                    "57f6d1f3fe3ccfc9da73749ce65115c4087d5677",
+                    "ad552e6dc057d1d825bf49df79d6b98eba846ebe"
+                ],
+                [
+                    "002",
+                    true,
+                    "d2e5ed27824addf1628b5e168f49665645c140b5",
+                    "4143d3a341877154d6e95211464e1df1015b74bd"
+                ],
+                [
+                    "003",
+                    true,
+                    "36d17c8d7f7e0e43189fa97bbb7bb219bfa1a0e5",
+                    "01097d02b2cd8ac5b0dfb4c0d644520b928597cf"
+                ],
+                [
+                    "004",
+                    true,
+                    "8c6366f1671d7f343314f870146087aa7a3522a5",
+                    "75a9a64e02cba6db0a670240c3e6432c756fd76f"
+                ]
+            ],
+            "score_type": "GroupMin",
+            "time_limit": 1,
+            "description": "tests",
+            "memory_limit": 268435456,
+            "task_type_parameters": "[\"alone\", [\"\", \"\"], \"comparator\"]",
+            "score_type_parameters": "[[0, 1], [40, 2], [60, 2]]"
+        }
+    ],
+    "score_mode": "max_tokened_last",
+    "statements": {
+        "en": "0a38a274179079a1ce3a1ecc087502c033a0283d",
+        "es": "a6fb5187546776e58a89b8fbd41f49edeba0c4d1"
+    },
+    "token_mode": "disabled",
+    "attachments": {
+    },
+    "token_gen_max": null,
+    "active_dataset": "tests",
+    "feedback_level": "full",
+    "score_precision": 2,
+    "token_gen_number": 2,
+    "token_max_number": null,
+    "allowed_languages": null,
+    "submission_format": [
+        "polyaplusb.%l"
+    ],
+    "token_gen_initial": 2,
+    "primary_statements": [
+        "en",
+        "es"
+    ],
+    "token_gen_interval": 1800.000000,
+    "token_min_interval": 0.000000,
+    "max_user_test_number": null,
+    "max_submission_number": 50,
+    "min_user_test_interval": null,
+    "min_submission_interval": 30.000000
+}

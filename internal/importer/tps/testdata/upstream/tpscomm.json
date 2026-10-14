@@ -1,0 +1,69 @@
+{
+    "name": "tpscomm",
+    "title": "Guess the number",
+    "datasets": [
+        {
+            "managers": {
+                "manager": "7dc171341d98b97be3be4072ffd1afb7d4dd2510",
+                "tpscomm.h": "d6ee40caa6ea2fe4a2a526de829c68a5c4d3f80b",
+                "grader.cpp": "7ee9db8f6f1383783deb3ccdc3b3ad79b531eb99",
+                "grader.java": "93fb4ab4d8a3ff229626700dccba48714feec634"
+            },
+            "autojudge": true,
+            "task_type": "Communication",
+            "testcases": [
+                [
+                    "01",
+                    true,
+                    "d3964f9dad9f60363c81b688324d95b4ec7c8038",
+                    "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc"
+                ],
+                [
+                    "02",
+                    true,
+                    "030514d80869744a4e2f60d2fd37d6081f5ed01a",
+                    "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc"
+                ],
+                [
+                    "03",
+                    true,
+                    "8eecbb71d418ef8c7d583dd506a994b1bc1c3f7b",
+                    "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc"
+                ]
+            ],
+            "score_type": "Sum",
+            "time_limit": 2,
+            "description": "Default",
+            "memory_limit": 536870912,
+            "task_type_parameters": "[2, \"grader\", \"std_io\"]",
+            "score_type_parameters": "33.333333333333336"
+        }
+    ],
+    "score_mode": "max_subtask",
+    "statements": {
+        "en_US": "ade76504a9f19ef28bd45202a1db80d25342ef44"
+    },
+    "token_mode": "disabled",
+    "attachments": {
+    },
+    "token_gen_max": null,
+    "active_dataset": "Default",
+    "feedback_level": "oi_restricted",
+    "score_precision": 2,
+    "token_gen_number": 2,
+    "token_max_number": null,
+    "allowed_languages": null,
+    "submission_format": [
+        "tpscomm.%l"
+    ],
+    "token_gen_initial": 2,
+    "primary_statements": [
+        "en_US"
+    ],
+    "token_gen_interval": 1800.000000,
+    "token_min_interval": 0.000000,
+    "max_user_test_number": 50,
+    "max_submission_number": 50,
+    "min_user_test_interval": 60.000000,
+    "min_submission_interval": 60.000000
+}
