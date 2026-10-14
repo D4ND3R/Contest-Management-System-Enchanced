@@ -83,9 +83,12 @@ func communicationParams() []Param {
 // The users' statistics are merged as concurrent runs, and their total
 // CPU time must stay under the time limit. A manager that does not end
 // normally fails the job (the admins must fix it), except when a user
-// process failed first: then the outcome is 0 with the users' message
-// whatever the manager does (it is stopped: it may be blocked on the
-// FIFOs of a dead process, or die of a broken pipe). Upstream fails the
+// process failed first, or crashed by itself (a signal other than
+// SIGPIPE, the CPU time or memory limit, a forbidden system call) at most
+// crashGrace after the manager ended, since the ends of processes that
+// die together are noticed in any order: then the outcome is 0 with the
+// users' message whatever the manager does (it is stopped: it may be
+// blocked on the FIFOs of a dead process, or die of a broken pipe). Upstream fails the
 // job in that case too, and also answers "Execution completed
 // successfully" to a user test whose program failed.
 type communication struct {
@@ -295,7 +298,16 @@ func (t *communication) Evaluate(ctx context.Context, env *Env, j *job.Job, res 
 			return fmt.Errorf("manager: %w", mgr.err)
 		}
 		if mgr.failedByItself() && !failedBefore(users, mgr.at) {
-			return mgr.failure()
+			// The workers notice the ends of processes that die together
+			// in any order: give a user that crashed by itself a moment
+			// to be noticed before blaming the manager.
+			select {
+			case <-usersDone:
+			case <-time.After(crashGrace):
+			}
+			if !userCrashedNear(users, mgr.at) {
+				return mgr.failure()
+			}
 		}
 		<-usersDone
 	}
@@ -344,7 +356,7 @@ func (t *communication) Evaluate(ctx context.Context, env *Env, j *job.Job, res 
 		if mgr.err != nil {
 			return fmt.Errorf("manager: %w", mgr.err)
 		}
-		if mgr.failedByItself() && mgr.at.Before(failedAt) {
+		if mgr.failedByItself() && mgr.at.Before(failedAt) && !userCrashedNear(users, mgr.at) {
 			return mgr.failure()
 		}
 		r.res.Stats = userStats
@@ -407,6 +419,44 @@ func (e *processEnd) failedByItself() bool {
 // failure is the error of a job whose manager failed.
 func (e *processEnd) failure() error {
 	return configError("the manager ended with %s (signal %d)", e.stats.ExitStatus, e.stats.Signal)
+}
+
+// crashGrace bounds how much later than the manager a user process that
+// crashed by itself may be noticed for the crash to count as the cause of
+// the manager's failure.
+const crashGrace = 250 * time.Millisecond
+
+// crashedByItself reports whether a user process failed in a way that a
+// manager that died cannot cause: killed by a signal other than SIGPIPE,
+// over its CPU time or memory limit, or a forbidden system call. A
+// nonzero exit, a broken pipe or the wall clock limit can follow from a
+// dead manager (an end of file, a closed FIFO, a read that never
+// returns), so for those the order of the ends decides.
+func crashedByItself(s *job.Stats) bool {
+	switch s.ExitStatus {
+	case job.ExitSignal:
+		return s.Signal != int(syscall.SIGPIPE)
+	case job.ExitTimeout, job.ExitMemoryLimit, job.ExitSecurityViolation:
+		return true
+	}
+	return false
+}
+
+// userCrashedNear reports whether a user process that already ended
+// crashed by itself no later than crashGrace after t, the end of the
+// manager: then the manager failed because of it (a manager failing on
+// a broken pipe), even if its end was noticed first.
+func userCrashedNear(users []*processEnd, t time.Time) bool {
+	for _, u := range users {
+		select {
+		case <-u.done:
+			if u.err == nil && crashedByItself(u.stats) && !u.at.After(t.Add(crashGrace)) {
+				return true
+			}
+		default:
+		}
+	}
+	return false
 }
 
 // failedBefore reports whether one of the processes that already ended

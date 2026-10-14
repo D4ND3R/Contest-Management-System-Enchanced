@@ -377,7 +377,11 @@ portada con sus tareas y programas. Diferencias:
   el manager (CMS espera 21 s y falla el trabajo, que queda reintentándose
   sin juzgarse); un manager muerto por SIGPIPE cuenta como falla del
   usuario. Si el manager falla primero, el trabajo falla (error de
-  configuración), nunca se culpa al concursante.
+  configuración), nunca se culpa al concursante. Como el worker puede
+  notar en cualquier orden el fin de procesos que mueren juntos, una
+  falla del usuario que el manager no puede causar (señal distinta de
+  SIGPIPE, límite de CPU o memoria, syscall prohibida) a lo sumo 250 ms
+  después del fin del manager también es culpa del usuario.
 - Las expresiones regulares de los grupos (GroupMin/Mul/Threshold) usan la
   sintaxis de Python traducida a RE2; lo que RE2 no puede ejecutar
   (lookahead, referencias hacia atrás…) se rechaza al guardar el dataset.
