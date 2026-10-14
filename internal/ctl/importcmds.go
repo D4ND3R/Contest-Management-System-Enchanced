@@ -20,6 +20,7 @@ import (
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/config"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/language"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/importer"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/importer/dump"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/importer/pkg"
 )
 
@@ -382,9 +383,9 @@ func importUsersCommand() *cli.Command {
 		Long: `Imports the users of the package at DIR (a contest whose package lists
 them, for the formats that do), or only those named, in one transaction.
 Existing users are left alone, or updated with -u (a user without a
-password in the package keeps hers). Users created without a password get
-a random one. With -c, every user named gets a participation in the main
-group of that contest if she has none.` + loadersHelp(),
+password in the package keeps the one in the database). Users created
+without a password get a random one. With -c, every user named without a
+participation in that contest gets one in its main group.` + loadersHelp(),
 		Flags: func(fs *flag.FlagSet) {
 			f.registerWrite(fs)
 			boolFlags(fs, &opts.Update, "update the users that exist", "u", "update")
@@ -785,12 +786,80 @@ not exported; managers the format cannot carry are listed as warnings.`,
 }
 
 func importDumpCommand() *cli.Command {
+	var (
+		f    importFlags
+		opts dump.Options
+	)
 	return &cli.Command{
 		Name:  "import-dump",
-		Args:  "[flags] DIR",
-		Short: "import a dump of CMS (cmsDumpImporter)",
-		Run: func(context.Context, *cli.Env, []string) error {
-			return fmt.Errorf("import-dump: %w", errNotImplemented)
+		Args:  "[flags] DUMP",
+		Short: "import a dump of CMS: contests, users, submissions and results (cmsDumpImporter)",
+		Long: fmt.Sprintf(`Imports a dump written by cmsDumpExporter of CMS, to move an installation of
+CMS to this one: a directory with contest.json and files/, or a zip or tar
+(.tar, .tar.gz, .tar.bz2) archive of one. Dumps of the data model versions
+%d (CMS 1.2) to %d are read; older versions are updated on the way, as
+cmsDumpImporter does (older dumps: update them with cmsDumpUpdater of CMS).
+
+Every file is checked against its name (its SHA-1) and stored in the blob
+store under its SHA-256; then every object (contests with their groups,
+tasks with their datasets, users, teams, participations, announcements,
+questions, messages, submissions with their tokens, results, executables and
+evaluations, user tests) is written in one transaction: nothing is written
+if anything is wrong. Dumps have no database ids: the rows get new ones, in
+the order of the original installation on an empty database. The task
+scores are computed from the results of the dump, and the dispatcher is
+notified to judge what the dump does not have judged.
+
+The SHA-256 of a file needs its content: a dump exported without files
+(cmsDumpExporter -F) cannot be imported; export it again without -F. A dump
+exported with -c also has the other contests its contestants took part in,
+but not their files (cmsDumpExporter does not export them): their tasks,
+submissions and user tests are imported with those files deleted
+(tombstones), with a warning; export every contest needed with -c to keep
+them.
+
+A dump whose contests, tasks, users or teams are already in the database is
+refused unless -d, which deletes the contests, tasks, users and teams of the
+database (and everything under them) first, like cmsDumpImporter -d; with
+--reuse-users the existing users and teams are used instead (to import, one
+after the other, dumps of contests that share their contestants). With
+--dry-run, -d deletes nothing and blocks no one: the dump is checked
+against empty copies of those tables. Admins are in a dump only as authors
+of announcements and answers: they are matched by username, and those not
+in the database are created disabled.`, dump.OldestVersion, dump.Version),
+		Flags: func(fs *flag.FlagSet) {
+			f.fs = fs
+			fs.BoolVar(&f.dryRun, "dry-run", false, "check everything and print what would change, without writing anything")
+			boolFlags(fs, &opts.Drop, "delete the contests, tasks, users and teams of the database first (not the admins)", "d", "drop")
+			fs.BoolVar(&opts.ReuseUsers, "reuse-users", false, "use the users and teams already in the database instead of refusing the dump")
+			boolFlags(fs, &opts.SkipGenerated, "do not import the results (submissions and user tests are judged again)", "G", "no-generated")
+			boolFlags(fs, &opts.SkipSubmissions, "do not import the submissions", "S", "no-submissions")
+			boolFlags(fs, &opts.SkipUserTests, "do not import the user tests", "U", "no-user-tests")
+			boolFlags(fs, &opts.SkipUsers, "do not import users, teams, participations and what depends on them", "X", "no-users")
+		},
+		Run: func(ctx context.Context, env *cli.Env, args []string) error {
+			args, err := f.positional(args)
+			if err != nil {
+				return err
+			}
+			switch {
+			case len(args) == 0:
+				return cli.UsageError("missing the dump (a directory, a zip file or a tar archive)")
+			case len(args) > 1:
+				return cli.UsageError("unexpected arguments %q", args[1:])
+			}
+			path, err := filepath.Abs(args[0])
+			if err != nil {
+				return err
+			}
+			ie, err := openImport(ctx, env, &f)
+			if err != nil {
+				return err
+			}
+			defer ie.close()
+			opts.Report = &importer.Report{}
+			res, err := dump.Import(ctx, ie.writer, path, opts)
+			return finishImport(ctx, env, ie, res, err)
 		},
 	}
 }

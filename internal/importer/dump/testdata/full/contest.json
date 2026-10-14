@@ -1,0 +1,1747 @@
+{
+    "0": {
+        "_class": "Contest",
+        "allow_password_authentication": true,
+        "allow_questions": true,
+        "allow_registration": false,
+        "allow_unofficial_submission_before_analysis_mode": false,
+        "allow_user_tests": true,
+        "allowed_localizations": [],
+        "announcements": [
+            "15",
+            "16"
+        ],
+        "block_hidden_participations": false,
+        "description": "Demo Contest",
+        "groups": [
+            "10",
+            "11"
+        ],
+        "ip_autologin": false,
+        "ip_restriction": true,
+        "languages": [
+            "C++17 / g++",
+            "C11 / gcc",
+            "Python 3 / CPython",
+            "Java / JDK"
+        ],
+        "main_group": "10",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_submission_interval_grace_period": null,
+        "min_user_test_interval": null,
+        "name": "demo",
+        "participations": [
+            "17",
+            "18",
+            "19"
+        ],
+        "score_precision": 0,
+        "submissions_download_allowed": true,
+        "tasks": [
+            "12",
+            "13",
+            "14"
+        ],
+        "timezone": null,
+        "token_gen_initial": 2,
+        "token_gen_interval": 30.0,
+        "token_gen_max": 5,
+        "token_gen_number": 1,
+        "token_max_number": 10,
+        "token_min_interval": 0.0,
+        "token_mode": "finite"
+    },
+    "1": {
+        "_class": "User",
+        "email": null,
+        "first_name": "Alice",
+        "last_name": "Liddell",
+        "participations": [
+            "17"
+        ],
+        "password": "plaintext:demo",
+        "preferred_languages": [],
+        "timezone": null,
+        "username": "alice"
+    },
+    "10": {
+        "_class": "Group",
+        "analysis_enabled": false,
+        "analysis_start": 4102444800.0,
+        "analysis_stop": 4102444800.0,
+        "contest": "0",
+        "name": "default",
+        "participations": [
+            "17",
+            "18"
+        ],
+        "per_user_time": null,
+        "start": 1735689600.0,
+        "stop": 1893456000.0
+    },
+    "100": {
+        "_class": "File",
+        "digest": "37d29a548190fc0545012a1cf3e18c04b6387e9a",
+        "filename": "sum.%l",
+        "submission": "38"
+    },
+    "101": {
+        "_class": "SubmissionResult",
+        "compilation_memory": 2097152,
+        "compilation_outcome": "fail",
+        "compilation_sandbox_digests": null,
+        "compilation_sandbox_paths": null,
+        "compilation_shard": null,
+        "compilation_stderr": "sum.py: SyntaxError",
+        "compilation_stdout": "",
+        "compilation_text": [
+            "Compilation failed"
+        ],
+        "compilation_time": 0.25,
+        "compilation_tries": 2,
+        "compilation_wall_clock_time": 0.5,
+        "dataset": "34",
+        "evaluation_outcome": null,
+        "evaluation_tries": 0,
+        "evaluations": [],
+        "executables": {},
+        "public_score": 0.0,
+        "public_score_details": [],
+        "ranking_score_details": [
+            "0",
+            "0"
+        ],
+        "score": 0.0,
+        "score_details": [],
+        "scored_at": 1767265200.999999,
+        "submission": "38"
+    },
+    "102": {
+        "_class": "UserTestFile",
+        "digest": "0b51679611fa400c0230234c8bbd21d59ac93e8e",
+        "filename": "sum.%l",
+        "user_test": "39"
+    },
+    "103": {
+        "_class": "UserTestManager",
+        "digest": "db861bd3953a9ea519236e9845ff406151915351",
+        "filename": "sum.h",
+        "user_test": "39"
+    },
+    "104": {
+        "_class": "UserTestResult",
+        "compilation_memory": 4194304,
+        "compilation_outcome": "ok",
+        "compilation_sandbox_digests": null,
+        "compilation_sandbox_paths": [],
+        "compilation_shard": null,
+        "compilation_stderr": null,
+        "compilation_stdout": null,
+        "compilation_text": [
+            "Compilation succeeded"
+        ],
+        "compilation_time": 0.4,
+        "compilation_tries": 1,
+        "compilation_wall_clock_time": null,
+        "dataset": "34",
+        "evaluation_outcome": "ok",
+        "evaluation_sandbox_digests": null,
+        "evaluation_sandbox_paths": [
+            "/tmp/ut"
+        ],
+        "evaluation_shard": 1,
+        "evaluation_text": [
+            "Execution completed successfully"
+        ],
+        "evaluation_tries": 1,
+        "executables": {
+            "sum": "118"
+        },
+        "execution_memory": 1048576,
+        "execution_time": 0.001,
+        "execution_wall_clock_time": 0.002,
+        "output": "77de68daecd823babbb58edb1c8e14d7106e83bb",
+        "user_test": "39"
+    },
+    "105": {
+        "_class": "Manager",
+        "dataset": "40",
+        "digest": "f156ff125418de45ff525bf9067d9199d0ef9830",
+        "filename": "checker"
+    },
+    "106": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "40",
+        "input": "a3db5c13ff90a36963278c6a39e4ee3c22e2a436",
+        "output": "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e",
+        "public": false
+    },
+    "107": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "40",
+        "input": "4143d3a341877154d6e95211464e1df1015b74bd",
+        "output": "5d9474c0309b7ca09a182d888f73b37a8fe1362c",
+        "public": false
+    },
+    "108": {
+        "_class": "Testcase",
+        "codename": "002",
+        "dataset": "40",
+        "input": "05df01e327042694f79bbbaafea1d617bee8f968",
+        "output": "d0758565fd06c37aa66b071160d156f5628cd518",
+        "public": false
+    },
+    "109": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "42",
+        "input": "f147fe71b93a767bbb8cb68f6da67b1dd92e5104",
+        "output": "34973274ccef6ab4dfaaf86599792fa9c3fe4689",
+        "public": false
+    },
+    "11": {
+        "_class": "Group",
+        "analysis_enabled": true,
+        "analysis_start": 1767398400.0,
+        "analysis_stop": 1767484800.0,
+        "contest": "0",
+        "name": "late",
+        "participations": [
+            "19"
+        ],
+        "per_user_time": 10800.0,
+        "start": 1767344400.0,
+        "stop": 1767362400.0
+    },
+    "110": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "42",
+        "input": "e5cd484af2581a8170e90996d8565421bc505d2e",
+        "output": "a6310e1fe8acfe10532cc4311e3cc81af00f5eb5",
+        "public": false
+    },
+    "111": {
+        "_class": "File",
+        "digest": "34973274ccef6ab4dfaaf86599792fa9c3fe4689",
+        "filename": "output_000.txt",
+        "submission": "46"
+    },
+    "112": {
+        "_class": "Admin",
+        "authentication": "plaintext:boss",
+        "enabled": true,
+        "name": "The Boss",
+        "permission_all": true,
+        "permission_messaging": false,
+        "username": "boss"
+    },
+    "113": {
+        "_class": "Executable",
+        "dataset": "34",
+        "digest": "52cb8287f6c1ed818d130fbb1621c602bfaaae35",
+        "filename": "sum",
+        "submission": "37",
+        "submission_result": "99"
+    },
+    "114": {
+        "_class": "Evaluation",
+        "admin_text": "fine",
+        "dataset": "34",
+        "evaluation_sandbox_digests": null,
+        "evaluation_sandbox_paths": [
+            "/tmp/eval0"
+        ],
+        "evaluation_shard": 0,
+        "execution_memory": 1048576,
+        "execution_time": 0.01,
+        "execution_wall_clock_time": 0.02,
+        "outcome": "1.0",
+        "submission": "37",
+        "submission_result": "99",
+        "testcase": "89",
+        "text": [
+            "Output is correct"
+        ]
+    },
+    "115": {
+        "_class": "Evaluation",
+        "admin_text": null,
+        "dataset": "34",
+        "evaluation_sandbox_digests": null,
+        "evaluation_sandbox_paths": [
+            "/tmp/eval1"
+        ],
+        "evaluation_shard": 1,
+        "execution_memory": 2097152,
+        "execution_time": 0.02,
+        "execution_wall_clock_time": 0.04,
+        "outcome": "1.0",
+        "submission": "37",
+        "submission_result": "99",
+        "testcase": "90",
+        "text": [
+            "Output is correct"
+        ]
+    },
+    "116": {
+        "_class": "Evaluation",
+        "admin_text": null,
+        "dataset": "34",
+        "evaluation_sandbox_digests": null,
+        "evaluation_sandbox_paths": [
+            "/tmp/eval2"
+        ],
+        "evaluation_shard": 2,
+        "execution_memory": 3145728,
+        "execution_time": 0.03,
+        "execution_wall_clock_time": 0.06,
+        "outcome": "1.0",
+        "submission": "37",
+        "submission_result": "99",
+        "testcase": "91",
+        "text": [
+            "Output is correct"
+        ]
+    },
+    "117": {
+        "_class": "Evaluation",
+        "admin_text": null,
+        "dataset": "34",
+        "evaluation_sandbox_digests": null,
+        "evaluation_sandbox_paths": [
+            "/tmp/eval3"
+        ],
+        "evaluation_shard": 3,
+        "execution_memory": 4194304,
+        "execution_time": 0.04,
+        "execution_wall_clock_time": 0.08,
+        "outcome": "1.0",
+        "submission": "37",
+        "submission_result": "99",
+        "testcase": "92",
+        "text": [
+            "Output is correct"
+        ]
+    },
+    "118": {
+        "_class": "UserTestExecutable",
+        "dataset": "34",
+        "digest": "0654c7bcf41343ba159d9dc24543eaeb9b9a66b0",
+        "filename": "sum",
+        "user_test": "39",
+        "user_test_result": "104"
+    },
+    "12": {
+        "_class": "Task",
+        "active_dataset": "34",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": "0",
+        "datasets": [
+            "34",
+            "36"
+        ],
+        "feedback_level": "restricted",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_user_test_interval": null,
+        "name": "sum",
+        "num": 0,
+        "primary_statements": [
+            "it"
+        ],
+        "score_mode": "max_tokened_last",
+        "score_precision": 0,
+        "statements": {
+            "it": "35"
+        },
+        "submission_format": [
+            "sum.%l"
+        ],
+        "submissions": [
+            "37",
+            "38"
+        ],
+        "title": "A plus B",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "infinite",
+        "user_tests": [
+            "39"
+        ]
+    },
+    "13": {
+        "_class": "Task",
+        "active_dataset": "40",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": "0",
+        "datasets": [
+            "40"
+        ],
+        "feedback_level": "restricted",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_user_test_interval": null,
+        "name": "half",
+        "num": 1,
+        "primary_statements": [
+            "it"
+        ],
+        "score_mode": "max_tokened_last",
+        "score_precision": 0,
+        "statements": {
+            "it": "41"
+        },
+        "submission_format": [
+            "half.%l"
+        ],
+        "submissions": [],
+        "title": "Half credit",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "infinite",
+        "user_tests": []
+    },
+    "14": {
+        "_class": "Task",
+        "active_dataset": "42",
+        "allowed_languages": null,
+        "attachments": {
+            "input_000.txt": "44",
+            "input_001.txt": "45"
+        },
+        "contest": "0",
+        "datasets": [
+            "42"
+        ],
+        "feedback_level": "restricted",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_user_test_interval": null,
+        "name": "quiz",
+        "num": 2,
+        "primary_statements": [
+            "it"
+        ],
+        "score_mode": "max_tokened_last",
+        "score_precision": 0,
+        "statements": {
+            "it": "43"
+        },
+        "submission_format": [
+            "output_000.txt",
+            "output_001.txt"
+        ],
+        "submissions": [
+            "46"
+        ],
+        "title": "Quiz",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": []
+    },
+    "15": {
+        "_class": "Announcement",
+        "admin": "47",
+        "contest": "0",
+        "subject": "Welcome",
+        "text": "Good luck!",
+        "timestamp": 1767261900.0
+    },
+    "16": {
+        "_class": "Announcement",
+        "admin": null,
+        "contest": "0",
+        "subject": "Anonymous",
+        "text": "No author",
+        "timestamp": 1767261960.0
+    },
+    "17": {
+        "_class": "Participation",
+        "contest": "0",
+        "delay_time": 60.0,
+        "extra_time": 120.5,
+        "group": "10",
+        "hidden": false,
+        "ip": [
+            "10.0.0.0/8",
+            "192.168.1.7/32"
+        ],
+        "messages": [],
+        "password": "plaintext:pp",
+        "questions": [
+            "49"
+        ],
+        "starting_time": 1767261600.123456,
+        "submissions": [
+            "37"
+        ],
+        "team": "48",
+        "unrestricted": false,
+        "user": "1",
+        "user_tests": [
+            "39"
+        ]
+    },
+    "18": {
+        "_class": "Participation",
+        "contest": "0",
+        "delay_time": 0.0,
+        "extra_time": 0.0,
+        "group": "10",
+        "hidden": false,
+        "ip": null,
+        "messages": [
+            "51"
+        ],
+        "password": "plaintext:demo",
+        "questions": [
+            "52"
+        ],
+        "starting_time": null,
+        "submissions": [
+            "38"
+        ],
+        "team": "50",
+        "unrestricted": true,
+        "user": "2",
+        "user_tests": []
+    },
+    "19": {
+        "_class": "Participation",
+        "contest": "0",
+        "delay_time": 0.0,
+        "extra_time": 0.0,
+        "group": "11",
+        "hidden": true,
+        "ip": null,
+        "messages": [],
+        "password": "plaintext:demo",
+        "questions": [],
+        "starting_time": null,
+        "submissions": [
+            "46"
+        ],
+        "team": null,
+        "unrestricted": false,
+        "user": "3",
+        "user_tests": []
+    },
+    "2": {
+        "_class": "User",
+        "email": null,
+        "first_name": "Bob",
+        "last_name": "Builder",
+        "participations": [
+            "18"
+        ],
+        "password": "plaintext:demo",
+        "preferred_languages": [],
+        "timezone": null,
+        "username": "bob"
+    },
+    "20": {
+        "_class": "Dataset",
+        "autojudge": true,
+        "description": "Default",
+        "managers": {
+            "checker": "53"
+        },
+        "memory_limit": null,
+        "score_type": "GroupMin",
+        "score_type_parameters": [
+            [
+                40,
+                "01"
+            ],
+            [
+                60,
+                "02"
+            ]
+        ],
+        "task": "4",
+        "task_type": "OutputOnly",
+        "task_type_parameters": [
+            "comparator"
+        ],
+        "testcases": {
+            "01": "54",
+            "02": "55"
+        },
+        "time_limit": null
+    },
+    "21": {
+        "_class": "Dataset",
+        "autojudge": true,
+        "description": "Default",
+        "managers": {},
+        "memory_limit": 134217728,
+        "score_type": "GroupMin",
+        "score_type_parameters": [
+            [
+                0,
+                "s1",
+                "Samples"
+            ],
+            [
+                50,
+                "a1|a2",
+                "Subtask 1"
+            ],
+            [
+                50,
+                "b1",
+                "Subtask 2"
+            ]
+        ],
+        "task": "5",
+        "task_type": "BatchAndOutput",
+        "task_type_parameters": [
+            "alone",
+            [
+                "bao.in",
+                "bao.out"
+            ],
+            "diff",
+            "b1"
+        ],
+        "testcases": {
+            "a1": "56",
+            "a2": "57",
+            "b1": "58",
+            "s1": "59"
+        },
+        "time_limit": 0.5
+    },
+    "22": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "tests",
+        "managers": {
+            "checker": "60"
+        },
+        "memory_limit": 268435456,
+        "score_type": "GroupMin",
+        "score_type_parameters": [
+            [
+                0,
+                1
+            ],
+            [
+                40,
+                2
+            ],
+            [
+                60,
+                2
+            ]
+        ],
+        "task": "6",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "alone",
+            [
+                "",
+                ""
+            ],
+            "comparator"
+        ],
+        "testcases": {
+            "000": "61",
+            "001": "62",
+            "002": "63",
+            "003": "64",
+            "004": "65"
+        },
+        "time_limit": 1.0
+    },
+    "23": {
+        "_class": "Statement",
+        "digest": "0a38a274179079a1ce3a1ecc087502c033a0283d",
+        "language": "en",
+        "task": "6"
+    },
+    "24": {
+        "_class": "Statement",
+        "digest": "a6fb5187546776e58a89b8fbd41f49edeba0c4d1",
+        "language": "es",
+        "task": "6"
+    },
+    "25": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "tests",
+        "managers": {},
+        "memory_limit": 67108864,
+        "score_type": "Sum",
+        "score_type_parameters": 33.333333333333336,
+        "task": "7",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "alone",
+            [
+                "pairs.in",
+                "pairs.out"
+            ],
+            "diff"
+        ],
+        "testcases": {
+            "000": "66",
+            "001": "67",
+            "002": "68"
+        },
+        "time_limit": 2.5
+    },
+    "26": {
+        "_class": "Statement",
+        "digest": "29d964ab51944c2dff7b418562c8198a71bc901e",
+        "language": "ru",
+        "task": "7"
+    },
+    "27": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "pretests",
+        "managers": {},
+        "memory_limit": 67108864,
+        "score_type": "Sum",
+        "score_type_parameters": 50.0,
+        "task": "7",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "alone",
+            [
+                "pairs.in",
+                "pairs.out"
+            ],
+            "diff"
+        ],
+        "testcases": {
+            "000": "69",
+            "001": "70"
+        },
+        "time_limit": 2.5
+    },
+    "28": {
+        "_class": "Dataset",
+        "autojudge": true,
+        "description": "Default",
+        "managers": {
+            "checker": "71",
+            "grader.cpp": "74",
+            "grader.java": "75",
+            "grader.py": "72",
+            "tpsbatch.h": "73"
+        },
+        "memory_limit": 268435456,
+        "score_type": "GroupMin",
+        "score_type_parameters": [
+            [
+                0,
+                "0\\-01|0\\-02",
+                "Samples"
+            ],
+            [
+                30,
+                "0\\-01|1\\-01|1\\-02",
+                "Subtask 1"
+            ],
+            [
+                70,
+                "0\\-01|0\\-02|1\\-01|1\\-02|2\\-01|2\\-02",
+                "Subtask 2"
+            ]
+        ],
+        "task": "8",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "grader",
+            [
+                "",
+                ""
+            ],
+            "comparator"
+        ],
+        "testcases": {
+            "0-01": "76",
+            "0-02": "77",
+            "1-01": "78",
+            "1-02": "79",
+            "2-01": "80",
+            "2-02": "81"
+        },
+        "time_limit": 1.5
+    },
+    "29": {
+        "_class": "Statement",
+        "digest": "8a1a4b510a2645a3049ac33ea24bf2d49b605327",
+        "language": "en_US",
+        "task": "8"
+    },
+    "3": {
+        "_class": "User",
+        "email": null,
+        "first_name": "Carol",
+        "last_name": "Danvers",
+        "participations": [
+            "19"
+        ],
+        "password": "plaintext:demo",
+        "preferred_languages": [],
+        "timezone": null,
+        "username": "carol"
+    },
+    "30": {
+        "_class": "Statement",
+        "digest": "bc519c006cec5f5bae718b20f10153b2e901fd27",
+        "language": "es",
+        "task": "8"
+    },
+    "31": {
+        "_class": "Attachment",
+        "digest": "b04f3ee8f5e43fa3b162981b50bb72fe1acabb33",
+        "filename": "tpsbatch.zip",
+        "task": "8"
+    },
+    "32": {
+        "_class": "Dataset",
+        "autojudge": true,
+        "description": "Default",
+        "managers": {
+            "grader.cpp": "83",
+            "grader.java": "82",
+            "manager": "85",
+            "tpscomm.h": "84"
+        },
+        "memory_limit": 536870912,
+        "score_type": "Sum",
+        "score_type_parameters": 33.333333333333336,
+        "task": "9",
+        "task_type": "Communication",
+        "task_type_parameters": [
+            2,
+            "grader",
+            "std_io"
+        ],
+        "testcases": {
+            "01": "86",
+            "02": "87",
+            "03": "88"
+        },
+        "time_limit": 2.0
+    },
+    "33": {
+        "_class": "Statement",
+        "digest": "ade76504a9f19ef28bd45202a1db80d25342ef44",
+        "language": "en_US",
+        "task": "9"
+    },
+    "34": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "Default",
+        "managers": {},
+        "memory_limit": 268435456,
+        "score_type": "GroupMin",
+        "score_type_parameters": [
+            [
+                40,
+                2
+            ],
+            [
+                60,
+                2
+            ]
+        ],
+        "task": "12",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "alone",
+            [
+                "",
+                ""
+            ],
+            "diff"
+        ],
+        "testcases": {
+            "000": "89",
+            "001": "90",
+            "002": "91",
+            "003": "92"
+        },
+        "time_limit": 1.0
+    },
+    "35": {
+        "_class": "Statement",
+        "digest": "daf6ff17831183bc926bfa5932420be3c3f3b59d",
+        "language": "it",
+        "task": "12"
+    },
+    "36": {
+        "_class": "Dataset",
+        "autojudge": true,
+        "description": "Second",
+        "managers": {},
+        "memory_limit": 536870912,
+        "score_type": "Sum",
+        "score_type_parameters": 25,
+        "task": "12",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "alone",
+            [
+                "input.txt",
+                "output.txt"
+            ],
+            "diff"
+        ],
+        "testcases": {
+            "000": "93",
+            "001": "94",
+            "002": "95",
+            "003": "96"
+        },
+        "time_limit": 2.0
+    },
+    "37": {
+        "_class": "Submission",
+        "comment": "",
+        "files": {
+            "sum.%l": "97"
+        },
+        "language": "C++17 / g++",
+        "official": true,
+        "opaque_id": 4926046975063954292,
+        "participation": "17",
+        "results": [
+            "99"
+        ],
+        "task": "12",
+        "timestamp": 1791365124.544329,
+        "token": "98"
+    },
+    "38": {
+        "_class": "Submission",
+        "comment": "",
+        "files": {
+            "sum.%l": "100"
+        },
+        "language": "Python 3 / CPython",
+        "official": true,
+        "opaque_id": 8732919409223706904,
+        "participation": "18",
+        "results": [
+            "101"
+        ],
+        "task": "12",
+        "timestamp": 1791365126.628261,
+        "token": null
+    },
+    "39": {
+        "_class": "UserTest",
+        "files": {
+            "sum.%l": "102"
+        },
+        "input": "32d3c3db7c8157c3bb576fa546eb6e41322fb89e",
+        "language": "C++17 / g++",
+        "managers": {
+            "sum.h": "103"
+        },
+        "participation": "17",
+        "results": [
+            "104"
+        ],
+        "task": "12",
+        "timestamp": 1767263400.0
+    },
+    "4": {
+        "_class": "Task",
+        "active_dataset": "20",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": null,
+        "datasets": [
+            "20"
+        ],
+        "feedback_level": "restricted",
+        "max_submission_number": 100,
+        "max_user_test_number": 100,
+        "min_submission_interval": 60.0,
+        "min_user_test_interval": 60.0,
+        "name": "tpsoutput",
+        "num": null,
+        "primary_statements": [],
+        "score_mode": "max_subtask",
+        "score_precision": 2,
+        "statements": {},
+        "submission_format": [
+            "output_01.txt",
+            "output_02.txt"
+        ],
+        "submissions": [],
+        "title": "Output only",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": []
+    },
+    "40": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "Default",
+        "managers": {
+            "checker": "105"
+        },
+        "memory_limit": 268435456,
+        "score_type": "Sum",
+        "score_type_parameters": 33.333333333333336,
+        "task": "13",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "alone",
+            [
+                "",
+                ""
+            ],
+            "comparator"
+        ],
+        "testcases": {
+            "000": "106",
+            "001": "107",
+            "002": "108"
+        },
+        "time_limit": 1.0
+    },
+    "41": {
+        "_class": "Statement",
+        "digest": "ab7bae902ada0f1967b9b5543012d9fd768f6b94",
+        "language": "it",
+        "task": "13"
+    },
+    "42": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "Default",
+        "managers": {},
+        "memory_limit": null,
+        "score_type": "Sum",
+        "score_type_parameters": 50.0,
+        "task": "14",
+        "task_type": "OutputOnly",
+        "task_type_parameters": [
+            "diff"
+        ],
+        "testcases": {
+            "000": "109",
+            "001": "110"
+        },
+        "time_limit": null
+    },
+    "43": {
+        "_class": "Statement",
+        "digest": "fb16ae4726db7264b793547b52a64654514e1981",
+        "language": "it",
+        "task": "14"
+    },
+    "44": {
+        "_class": "Attachment",
+        "digest": "f147fe71b93a767bbb8cb68f6da67b1dd92e5104",
+        "filename": "input_000.txt",
+        "task": "14"
+    },
+    "45": {
+        "_class": "Attachment",
+        "digest": "e5cd484af2581a8170e90996d8565421bc505d2e",
+        "filename": "input_001.txt",
+        "task": "14"
+    },
+    "46": {
+        "_class": "Submission",
+        "comment": "by hand",
+        "files": {
+            "output_000.txt": "111"
+        },
+        "language": null,
+        "official": false,
+        "opaque_id": 77,
+        "participation": "19",
+        "results": [],
+        "task": "14",
+        "timestamp": 1767346200.0,
+        "token": null
+    },
+    "47": {
+        "_class": "Admin",
+        "authentication": "bcrypt:$2b$12$3Y857Qjn5K.IPy2/GjZFtOoBBQHRzHSpSN6.viENbUEIhRneywyyu",
+        "enabled": true,
+        "name": "admin",
+        "permission_all": true,
+        "permission_messaging": false,
+        "username": "admin"
+    },
+    "48": {
+        "_class": "Team",
+        "code": "ITA",
+        "name": "Italia",
+        "participations": [
+            "17"
+        ]
+    },
+    "49": {
+        "_class": "Question",
+        "admin": "47",
+        "ignored": false,
+        "participation": "17",
+        "question_timestamp": 1767262080.0,
+        "reply_subject": "Yes",
+        "reply_text": "Read the statement",
+        "reply_timestamp": 1767262140.0,
+        "subject": "Limits?",
+        "text": "Is N <= 10^9?"
+    },
+    "5": {
+        "_class": "Task",
+        "active_dataset": "21",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": null,
+        "datasets": [
+            "21"
+        ],
+        "feedback_level": "restricted",
+        "max_submission_number": 50,
+        "max_user_test_number": 50,
+        "min_submission_interval": 60.0,
+        "min_user_test_interval": 60.0,
+        "name": "tpsbao",
+        "num": null,
+        "primary_statements": [],
+        "score_mode": "max_subtask",
+        "score_precision": 0,
+        "statements": {},
+        "submission_format": [
+            "tpsbao.%l",
+            "output_b1.txt",
+            "output_s1.txt"
+        ],
+        "submissions": [],
+        "title": "Batch and output",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": []
+    },
+    "50": {
+        "_class": "Team",
+        "code": "MEX",
+        "name": "M\u00e9xico",
+        "participations": [
+            "18"
+        ]
+    },
+    "51": {
+        "_class": "Message",
+        "admin": "112",
+        "participation": "18",
+        "subject": "Hi bob",
+        "text": "Check your output",
+        "timestamp": 1767262020.0
+    },
+    "52": {
+        "_class": "Question",
+        "admin": null,
+        "ignored": true,
+        "participation": "18",
+        "question_timestamp": 1767262200.0,
+        "reply_subject": null,
+        "reply_text": null,
+        "reply_timestamp": null,
+        "subject": "Spam",
+        "text": "?"
+    },
+    "53": {
+        "_class": "Manager",
+        "dataset": "20",
+        "digest": "07cd2d538ec59f8355ba50cef7f2417939a8db21",
+        "filename": "checker"
+    },
+    "54": {
+        "_class": "Testcase",
+        "codename": "01",
+        "dataset": "20",
+        "input": "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e",
+        "output": "7448d8798a4380162d4b56f9b452e2f6f9e24e7a",
+        "public": true
+    },
+    "55": {
+        "_class": "Testcase",
+        "codename": "02",
+        "dataset": "20",
+        "input": "5d9474c0309b7ca09a182d888f73b37a8fe1362c",
+        "output": "4143d3a341877154d6e95211464e1df1015b74bd",
+        "public": true
+    },
+    "56": {
+        "_class": "Testcase",
+        "codename": "a1",
+        "dataset": "21",
+        "input": "e6d9715dfa5fe5c5f5d9ceaff57a256115e2e91c",
+        "output": "790211060232b881f424cce875d41e7c02033f0e",
+        "public": true
+    },
+    "57": {
+        "_class": "Testcase",
+        "codename": "a2",
+        "dataset": "21",
+        "input": "5447c6b8023bbc5a887918cd45c14511e9485c75",
+        "output": "6a22b7dd3a57ded2aef23148f32bccbecaa8cf63",
+        "public": true
+    },
+    "58": {
+        "_class": "Testcase",
+        "codename": "b1",
+        "dataset": "21",
+        "input": "b551771aa4ad5b14123fc3bd98d89db2bc0edd4f",
+        "output": "17a84b0e1645327e7f891b9d3d4a1faf008fb65f",
+        "public": true
+    },
+    "59": {
+        "_class": "Testcase",
+        "codename": "s1",
+        "dataset": "21",
+        "input": "d0257f733e5e1c54fcf496857e2b4f0e4148c017",
+        "output": "3307843b6ed9843383ec6a7874864cd7d7c2be98",
+        "public": true
+    },
+    "6": {
+        "_class": "Task",
+        "active_dataset": "22",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": null,
+        "datasets": [
+            "22"
+        ],
+        "feedback_level": "full",
+        "max_submission_number": 50,
+        "max_user_test_number": null,
+        "min_submission_interval": 30.0,
+        "min_user_test_interval": null,
+        "name": "polyaplusb",
+        "num": null,
+        "primary_statements": [
+            "en",
+            "es"
+        ],
+        "score_mode": "max_tokened_last",
+        "score_precision": 2,
+        "statements": {
+            "en": "23",
+            "es": "24"
+        },
+        "submission_format": [
+            "polyaplusb.%l"
+        ],
+        "submissions": [],
+        "title": "A plus B",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": []
+    },
+    "60": {
+        "_class": "Manager",
+        "dataset": "22",
+        "digest": "24d7b3c9d963f854329cc1ec7465b2ff75ecac0e",
+        "filename": "checker"
+    },
+    "61": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "22",
+        "input": "32d3c3db7c8157c3bb576fa546eb6e41322fb89e",
+        "output": "a3db5c13ff90a36963278c6a39e4ee3c22e2a436",
+        "public": true
+    },
+    "62": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "22",
+        "input": "57f6d1f3fe3ccfc9da73749ce65115c4087d5677",
+        "output": "ad552e6dc057d1d825bf49df79d6b98eba846ebe",
+        "public": true
+    },
+    "63": {
+        "_class": "Testcase",
+        "codename": "002",
+        "dataset": "22",
+        "input": "d2e5ed27824addf1628b5e168f49665645c140b5",
+        "output": "4143d3a341877154d6e95211464e1df1015b74bd",
+        "public": true
+    },
+    "64": {
+        "_class": "Testcase",
+        "codename": "003",
+        "dataset": "22",
+        "input": "36d17c8d7f7e0e43189fa97bbb7bb219bfa1a0e5",
+        "output": "01097d02b2cd8ac5b0dfb4c0d644520b928597cf",
+        "public": true
+    },
+    "65": {
+        "_class": "Testcase",
+        "codename": "004",
+        "dataset": "22",
+        "input": "8c6366f1671d7f343314f870146087aa7a3522a5",
+        "output": "75a9a64e02cba6db0a670240c3e6432c756fd76f",
+        "public": true
+    },
+    "66": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "25",
+        "input": "98c520c6fb2f5c57c9a77f48f7c8d20ee89643b2",
+        "output": "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e",
+        "public": true
+    },
+    "67": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "25",
+        "input": "af9e4b42834947067582ecba6efc2133a074a2d7",
+        "output": "7448d8798a4380162d4b56f9b452e2f6f9e24e7a",
+        "public": true
+    },
+    "68": {
+        "_class": "Testcase",
+        "codename": "002",
+        "dataset": "25",
+        "input": "a9c2af7a96b4a4a732e18d15b69f6917565f99e1",
+        "output": "09d2af8dd22201dd8d48e5dcfcaed281ff9422c7",
+        "public": true
+    },
+    "69": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "27",
+        "input": "98c520c6fb2f5c57c9a77f48f7c8d20ee89643b2",
+        "output": "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e",
+        "public": true
+    },
+    "7": {
+        "_class": "Task",
+        "active_dataset": "25",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": null,
+        "datasets": [
+            "25",
+            "27"
+        ],
+        "feedback_level": "restricted",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_user_test_interval": null,
+        "name": "polypairs",
+        "num": null,
+        "primary_statements": [
+            "ru"
+        ],
+        "score_mode": "max_tokened_last",
+        "score_precision": 0,
+        "statements": {
+            "ru": "26"
+        },
+        "submission_format": [
+            "polypairs.%l"
+        ],
+        "submissions": [],
+        "title": "\u041f\u0430\u0440\u044b",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": []
+    },
+    "70": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "27",
+        "input": "69b981fc1fb54c9826268f667ba26b5a56e452e7",
+        "output": "e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e",
+        "public": true
+    },
+    "71": {
+        "_class": "Manager",
+        "dataset": "28",
+        "digest": "07cd2d538ec59f8355ba50cef7f2417939a8db21",
+        "filename": "checker"
+    },
+    "72": {
+        "_class": "Manager",
+        "dataset": "28",
+        "digest": "b8983b8262a96eb3ecd82279d0e0b5b8acdf3605",
+        "filename": "grader.py"
+    },
+    "73": {
+        "_class": "Manager",
+        "dataset": "28",
+        "digest": "32283f6ed2f7f8922807c96a1d90b37df55b9e16",
+        "filename": "tpsbatch.h"
+    },
+    "74": {
+        "_class": "Manager",
+        "dataset": "28",
+        "digest": "68f547e1df7d475c44322e56e20b8bfb3fd84171",
+        "filename": "grader.cpp"
+    },
+    "75": {
+        "_class": "Manager",
+        "dataset": "28",
+        "digest": "fa10eb83233a94f4e7ea82caf7f51963b70a1afc",
+        "filename": "grader.java"
+    },
+    "76": {
+        "_class": "Testcase",
+        "codename": "0-01",
+        "dataset": "28",
+        "input": "e37cec58f04e916bae799a3b1bf64ff77abc70c9",
+        "output": "ccf271b7830882da1791852baeca1737fcbe4b90",
+        "public": true
+    },
+    "77": {
+        "_class": "Testcase",
+        "codename": "0-02",
+        "dataset": "28",
+        "input": "4602d7a486d619898d7d32cf1f593cc073d73b61",
+        "output": "e8d23e5f8df22d77c1d830f60c7b8b453d622a19",
+        "public": true
+    },
+    "78": {
+        "_class": "Testcase",
+        "codename": "1-01",
+        "dataset": "28",
+        "input": "8cda47d1f737e3a067bb47bdac0b3428cd8605e0",
+        "output": "97ea7ec8a6bb8ab9049d86bc39b5be2b0800b14b",
+        "public": true
+    },
+    "79": {
+        "_class": "Testcase",
+        "codename": "1-02",
+        "dataset": "28",
+        "input": "fdef37b31cc84b7f22497ba695f96a4930257941",
+        "output": "9c6b057a2b9d96a4067a749ee3b3b0158d390cf1",
+        "public": true
+    },
+    "8": {
+        "_class": "Task",
+        "active_dataset": "28",
+        "allowed_languages": null,
+        "attachments": {
+            "tpsbatch.zip": "31"
+        },
+        "contest": null,
+        "datasets": [
+            "28"
+        ],
+        "feedback_level": "restricted",
+        "max_submission_number": 50,
+        "max_user_test_number": 50,
+        "min_submission_interval": 60.0,
+        "min_user_test_interval": 60.0,
+        "name": "tpsbatch",
+        "num": null,
+        "primary_statements": [
+            "en_US"
+        ],
+        "score_mode": "max_subtask",
+        "score_precision": 2,
+        "statements": {
+            "en_US": "29",
+            "es": "30"
+        },
+        "submission_format": [
+            "tpsbatch.%l"
+        ],
+        "submissions": [],
+        "title": "Sum of a list",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": []
+    },
+    "80": {
+        "_class": "Testcase",
+        "codename": "2-01",
+        "dataset": "28",
+        "input": "c60c76cb2a1e8365b69c7d2270847120fed11128",
+        "output": "002616f1f6a97bc83576d97f8470ea37a698c809",
+        "public": true
+    },
+    "81": {
+        "_class": "Testcase",
+        "codename": "2-02",
+        "dataset": "28",
+        "input": "0bc734596650596c104ee00e8557be07b0910eb1",
+        "output": "de24ecf006baac94c0ad4a0ffbfaa9d230c49d70",
+        "public": true
+    },
+    "82": {
+        "_class": "Manager",
+        "dataset": "32",
+        "digest": "93fb4ab4d8a3ff229626700dccba48714feec634",
+        "filename": "grader.java"
+    },
+    "83": {
+        "_class": "Manager",
+        "dataset": "32",
+        "digest": "7ee9db8f6f1383783deb3ccdc3b3ad79b531eb99",
+        "filename": "grader.cpp"
+    },
+    "84": {
+        "_class": "Manager",
+        "dataset": "32",
+        "digest": "d6ee40caa6ea2fe4a2a526de829c68a5c4d3f80b",
+        "filename": "tpscomm.h"
+    },
+    "85": {
+        "_class": "Manager",
+        "dataset": "32",
+        "digest": "7dc171341d98b97be3be4072ffd1afb7d4dd2510",
+        "filename": "manager"
+    },
+    "86": {
+        "_class": "Testcase",
+        "codename": "01",
+        "dataset": "32",
+        "input": "d3964f9dad9f60363c81b688324d95b4ec7c8038",
+        "output": "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc",
+        "public": true
+    },
+    "87": {
+        "_class": "Testcase",
+        "codename": "02",
+        "dataset": "32",
+        "input": "030514d80869744a4e2f60d2fd37d6081f5ed01a",
+        "output": "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc",
+        "public": true
+    },
+    "88": {
+        "_class": "Testcase",
+        "codename": "03",
+        "dataset": "32",
+        "input": "8eecbb71d418ef8c7d583dd506a994b1bc1c3f7b",
+        "output": "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc",
+        "public": true
+    },
+    "89": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "34",
+        "input": "32d3c3db7c8157c3bb576fa546eb6e41322fb89e",
+        "output": "a3db5c13ff90a36963278c6a39e4ee3c22e2a436",
+        "public": true
+    },
+    "9": {
+        "_class": "Task",
+        "active_dataset": "32",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": null,
+        "datasets": [
+            "32"
+        ],
+        "feedback_level": "oi_restricted",
+        "max_submission_number": 50,
+        "max_user_test_number": 50,
+        "min_submission_interval": 60.0,
+        "min_user_test_interval": 60.0,
+        "name": "tpscomm",
+        "num": null,
+        "primary_statements": [
+            "en_US"
+        ],
+        "score_mode": "max_subtask",
+        "score_precision": 2,
+        "statements": {
+            "en_US": "33"
+        },
+        "submission_format": [
+            "tpscomm.%l"
+        ],
+        "submissions": [],
+        "title": "Guess the number",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": []
+    },
+    "90": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "34",
+        "input": "3a475d9719aa56accc500a31662fbdb275980cb5",
+        "output": "97ea7ec8a6bb8ab9049d86bc39b5be2b0800b14b",
+        "public": false
+    },
+    "91": {
+        "_class": "Testcase",
+        "codename": "002",
+        "dataset": "34",
+        "input": "969d74a8873fb7eb7b604a9501ff7cfe9bcac4ee",
+        "output": "a4685dd1a208792fe9d51ac4a08732495cd09dbb",
+        "public": false
+    },
+    "92": {
+        "_class": "Testcase",
+        "codename": "003",
+        "dataset": "34",
+        "input": "991ff2709e0ea3b6d1760f577f7bc7e064f091e4",
+        "output": "c4e815b66718b3dcb762f05acfec36fac0d7908b",
+        "public": false
+    },
+    "93": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "36",
+        "input": "32d3c3db7c8157c3bb576fa546eb6e41322fb89e",
+        "output": "a3db5c13ff90a36963278c6a39e4ee3c22e2a436",
+        "public": false
+    },
+    "94": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "36",
+        "input": "3a475d9719aa56accc500a31662fbdb275980cb5",
+        "output": "97ea7ec8a6bb8ab9049d86bc39b5be2b0800b14b",
+        "public": true
+    },
+    "95": {
+        "_class": "Testcase",
+        "codename": "002",
+        "dataset": "36",
+        "input": "969d74a8873fb7eb7b604a9501ff7cfe9bcac4ee",
+        "output": "a4685dd1a208792fe9d51ac4a08732495cd09dbb",
+        "public": true
+    },
+    "96": {
+        "_class": "Testcase",
+        "codename": "003",
+        "dataset": "36",
+        "input": "991ff2709e0ea3b6d1760f577f7bc7e064f091e4",
+        "output": "c4e815b66718b3dcb762f05acfec36fac0d7908b",
+        "public": true
+    },
+    "97": {
+        "_class": "File",
+        "digest": "708757fc7b6b073414a63ec2d57215602a4fd47a",
+        "filename": "sum.%l",
+        "submission": "37"
+    },
+    "98": {
+        "_class": "Token",
+        "submission": "37",
+        "timestamp": 1791365154.544329
+    },
+    "99": {
+        "_class": "SubmissionResult",
+        "compilation_memory": 1048576,
+        "compilation_outcome": "ok",
+        "compilation_sandbox_digests": [
+            "0123456789abcdef0123456789abcdef01234567"
+        ],
+        "compilation_sandbox_paths": [
+            "/tmp/box1",
+            "/tmp/box2"
+        ],
+        "compilation_shard": 3,
+        "compilation_stderr": null,
+        "compilation_stdout": "warning: unused",
+        "compilation_text": [
+            "Compilation succeeded"
+        ],
+        "compilation_time": 0.5,
+        "compilation_tries": 1,
+        "compilation_wall_clock_time": 0.6,
+        "dataset": "34",
+        "evaluation_outcome": "ok",
+        "evaluation_tries": 1,
+        "evaluations": [
+            "114",
+            "115",
+            "116",
+            "117"
+        ],
+        "executables": {
+            "sum": "113"
+        },
+        "public_score": 0.0,
+        "public_score_details": [],
+        "ranking_score_details": [
+            "40",
+            "60"
+        ],
+        "score": 100.0,
+        "score_details": [],
+        "scored_at": 1791365135.922147,
+        "submission": "37"
+    },
+    "_objects": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+    ],
+    "_version": 49
+}

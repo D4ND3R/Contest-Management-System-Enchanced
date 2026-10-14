@@ -269,8 +269,26 @@ func TestImportCommands(t *testing.T) {
 	if out, _, err = run("export-task", "sum", filepath.Join(t.TempDir(), "sum.zip")); err != nil || !strings.Contains(out, "exported task sum") {
 		t.Errorf("export-task: %v\n%s", err, out)
 	}
-	if _, _, err = run("import-dump", t.TempDir()); !errors.Is(err, errNotImplemented) {
+	if _, _, err = run("import-dump", t.TempDir()); err == nil || !strings.Contains(err.Error(), "not a dump of CMS") {
 		t.Errorf("import-dump: %v", err)
+	}
+	// A dump exported without files (cmsDumpExporter -F): one clear error,
+	// and the help says so.
+	light := t.TempDir()
+	model, err := os.ReadFile(filepath.Join("..", "..", "testdata", "dumps", "demo", "contest.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(light, "contest.json"), model, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out, errOut, err := run("import-dump", "--dry-run", light)
+	if err == nil || strings.Count(errOut, "error:") != 1 ||
+		!strings.Contains(errOut, "it was exported without files (cmsDumpExporter -F), and such a dump cannot be imported") {
+		t.Errorf("import-dump of a dump without files: %v\n%s%s", err, out, errOut)
+	}
+	if out, _, _ = run("help", "import-dump"); !strings.Contains(out, "a dump exported without files\n(cmsDumpExporter -F) cannot be imported") {
+		t.Errorf("help:\n%s", out)
 	}
 	// The help lists the loaders.
 	if out, _, _ = run("help", "import-contest"); !strings.Contains(out, " * memory (models built by the tests; contest, task, users, teams), also -L memory_alias") {

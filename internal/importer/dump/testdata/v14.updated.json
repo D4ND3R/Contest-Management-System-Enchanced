@@ -1,0 +1,587 @@
+{
+    "0": {
+        "_class": "Contest",
+        "allow_password_authentication": true,
+        "allow_questions": true,
+        "allow_registration": false,
+        "allow_user_tests": true,
+        "allowed_localizations": [],
+        "analysis_enabled": false,
+        "analysis_start": 1400018000.0,
+        "analysis_stop": 1400018000.0,
+        "announcements": [
+            "30"
+        ],
+        "block_hidden_participations": false,
+        "description": "Old contest",
+        "ip_autologin": false,
+        "ip_restriction": true,
+        "languages": [
+            "C++11 / g++",
+            "C11 / gcc",
+            "Java / JDK"
+        ],
+        "main_group": "33",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_user_test_interval": null,
+        "name": "old",
+        "per_user_time": null,
+        "score_precision": 0,
+        "start": 1400000000.0,
+        "stop": 1400018000.0,
+        "submissions_download_allowed": true,
+        "tasks": [
+            "1"
+        ],
+        "timezone": "Europe/Rome",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 1,
+        "token_max_number": 5,
+        "token_min_interval": 0.0,
+        "token_mode": "finite",
+        "users": [
+            "20",
+            "21"
+        ]
+    },
+    "1": {
+        "_class": "Task",
+        "active_dataset": "2",
+        "attachments": {},
+        "contest": "0",
+        "datasets": [
+            "2",
+            "3"
+        ],
+        "feedback_level": "full",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_user_test_interval": null,
+        "name": "sum",
+        "num": 0,
+        "primary_statements": [
+            "en"
+        ],
+        "score_mode": "max_tokened_last",
+        "score_precision": 0,
+        "statements": {
+            "en": "4"
+        },
+        "submission_format": [
+            "sum.%l"
+        ],
+        "submissions": [
+            "40",
+            "41"
+        ],
+        "title": "Sum",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": [
+            "50"
+        ]
+    },
+    "10": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "3",
+        "input": "9c6b057a2b9d96a4067a749ee3b3b0158d390cf1",
+        "output": "9c6b057a2b9d96a4067a749ee3b3b0158d390cf1",
+        "public": false
+    },
+    "11": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "3",
+        "input": "9c6b057a2b9d96a4067a749ee3b3b0158d390cf1",
+        "output": "9c6b057a2b9d96a4067a749ee3b3b0158d390cf1",
+        "public": false
+    },
+    "2": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "Default",
+        "managers": {},
+        "memory_limit": 268435456,
+        "score_type": "GroupMin",
+        "score_type_parameters": [
+            [
+                40,
+                1
+            ],
+            [
+                60,
+                1
+            ]
+        ],
+        "task": "1",
+        "task_type": "Batch",
+        "task_type_parameters": [
+            "alone",
+            [
+                "",
+                ""
+            ],
+            "diff"
+        ],
+        "testcases": {
+            "000": "6",
+            "001": "7"
+        },
+        "time_limit": 1.0
+    },
+    "20": {
+        "_class": "Participation",
+        "contest": "0",
+        "delay_time": 0.0,
+        "extra_time": 600.0,
+        "group": "33",
+        "hidden": false,
+        "ip": [
+            "10.0.0.1",
+            "192.168.0.0/16"
+        ],
+        "messages": [
+            "31"
+        ],
+        "password": null,
+        "questions": [
+            "32"
+        ],
+        "starting_time": 1400000500.25,
+        "submissions": [
+            "40"
+        ],
+        "team_id": null,
+        "unrestricted": false,
+        "user": "34"
+    },
+    "21": {
+        "_class": "Participation",
+        "contest": "0",
+        "delay_time": 0.0,
+        "extra_time": 0.0,
+        "group": "33",
+        "hidden": true,
+        "ip": null,
+        "messages": [],
+        "password": null,
+        "questions": [],
+        "starting_time": null,
+        "submissions": [
+            "41"
+        ],
+        "team_id": null,
+        "unrestricted": false,
+        "user": "35"
+    },
+    "3": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "Comm",
+        "managers": {
+            "manager": "8",
+            "stub.cpp": "9"
+        },
+        "memory_limit": null,
+        "score_type": "Sum",
+        "score_type_parameters": 50,
+        "task": "1",
+        "task_type": "Communication",
+        "task_type_parameters": [
+            1,
+            "grader",
+            "fifo_io"
+        ],
+        "testcases": {
+            "000": "10",
+            "001": "11"
+        },
+        "time_limit": null
+    },
+    "30": {
+        "_class": "Announcement",
+        "admin": null,
+        "contest": "0",
+        "subject": "Hello",
+        "text": "Welcome",
+        "timestamp": 1400000100.0
+    },
+    "31": {
+        "_class": "Message",
+        "admin": null,
+        "participation": "20",
+        "subject": "Hi",
+        "text": "A message",
+        "timestamp": 1400000200.0
+    },
+    "32": {
+        "_class": "Question",
+        "admin": null,
+        "ignored": false,
+        "participation": "20",
+        "question_timestamp": 1400000300.0,
+        "reply_subject": "A",
+        "reply_text": "Because",
+        "reply_timestamp": 1400000400.0,
+        "subject": "Q",
+        "text": "Why?"
+    },
+    "33": {
+        "_class": "Group",
+        "analysis_enabled": false,
+        "analysis_start": 1400018000.0,
+        "analysis_stop": 1400018000.0,
+        "contest": "0",
+        "name": "default",
+        "per_user_time": null,
+        "start": 1400000000.0,
+        "stop": 1400018000.0
+    },
+    "34": {
+        "_class": "User",
+        "email": "",
+        "first_name": "Ana",
+        "last_name": "A",
+        "participations": [
+            "20"
+        ],
+        "password": "plaintext:secret",
+        "preferred_languages": [],
+        "printjobs": [
+            "60"
+        ],
+        "timezone": null,
+        "user_tests": [
+            "50"
+        ],
+        "username": "ana"
+    },
+    "35": {
+        "_class": "User",
+        "email": null,
+        "first_name": "Jos\u00e9",
+        "last_name": "B",
+        "participations": [
+            "21"
+        ],
+        "password": "plaintext:pw2",
+        "preferred_languages": [],
+        "timezone": null,
+        "user_tests": [],
+        "username": "jos__e9"
+    },
+    "4": {
+        "_class": "Statement",
+        "digest": "87b4a4f5c787a6a540044776c3d0cf841e8cbaa4",
+        "language": "en",
+        "task": "1"
+    },
+    "40": {
+        "_class": "Submission",
+        "comment": "",
+        "files": {
+            "sum.%l": "42"
+        },
+        "language": "C++11 / g++",
+        "official": true,
+        "opaque_id": 5967223519035506841,
+        "participation": "20",
+        "results": [
+            "44"
+        ],
+        "task": "1",
+        "timestamp": 1400001000.5,
+        "token": "43"
+    },
+    "41": {
+        "_class": "Submission",
+        "comment": "",
+        "files": {
+            "sum.%l": "45"
+        },
+        "language": "Java / JDK",
+        "official": true,
+        "opaque_id": 6668461812925114797,
+        "participation": "21",
+        "results": [
+            "46"
+        ],
+        "task": "1",
+        "timestamp": 1400002000.0,
+        "token": null
+    },
+    "42": {
+        "_class": "File",
+        "digest": "fe88360c3160fdb9b4e7e700ba685eaf55bf3070",
+        "filename": "sum.%l",
+        "submission": "40"
+    },
+    "43": {
+        "_class": "Token",
+        "submission": "40",
+        "timestamp": 1400001500.0
+    },
+    "44": {
+        "_class": "SubmissionResult",
+        "compilation_memory": 1000,
+        "compilation_outcome": "ok",
+        "compilation_sandbox_paths": [
+            "/tmp/a",
+            "/tmp/b"
+        ],
+        "compilation_shard": 0,
+        "compilation_stderr": "",
+        "compilation_stdout": "",
+        "compilation_text": [
+            "Compilation succeeded"
+        ],
+        "compilation_time": 0.5,
+        "compilation_tries": 1,
+        "compilation_wall_clock_time": 0.7,
+        "dataset": "2",
+        "evaluation_outcome": "ok",
+        "evaluation_tries": 1,
+        "evaluations": [
+            "48",
+            "49"
+        ],
+        "executables": {
+            "sum": "47"
+        },
+        "public_score": 40.0,
+        "public_score_details": [
+            {
+                "idx": 1,
+                "max_score": 40,
+                "score_fraction": 1.0,
+                "testcases": [
+                    {
+                        "idx": "000",
+                        "memory": 1000,
+                        "outcome": "Correct",
+                        "text": [
+                            "Output is correct"
+                        ],
+                        "time": 0.01
+                    }
+                ]
+            },
+            {
+                "idx": 2,
+                "testcases": [
+                    {
+                        "idx": "001"
+                    }
+                ]
+            }
+        ],
+        "ranking_score_details": [
+            "40",
+            "0"
+        ],
+        "score": 40.0,
+        "score_details": [
+            {
+                "idx": 1,
+                "max_score": 40,
+                "score_fraction": 1.0,
+                "testcases": [
+                    {
+                        "idx": "000",
+                        "memory": 1000,
+                        "outcome": "Correct",
+                        "text": [
+                            "Output is correct"
+                        ],
+                        "time": 0.01
+                    }
+                ]
+            },
+            {
+                "idx": 2,
+                "max_score": 60,
+                "score_fraction": 0.0,
+                "testcases": [
+                    {
+                        "idx": "001",
+                        "memory": null,
+                        "outcome": "Not correct",
+                        "text": [
+                            "Output isn't correct"
+                        ],
+                        "time": 0.02
+                    }
+                ]
+            }
+        ],
+        "submission": "40"
+    },
+    "45": {
+        "_class": "File",
+        "digest": "1053adfd92c077783c5332c76eac22a97b4cf179",
+        "filename": "sum.%l",
+        "submission": "41"
+    },
+    "46": {
+        "_class": "SubmissionResult",
+        "compilation_memory": null,
+        "compilation_outcome": "ok",
+        "compilation_sandbox_paths": null,
+        "compilation_shard": null,
+        "compilation_stderr": null,
+        "compilation_stdout": null,
+        "compilation_text": [
+            "Compilation succeeded"
+        ],
+        "compilation_time": null,
+        "compilation_tries": 1,
+        "compilation_wall_clock_time": null,
+        "dataset": "2",
+        "evaluation_outcome": null,
+        "evaluation_tries": 0,
+        "evaluations": [],
+        "executables": {},
+        "public_score": null,
+        "public_score_details": null,
+        "ranking_score_details": null,
+        "score": null,
+        "score_details": null,
+        "submission": "41"
+    },
+    "47": {
+        "_class": "Executable",
+        "dataset": "2",
+        "digest": "197d3c79c916e6d9bf0159ff61bc292b8e0f4230",
+        "filename": "sum",
+        "submission": "40",
+        "submission_result": "44"
+    },
+    "48": {
+        "_class": "Evaluation",
+        "dataset": "2",
+        "evaluation_sandbox_paths": [
+            "/tmp/e1"
+        ],
+        "evaluation_shard": 0,
+        "execution_memory": 1000,
+        "execution_time": 0.01,
+        "execution_wall_clock_time": 0.02,
+        "outcome": "1.0",
+        "submission": "40",
+        "submission_result": "44",
+        "testcase": "6",
+        "text": [
+            "Output is correct"
+        ]
+    },
+    "49": {
+        "_class": "Evaluation",
+        "dataset": "2",
+        "evaluation_sandbox_paths": [],
+        "evaluation_shard": 1,
+        "execution_memory": null,
+        "execution_time": 0.02,
+        "execution_wall_clock_time": 0.03,
+        "outcome": "0.0",
+        "submission": "40",
+        "submission_result": "44",
+        "testcase": "7",
+        "text": [
+            "Output isn't correct: %s",
+            "3"
+        ]
+    },
+    "50": {
+        "_class": "UserTest",
+        "files": {
+            "sum.%l": "52"
+        },
+        "input": "4a771ece2809d95c8dc077bbc0d7e640dccf5796",
+        "language": "C++11 / g++",
+        "managers": {},
+        "participation": "20",
+        "results": [
+            "53"
+        ],
+        "task": "1",
+        "timestamp": 1400003000.0
+    },
+    "52": {
+        "_class": "UserTestFile",
+        "digest": "fe88360c3160fdb9b4e7e700ba685eaf55bf3070",
+        "filename": "sum.%l",
+        "user_test": "50"
+    },
+    "53": {
+        "_class": "UserTestResult",
+        "compilation_memory": null,
+        "compilation_outcome": "ok",
+        "compilation_sandbox_paths": [],
+        "compilation_shard": null,
+        "compilation_stderr": null,
+        "compilation_stdout": null,
+        "compilation_text": [
+            "Compilation succeeded"
+        ],
+        "compilation_time": 0.3,
+        "compilation_tries": 1,
+        "compilation_wall_clock_time": null,
+        "dataset": "2",
+        "evaluation_outcome": "ok",
+        "evaluation_sandbox_paths": null,
+        "evaluation_shard": null,
+        "evaluation_text": [
+            "Execution completed successfully"
+        ],
+        "evaluation_tries": 1,
+        "executables": {},
+        "execution_memory": 2000,
+        "execution_time": 0.1,
+        "execution_wall_clock_time": null,
+        "output": "9e6a55b6b4563e652a23be9d623ca5055c356940",
+        "user_test": "50"
+    },
+    "6": {
+        "_class": "Testcase",
+        "codename": "000",
+        "dataset": "2",
+        "input": "32d3c3db7c8157c3bb576fa546eb6e41322fb89e",
+        "output": "a3db5c13ff90a36963278c6a39e4ee3c22e2a436",
+        "public": true
+    },
+    "7": {
+        "_class": "Testcase",
+        "codename": "001",
+        "dataset": "2",
+        "input": "57f6d1f3fe3ccfc9da73749ce65115c4087d5677",
+        "output": "ad552e6dc057d1d825bf49df79d6b98eba846ebe",
+        "public": false
+    },
+    "8": {
+        "_class": "Manager",
+        "dataset": "3",
+        "digest": "51b5f2d2c5055b90da12b005fa79882092e64bd4",
+        "filename": "manager"
+    },
+    "9": {
+        "_class": "Manager",
+        "dataset": "3",
+        "digest": "b4dbdbdb6b90ae0d05358f3c6bd1bb490b1fa1ff",
+        "filename": "grader.cpp"
+    },
+    "_objects": [
+        "0"
+    ],
+    "_version": 49
+}

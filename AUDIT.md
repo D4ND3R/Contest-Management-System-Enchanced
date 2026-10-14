@@ -4,7 +4,7 @@ Cada requisito de SPEC.md con su código, su prueba y su estado:
 **hecho**, **parcial**, **falta** o **requiere hardware** (necesita una
 máquina que esta VM no ofrece, p. ej. cgroups v2 para isolate).
 
-Actualizada al cerrar F4.
+Actualizada al cerrar F8.
 
 ## F0 — Cimientos
 
@@ -49,7 +49,9 @@ Actualizada al cerrar F4.
 | R5.1–R5.9 Sitio del concursante | falta (esqueleto: `/healthz`, `/source`) |
 | R6.1–R6.9 Administración | falta (esqueleto) |
 | R7.1–R7.4 Scoreboard público | falta (esqueleto) |
-| R8.1–R8.3 Importación desde CMS | falta |
+| R8.1 Loaders italy_yaml, Polygon, TPS | hecho — `internal/importer/{italy,polygon,tps}`, comparados con los loaders del original en pruebas |
+| R8.2 Formato propio con validación y exportación | hecho — `internal/importer/pkg`, `cms ctl validate-task`/`export-task`; pruebas de ida y vuelta |
+| R8.3 Dumps de CMS | hecho — `internal/importer/dump`, `cms ctl import-dump`; comparado con `cmsDumpImporter`, versiones 14–49 |
 | R9.1–R9.6 Instalación | falta (imagen base y Compose de desarrollo hechos) |
 
 ## No funcionales

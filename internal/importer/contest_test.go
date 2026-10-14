@@ -230,7 +230,7 @@ func TestWriteContestUpdate(t *testing.T) {
 		t.Errorf("%d participations, want 4 (none given, none deleted)", n)
 	}
 
-	// --delete-stale-participations deletes carol's, with her submissions.
+	// --delete-stale-participations deletes carol's, with its submissions.
 	if _, err := pool.Exec(ctx, `INSERT INTO submissions (opaque_id, participation_id, task_id, timestamp)
 		SELECT 7, p.id, $2, now() FROM participations p JOIN users u ON u.id = p.user_id
 		WHERE p.contest_id = $1 AND u.username = 'carol'`, id, res.TaskIDs["b"]); err != nil {
@@ -364,7 +364,7 @@ func TestWriteUsersAndTeams(t *testing.T) {
 	if err != nil || res.Count("user", Skipped) != 2 {
 		t.Errorf("err %v, changes:\n%s", err, changes(res))
 	}
-	// With Update they change; a user without password keeps hers.
+	// With Update they change; a user without password keeps the stored one.
 	users[1].Email = Ptr("bob@example.com")
 	res, err = w.WriteUsers(ctx, append(users, User{Username: "carol", Password: "plaintext:c"}), UserOptions{Update: true})
 	if err != nil || res.Count("user", Updated) != 2 || res.Count("user", Created) != 1 {

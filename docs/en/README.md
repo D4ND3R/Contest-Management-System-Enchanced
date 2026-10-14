@@ -8,6 +8,7 @@
 | [Development](development.md) | available |
 | [Judges (workers)](judges.md) | available |
 | [Task package format](package-format.md) | available |
+| [Importing contests, tasks and CMS dumps](importing.md) | available |
 | Getting started | F9 |
 | Installation, requirements and sizing | F9 |
 | Upgrades and backups | F9 |

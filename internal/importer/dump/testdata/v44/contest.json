@@ -1,0 +1,300 @@
+{
+    "0": {
+        "_class": "Contest",
+        "allow_password_authentication": true,
+        "allow_questions": true,
+        "allow_registration": false,
+        "allow_user_tests": true,
+        "allowed_localizations": [
+            "es"
+        ],
+        "analysis_enabled": true,
+        "analysis_start": 1710020000.0,
+        "analysis_stop": 1710030000.0,
+        "announcements": [],
+        "block_hidden_participations": false,
+        "description": "OMI 2024",
+        "ip_autologin": false,
+        "ip_restriction": false,
+        "languages": [
+            "C++17 / g++",
+            "Python 3 / CPython"
+        ],
+        "max_submission_number": 50,
+        "max_user_test_number": null,
+        "min_submission_interval": 30.0,
+        "min_user_test_interval": null,
+        "name": "omi",
+        "participations": [
+            "20"
+        ],
+        "per_user_time": 7200.0,
+        "score_precision": 2,
+        "start": 1710000000.0,
+        "stop": 1710018000.0,
+        "submissions_download_allowed": true,
+        "tasks": [
+            "1"
+        ],
+        "timezone": "America/Mexico_City",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled"
+    },
+    "1": {
+        "_class": "Task",
+        "active_dataset": "2",
+        "allowed_languages": null,
+        "attachments": {},
+        "contest": "0",
+        "datasets": [
+            "2"
+        ],
+        "feedback_level": "oi_restricted",
+        "max_submission_number": null,
+        "max_user_test_number": null,
+        "min_submission_interval": null,
+        "min_user_test_interval": null,
+        "name": "eco",
+        "num": 0,
+        "primary_statements": [
+            "es"
+        ],
+        "score_mode": "max_subtask",
+        "score_precision": 2,
+        "statements": {},
+        "submission_format": [
+            "eco.%l"
+        ],
+        "submissions": [
+            "40"
+        ],
+        "title": "Eco",
+        "token_gen_initial": 2,
+        "token_gen_interval": 1800.0,
+        "token_gen_max": null,
+        "token_gen_number": 2,
+        "token_max_number": null,
+        "token_min_interval": 0.0,
+        "token_mode": "disabled",
+        "user_tests": [
+            "50"
+        ]
+    },
+    "10": {
+        "_class": "User",
+        "email": "l@example.com",
+        "first_name": "Guadalupe",
+        "last_name": "L",
+        "participations": [
+            "20"
+        ],
+        "password": "bcrypt:$2b$12$abcdefghijklmnopqrstuuJHqf0ZB7O5J5vTp3pUtH9kE6x0Z9vR2",
+        "preferred_languages": [
+            "es"
+        ],
+        "timezone": null,
+        "username": "lupita"
+    },
+    "11": {
+        "_class": "Team",
+        "code": "MEX",
+        "name": "Mexico",
+        "participations": [
+            "20"
+        ]
+    },
+    "2": {
+        "_class": "Dataset",
+        "autojudge": false,
+        "description": "Default",
+        "managers": {
+            "manager": "8",
+            "stub.cpp": "9"
+        },
+        "memory_limit": 536870912,
+        "score_type": "Sum",
+        "score_type_parameters": 100,
+        "task": "1",
+        "task_type": "Communication",
+        "task_type_parameters": [
+            1,
+            "stub",
+            "std_io"
+        ],
+        "testcases": {
+            "a": "6"
+        },
+        "time_limit": 1.5
+    },
+    "20": {
+        "_class": "Participation",
+        "contest": "0",
+        "delay_time": 0.0,
+        "extra_time": 0.0,
+        "hidden": false,
+        "ip": null,
+        "messages": [],
+        "password": null,
+        "printjobs": [
+            "60"
+        ],
+        "questions": [],
+        "starting_time": null,
+        "submissions": [
+            "40"
+        ],
+        "team": "11",
+        "unrestricted": false,
+        "user": "10",
+        "user_tests": [
+            "50"
+        ]
+    },
+    "40": {
+        "_class": "Submission",
+        "comment": "",
+        "files": {
+            "eco.%l": "42"
+        },
+        "language": "Python 3 / CPython",
+        "official": true,
+        "participation": "20",
+        "results": [
+            "44"
+        ],
+        "task": "1",
+        "timestamp": 1710001000.0,
+        "token": null
+    },
+    "42": {
+        "_class": "File",
+        "digest": "6610b0876cd94855f8c33d1000bb4980e185e7ec",
+        "filename": "eco.%l",
+        "submission": "40"
+    },
+    "44": {
+        "_class": "SubmissionResult",
+        "compilation_memory": 5000000,
+        "compilation_outcome": "ok",
+        "compilation_sandbox": "/var/cms/a",
+        "compilation_shard": 2,
+        "compilation_stderr": "",
+        "compilation_stdout": "",
+        "compilation_text": [
+            "Compilation succeeded"
+        ],
+        "compilation_time": 0.05,
+        "compilation_tries": 1,
+        "compilation_wall_clock_time": 0.1,
+        "dataset": "2",
+        "evaluation_outcome": "ok",
+        "evaluation_tries": 1,
+        "evaluations": [
+            "48"
+        ],
+        "executables": {
+            "eco": "47"
+        },
+        "public_score": 100.0,
+        "public_score_details": [],
+        "ranking_score_details": [
+            "100"
+        ],
+        "score": 100.0,
+        "score_details": [
+            {
+                "idx": "a",
+                "memory": 1000,
+                "outcome": "Correct",
+                "text": [
+                    "Output is correct"
+                ],
+                "time": 0.1
+            }
+        ],
+        "submission": "40"
+    },
+    "47": {
+        "_class": "Executable",
+        "dataset": "2",
+        "digest": "523d0f6a098580cf5bc26d8ee0b624af03a5a055",
+        "filename": "eco",
+        "submission": "40",
+        "submission_result": "44"
+    },
+    "48": {
+        "_class": "Evaluation",
+        "admin_text": null,
+        "dataset": "2",
+        "evaluation_sandbox": "/var/cms/b:/var/cms/c",
+        "evaluation_shard": 2,
+        "execution_memory": 1000,
+        "execution_time": 0.1,
+        "execution_wall_clock_time": 0.2,
+        "outcome": "1.0",
+        "submission": "40",
+        "submission_result": "44",
+        "testcase": "6",
+        "text": [
+            "Output is correct"
+        ]
+    },
+    "50": {
+        "_class": "UserTest",
+        "files": {},
+        "input": "d3964f9dad9f60363c81b688324d95b4ec7c8038",
+        "language": "C++17 / g++",
+        "managers": {
+            "stub.cpp": "52"
+        },
+        "participation": "20",
+        "results": [],
+        "task": "1",
+        "timestamp": 1710002000.0
+    },
+    "52": {
+        "_class": "UserTestManager",
+        "digest": "b4dbdbdb6b90ae0d05358f3c6bd1bb490b1fa1ff",
+        "filename": "stub.cpp",
+        "user_test": "50"
+    },
+    "6": {
+        "_class": "Testcase",
+        "codename": "a",
+        "dataset": "2",
+        "input": "5d9474c0309b7ca09a182d888f73b37a8fe1362c",
+        "output": "5d9474c0309b7ca09a182d888f73b37a8fe1362c",
+        "public": true
+    },
+    "60": {
+        "_class": "PrintJob",
+        "digest": "280a374c1c0032c72111d411ce9e3fcf541a72da",
+        "filename": "a.txt",
+        "participation": "20",
+        "status": [
+            "Done"
+        ],
+        "timestamp": 1710003000.0
+    },
+    "8": {
+        "_class": "Manager",
+        "dataset": "2",
+        "digest": "51b5f2d2c5055b90da12b005fa79882092e64bd4",
+        "filename": "manager"
+    },
+    "9": {
+        "_class": "Manager",
+        "dataset": "2",
+        "digest": "b4dbdbdb6b90ae0d05358f3c6bd1bb490b1fa1ff",
+        "filename": "stub.cpp"
+    },
+    "_objects": [
+        "0"
+    ],
+    "_version": 44
+}

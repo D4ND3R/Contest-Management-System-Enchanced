@@ -35,6 +35,13 @@ Para correr un paquete a mano: `source .infra/env` (después de
 | `internal/config` | `cms.yaml` + `CMS_*` |
 | `internal/db` | pool de PostgreSQL, migraciones embebidas (`migrations/`) |
 | `internal/kv` | cliente Valkey con prefijo de claves |
+| `internal/store` | acceso a datos (sqlc en `store/q`, consultas en `store/queries/*.sql`) |
+| `internal/blob` | almacén de archivos por SHA-256 (local, S3, remoto) con caché LRU |
+| `internal/job`, `internal/queue` | protocolo dispatcher↔worker y colas en Valkey Streams |
+| `internal/judging` | lado de la BD del juez: operaciones pendientes, resultados, puntajes, caché `task_scores`, invalidación |
+| `internal/live` | eventos en vivo (Valkey pub/sub → hub por proceso → SSE) |
+| `internal/grading` | `language`, `steps`, `checker`, `tasktype`, `scoretype`, `scoring` (semántica de CMS) |
+| `internal/importer` | modelo y escritor de importación; loaders `italy`, `polygon`, `tps`, `pkg` (formato propio); `dump` (dumps de CMS) |
 | `internal/httpx` | servidor HTTP, middleware, CSP, `/healthz`, `/metrics`, `/source`, pprof |
 | `internal/obs` | logs JSON, registro Prometheus, health checks |
 | `internal/i18n` | `.po`, formas plurales, catálogos, `Format` de `%(x)s`; `extract/` para los `.pot` |

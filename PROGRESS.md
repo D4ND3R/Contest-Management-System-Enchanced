@@ -202,3 +202,49 @@ trabajos reales.
   y la publicación: el sitio del concursante conserva el sondeo de CMS de
   los envíos pendientes (F5).
 - k6 sobre hardware real de 2 vCPU (las cifras son con `taskset`).
+
+---
+
+## F8 — Importación desde CMS (hecha)
+
+### Hecho
+
+- `internal/importer`: modelo de importación (concursos con grupos y
+  participaciones, tareas con enunciados, adjuntos, datasets, managers y
+  casos, usuarios, equipos) con los valores por defecto de CMS; registro
+  de loaders con autodetección (`choose_loader`); reporte de validación
+  que rechaza lo que el dispatcher nunca podría juzgar; escritor en una
+  transacción con semántica de actualización de `ImportContest`/
+  `ImportTask` y `--dry-run` (D38).
+- Loaders: **italy_yaml** (`contest.yaml`, `task.yaml`, `gen/GEN` con
+  `#ST`, todos los tipos de problema), **Polygon** (`problem.xml`,
+  `contest.xml`, `cms_conf.py` leído como literales, checkers testlib
+  compilados con el `testlib.h` parcheado de CMS) y **TPS**
+  (`problem.json`, subtareas, graders, checker, managers) (D39).
+- **Formato propio** (`problem.yaml`, directorio o zip leído sin extraer)
+  con reporte de validación y exportación; ida y vuelta exacta (D40).
+- **Dumps de CMS**: versiones 14–49 (updaters portados), directorio, zip o
+  tar; SHA-1 → SHA-256; ids nuevos de las secuencias; `COPY` en una
+  transacción; `-d`, `--reuse-users`, `-G/-S/-U/-X`; `--dry-run -d` sin
+  bloquear (D41).
+- `cms ctl import-contest`, `import-task`, `import-users`, `import-team`,
+  `import-dataset`, `validate-task`, `validate-contest`, `export-task` e
+  `import-dump`, con las opciones de los comandos de CMS.
+- Guías: [importar](docs/es/importar.md) y
+  [formato de paquete](docs/es/formato-de-paquete.md) (y en inglés).
+
+### Pruebas
+
+| Área | Pruebas |
+|---|---|
+| Escritor | ida y vuelta, transacción (una tarea con error no deja nada), actualización de datasets en su lugar y nuevos inactivos, envíos conservados, sentencias constantes con 4 y 200 casos y con 3 y 150 participantes |
+| italy_yaml | el concurso `demo` y tareas sintéticas dan los mismos archivos, parámetros y casos que `cmsImportContest`/`cmsImportTask` del original |
+| Polygon y TPS | seis importaciones de referencia hechas con los loaders del original (esquema 49): mismas filas y mismos binarios de checkers compilados |
+| Formato propio | todos los tipos de problema y de puntaje: paquete → base → exportar → importar da filas idénticas; zip slip, enlaces, CRC, duplicados; reporte de validación |
+| Dumps | `testdata/dumps/demo` y una instalación completa exportada por el original: 0 diferencias tabla por tabla con `cmsDumpImporter` (salvo admins, a propósito); v14 y v44 contra `cmsDumpUpdater`; digest corrupto; dumps `-c` con otro concurso; `-F`; `--dry-run -d` con lectores abiertos; sentencias constantes con 4 y 4000 evaluaciones |
+
+### Pendiente
+
+- Vista previa de un zip en la administración (F6): `pkg.Load`,
+  `importer.ValidateTask` y `Writer.DryRun` ya la cubren.
+- Juzgar las soluciones de `solutions/` contra su veredicto esperado (F6).
