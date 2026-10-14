@@ -495,3 +495,38 @@ recibe una sola marca de resync en lugar de acumular memoria; las marcas
 llevan un `spread` para que 1500 páginas no recarguen a la vez. Los
 eventos llevan ids, nunca puntajes: la página consulta los detalles con
 sus permisos.
+
+## D38 — Importación en una transacción, sin escribir en el paquete
+
+**Decisión.** Toda importación (concurso, tareas, usuarios, equipos)
+valida primero, sube los archivos al almacén de blobs y escribe todas las
+filas en una sola transacción, con una cantidad de sentencias que no crece
+con los casos ni los participantes. Lo que el dispatcher nunca podría
+juzgar (tipo de problema o de puntaje desconocido, parámetros inválidos,
+lenguaje desconocido, managers faltantes) se rechaza antes de escribir.
+Las actualizaciones comparan el paquete con la base (CMS usa archivos
+`.itime` dentro del paquete): nada se escribe en el directorio importado.
+`--dry-run` deshace la transacción y muestra qué cambiaría. Un dataset con
+la misma descripción se actualiza en su lugar conservando casos y
+resultados (como CMS, con un aviso que sugiere reevaluar); una descripción
+nueva crea un dataset inactivo; los envíos se conservan.
+
+## D39 — Checkers y managers compilados al importar
+
+**Decisión.** Polygon, TPS y el formato propio traen checkers y managers
+como fuente C++; se compilan con g++ al importar con las opciones de CMS
+(Polygon: `testlib.h` parcheado de CMS y `-DCMS`). La máquina que importa
+necesita g++ y la misma arquitectura que los jueces. `cms_conf.py` de
+Polygon se lee como literales de Python y nunca se ejecuta.
+
+## D40 — Formato de paquete propio
+
+**Decisión.** `problem.yaml` (claves desconocidas son error) más
+`statement/`, `tests/`, `graders/`, `attachments/` y `solutions/` con el
+veredicto esperado en el nombre (`correcta.ac.cpp`). Se acepta como
+directorio o como zip leído sin extraer, con controles de zip slip,
+enlaces, cifrado, duplicados, tamaño declarado y CRC-32. La exportación
+escribe solo lo que difiere de los valores por defecto y conserva entero
+o real como lo escribe Python, de modo que importar → exportar → importar
+da filas idénticas. Las soluciones no se guardan (CMS no tiene tabla para
+ellas).
