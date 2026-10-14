@@ -266,8 +266,8 @@ func TestImportCommands(t *testing.T) {
 	if out, _, err = run("validate-contest", cdir); err != nil || !strings.Contains(out, `contest demo "demo": 1 group, 2 tasks, 2 users, 2 participations`) {
 		t.Errorf("validate-contest: %v\n%s", err, out)
 	}
-	if _, _, err = run("export-task", "sum", t.TempDir()); !errors.Is(err, errNotImplemented) {
-		t.Errorf("export-task: %v", err)
+	if out, _, err = run("export-task", "sum", filepath.Join(t.TempDir(), "sum.zip")); err != nil || !strings.Contains(out, "exported task sum") {
+		t.Errorf("export-task: %v\n%s", err, out)
 	}
 	if _, _, err = run("import-dump", t.TempDir()); !errors.Is(err, errNotImplemented) {
 		t.Errorf("import-dump: %v", err)

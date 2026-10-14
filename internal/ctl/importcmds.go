@@ -20,10 +20,12 @@ import (
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/config"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/language"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/importer"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/importer/pkg"
 )
 
 // The loaders are registered in importer.Default by their packages
-// (internal/importer/<format>), which the binary imports for that effect.
+// (internal/importer/<format>), which the binary imports for that effect
+// (loaders.go; export-task uses the package format directly).
 
 // ImportCommands returns the commands that bring packages into the
 // database (cmsImportContest, cmsImportTask, cmsImportUser, cmsImportTeam
@@ -721,12 +723,63 @@ and warnings, and fails if there are errors.` + loadersHelp(),
 }
 
 func exportTaskCommand() *cli.Command {
+	var (
+		f       importFlags
+		dataset string
+	)
 	return &cli.Command{
 		Name:  "export-task",
-		Args:  "[flags] TASK DIR",
-		Short: "export a task as a package of the own format",
-		Run: func(context.Context, *cli.Env, []string) error {
-			return fmt.Errorf("export-task: %w", errNotImplemented)
+		Args:  "[flags] TASK DEST",
+		Short: "export a task as a package of this installation's own format",
+		Long: `Writes the task TASK (name or id) with its active dataset, or the one given
+with -d, as a package of the own format (problem.yaml, statement/, tests/,
+graders/, attachments/; see docs/en/package-format.md): a zip file if DEST
+ends with .zip, otherwise a directory, which must not exist or be empty.
+Importing the package (import-task, or import-task -u over the same task)
+gives the same rows back. Submissions, the other datasets and solutions are
+not exported; managers the format cannot carry are listed as warnings.`,
+		Flags: func(fs *flag.FlagSet) {
+			f.fs = fs
+			stringFlags(fs, &dataset, "description of the dataset to export (default: the active one)", "d", "dataset")
+		},
+		Run: func(ctx context.Context, env *cli.Env, args []string) error {
+			args, err := f.positional(args)
+			if err != nil {
+				return err
+			}
+			if len(args) != 2 {
+				return cli.UsageError("want the task (name or id) and the destination (a directory or a .zip file)")
+			}
+			dest, err := filepath.Abs(args[1])
+			if err != nil {
+				return err
+			}
+			ie, err := openImport(ctx, env, &f)
+			if err != nil {
+				return err
+			}
+			defer ie.close()
+			id, err := lookupID(ctx, ie.pool, taskLookup, args[0])
+			if err != nil {
+				return err
+			}
+			exp, err := pkg.Export(ctx, ie.pool, ie.blobs, ie.writer.Languages, id, dataset, dest)
+			if err != nil {
+				return err
+			}
+			for _, w := range exp.Warnings {
+				fmt.Fprintln(env.Stderr, "warning: "+w)
+			}
+			fmt.Fprintf(env.Stdout, "exported task %s, dataset %q, to %s (%s)\n", exp.Task, exp.Dataset, dest, countOf(exp.Files, "file"))
+			if len(exp.OtherDatasets) > 0 {
+				quoted := make([]string, len(exp.OtherDatasets))
+				for i, d := range exp.OtherDatasets {
+					quoted[i] = fmt.Sprintf("%q", d)
+				}
+				fmt.Fprintf(env.Stdout, "not exported: %s %s (export them with -d)\n",
+					countOf(len(quoted), "other dataset"), strings.Join(quoted, ", "))
+			}
+			return nil
 		},
 	}
 }

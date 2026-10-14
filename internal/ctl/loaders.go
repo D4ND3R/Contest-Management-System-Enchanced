@@ -5,6 +5,7 @@ package ctl
 
 // The loaders register themselves in importer.Default from init.
 import (
+	_ "github.com/d4nd3r/contest-management-system-enchanced/internal/importer/italy"
 	_ "github.com/d4nd3r/contest-management-system-enchanced/internal/importer/polygon"
 	_ "github.com/d4nd3r/contest-management-system-enchanced/internal/importer/tps"
 )
