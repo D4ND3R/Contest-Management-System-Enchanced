@@ -56,6 +56,7 @@ it signs cookies and derives the keys of the secret scoreboard links.`,
 		},
 	}
 	c.Sub = append(c.Sub, JudgeCommands()...)
+	c.Sub = append(c.Sub, ImportCommands()...)
 	return c
 }
 
