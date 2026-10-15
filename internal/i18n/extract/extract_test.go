@@ -76,3 +76,26 @@ func f() { Tn("x", "xs", 1); Tn("x", "xes", 2) }`))
 		t.Fatalf("got %v", err)
 	}
 }
+
+// TestWithout drops the messages another catalog (cms.pot) already has:
+// same msgid and same context.
+func TestWithout(t *testing.T) {
+	c := NewCollector()
+	if err := c.Template("a.html", []byte(`{{T "Overview"}}{{T "New string"}}{{Tc "menu" "Overview"}}{{Tn "One" "Many" 2}}`)); err != nil {
+		t.Fatal(err)
+	}
+	pot, err := i18n.ParsePO(strings.NewReader("msgid \"\"\nmsgstr \"\"\n\nmsgid \"Overview\"\nmsgstr \"\"\n\nmsgid \"One\"\nmsgid_plural \"Many\"\nmsgstr[0] \"\"\nmsgstr[1] \"\"\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ids []string
+	for _, m := range Without(c.Messages(), pot) {
+		ids = append(ids, m.Context+"|"+m.ID)
+	}
+	if got := strings.Join(ids, ","); got != "|New string,menu|Overview" {
+		t.Errorf("Without: %s", got)
+	}
+	if n := len(Without(c.Messages())); n != 4 {
+		t.Errorf("Without nothing: %d", n)
+	}
+}

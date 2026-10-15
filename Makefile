@@ -104,6 +104,15 @@ generate: tools ## regenerate code and translation templates (sqlc, .pot)
 	done
 	$(GO) generate ./...
 
+# CLDR tables of internal/l10n and their golden outputs, extracted from
+# Babel 2.12.1 (the version CMS pins). Committed; not part of `generate`.
+L10N_PYTHON ?= python3
+
+.PHONY: l10n
+l10n: ## regenerate the CLDR tables of internal/l10n (L10N_PYTHON: a python with babel==2.12.1)
+	$(L10N_PYTHON) tools/l10n/extract.py
+	$(GO) test $(GOFLAGS) -count=1 -run 'TestGolden' ./internal/l10n/
+
 .PHONY: infra-up infra-down
 infra-up: ## start disposable PostgreSQL and Valkey (scripts/infra.sh)
 	scripts/infra.sh up
@@ -132,4 +141,4 @@ clean:
 
 .PHONY: help
 help:
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | expand -t 16
+	@grep -E '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | expand -t 16

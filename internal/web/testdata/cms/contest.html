@@ -1,0 +1,105 @@
+{{/*
+Test fixture: the login branch of cms/server/contest/templates/contest.html of CMS, ported line by line.
+Copyright © 2018 Luca Wehrstedt, © 2010-2018 Stefano Maggiolo and the CMS contributors (AGPL-3.0-or-later).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "title"}}
+    {{.Contest.Description}}
+{{end}}
+
+{{define "js"}}
+
+
+    <script>
+var LANGUAGES = {
+{{range .Languages}}
+    '{{.Name}}': {
+{{range .Extensions}}
+        '{{.}}': true,
+{{end}}
+    },
+{{end}}
+};
+
+{{if not .Participation}}
+var utils = new CMS.CWSUtils("{{url}}", "{{contest_url}}", "{{.Contest.Name}}",
+                             0, 0, 0, 0, 0);
+{{else}}
+// FIXME use Date objects
+    {{end}}
+
+{{block "additional_js" .}}{{end}}
+    </script>
+{{end}}
+
+{{define "body"}}
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="{{contest_url}}">{{.Contest.Description}}</a>
+{{if gt (len .Choice.Available) 1}}
+                    <p class="navbar-text pull-right">
+                        <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
+                            <option value=""{{if not .Choice.Cookie}} selected{{end}}>{{Format (T "Automatic (%(lang)s)") "lang" .Choice.Automatic.Name}}</option>
+                        {{range $code, $t := .Choice.ByID}}
+                            <option value="{{$code}}"{{if eq $t $.Choice.Cookie}} selected{{end}}>{{$t.Name}}</option>
+                        {{end}}
+                        </select>
+                    </p>
+{{end}}
+{{if .Participation}}
+                    <form action="{{contest_url "logout"}}" method="POST" class="navbar-form pull-right">
+                        {{xsrf_form_html}}
+                    </form>
+{{end}}
+                </div>
+            </div>
+        </div>
+{{if not .Participation}}
+    {{if .LoginError}}
+        <div id="notifications" class="notifications">
+        </div>
+    {{end}}
+        <div class="login_container">
+            <div class="login_box hero-unit">
+                <h1>{{T "Welcome"}}</h1>
+                <p>{{T "Please log in"}}</p>
+                <form class="form-horizontal" action="{{contest_url "login"}}" method="POST">
+                    {{xsrf_form_html}}
+                    {{$next := .Next}}
+                    {{if $next}}
+                    <input type="hidden" name="next" value="{{$next}}">
+                    {{end}}
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="username">{{T "Username"}}</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" name="username" id="username" autofocus>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="password">{{T "Password"}}</label>
+                            <div class="controls">
+                                <input type="password" class="input-xlarge" name="password" id="password">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="controls">
+                                <button type="submit" class="btn btn-primary btn-large">{{T "Login"}}</button>
+                                <button type="reset" class="btn btn-large">{{T "Reset"}}</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+                {{if .Contest.AllowRegistration}}
+                <p style="margin: 9px 0 0;">
+                    {{T "Don't have an account?"}} <a href="{{contest_url "register"}}">{{T "Register"}}</a>
+                </p>
+                {{end}}
+            </div>
+        </div>
+{{else}}
+        <div id="notifications" class="notifications"></div>
+{{end}}
+{{end}}

@@ -88,6 +88,26 @@ func (c *Collector) Messages() []Message {
 	return out
 }
 
+// Without returns msgs minus the messages (same context and msgid) that
+// already are in the catalogs skip, typically cms.pot: the strings of a
+// site that CMS already translates stay in the "cms" domain and only new
+// ones land in admin.pot.
+func Without(msgs []Message, skip ...*i18n.File) []Message {
+	have := map[string]bool{}
+	for _, f := range skip {
+		for _, e := range f.Entries {
+			have[e.Context+"\x04"+e.ID] = true
+		}
+	}
+	out := make([]Message, 0, len(msgs))
+	for _, m := range msgs {
+		if !have[m.Context+"\x04"+m.ID] {
+			out = append(out, m)
+		}
+	}
+	return out
+}
+
 func build(name string, args []string) (Message, bool) {
 	k, ok := kinds[name]
 	if !ok {

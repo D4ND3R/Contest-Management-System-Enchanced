@@ -94,11 +94,16 @@ func TestAdminSpanishIsComplete(t *testing.T) {
 	}
 }
 
+// adminSources are the directories of the go:generate line of locale.go
+// (admin.pot leaves out what cms.pot has).
+var adminSources = []string{"../internal/adminweb", "../internal/grading/steps",
+	"../internal/contestweb", "../internal/web"}
+
 // TestPOTIsUpToDate fails when the templates or code changed and
 // `make generate` was not run.
 func TestPOTIsUpToDate(t *testing.T) {
 	for domain, dirs := range map[string][]string{
-		DomainAdmin: {"../internal/adminweb", "../internal/grading/steps"},
+		DomainAdmin: adminSources,
 	} {
 		c := extract.NewCollector()
 		for _, d := range dirs {
@@ -110,7 +115,7 @@ func TestPOTIsUpToDate(t *testing.T) {
 			}
 		}
 		var buf bytes.Buffer
-		if err := extract.WritePOT(&buf, domain, c.Messages()); err != nil {
+		if err := extract.WritePOT(&buf, domain, extract.Without(c.Messages(), parse(t, "cms.pot"))); err != nil {
 			t.Fatal(err)
 		}
 		have, err := os.ReadFile(domain + ".pot")

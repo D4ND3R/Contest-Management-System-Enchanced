@@ -14,7 +14,10 @@ package locale
 
 import "embed"
 
-//go:generate go run ../cmd/i18n-extract -domain admin -out admin.pot ../internal/adminweb ../internal/grading/steps
+// admin.pot gets the strings of the administration and the new strings of
+// the contestant site; those that CMS already has stay in cms.pot (-skip).
+//
+//go:generate go run ../cmd/i18n-extract -domain admin -out admin.pot -skip cms.pot ../internal/adminweb ../internal/grading/steps ../internal/contestweb ../internal/web
 
 // FS holds every catalog.
 //

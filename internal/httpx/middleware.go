@@ -37,6 +37,7 @@ type reqInfo struct {
 	route    string
 	clientIP string
 	nonce    string
+	https    bool
 }
 
 type infoKey struct{}
@@ -160,6 +161,7 @@ func Observe(log *slog.Logger, reg prometheus.Registerer, numProxies int) Middle
 			start := time.Now()
 			r, ri := withInfo(r)
 			ri.clientIP = clientIP(r, numProxies)
+			ri.https = isHTTPS(r, numProxies)
 			sw := &statusWriter{ResponseWriter: w}
 			inflight.Inc()
 			defer inflight.Dec()
@@ -228,6 +230,45 @@ func clientIP(r *http.Request, numProxies int) string {
 		return r.RemoteAddr
 	}
 	return host
+}
+
+// IsHTTPS reports whether the client reached the site over HTTPS: the
+// connection itself is TLS or, behind num_proxies trusted reverse proxies,
+// X-Forwarded-Proto says so (set by Observe). Cookies get the Secure flag
+// when it is true.
+func IsHTTPS(r *http.Request) bool {
+	if ri := info(r.Context()); ri != nil && ri.clientIP != "" {
+		return ri.https
+	}
+	return r.TLS != nil
+}
+
+func isHTTPS(r *http.Request, numProxies int) bool {
+	if r.TLS != nil {
+		return true
+	}
+	if numProxies <= 0 {
+		return false
+	}
+	var hops []string
+	for _, h := range r.Header.Values("X-Forwarded-Proto") {
+		for _, p := range strings.Split(h, ",") {
+			if p = strings.TrimSpace(p); p != "" {
+				hops = append(hops, p)
+			}
+		}
+	}
+	if len(hops) == 0 {
+		return false
+	}
+	// Proxies that append put the scheme the client used numProxies
+	// entries from the right (as X-Forwarded-For); most proxies overwrite
+	// the header and send a single value.
+	i := 0
+	if len(hops) >= numProxies {
+		i = len(hops) - numProxies
+	}
+	return strings.EqualFold(hops[i], "https")
 }
 
 // CSP is the Content-Security-Policy of the web sites. Scripts need the

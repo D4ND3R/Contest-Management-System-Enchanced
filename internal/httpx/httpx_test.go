@@ -79,6 +79,39 @@ func TestClientIP(t *testing.T) {
 	}
 }
 
+func TestIsHTTPS(t *testing.T) {
+	plain := httptest.NewRequest("GET", "/", nil)
+	if isHTTPS(plain, 0) || isHTTPS(plain, 1) {
+		t.Error("plain request seen as HTTPS")
+	}
+	spoofed := httptest.NewRequest("GET", "/", nil)
+	spoofed.Header.Set("X-Forwarded-Proto", "https")
+	if isHTTPS(spoofed, 0) {
+		t.Error("X-Forwarded-Proto trusted without proxies")
+	}
+	if !isHTTPS(spoofed, 1) || !isHTTPS(spoofed, 2) {
+		t.Error("single X-Forwarded-Proto from a trusted proxy ignored")
+	}
+	chained := httptest.NewRequest("GET", "/", nil)
+	chained.Header.Set("X-Forwarded-Proto", "https, http")
+	if isHTTPS(chained, 1) || !isHTTPS(chained, 2) {
+		t.Error("appended X-Forwarded-Proto: wrong hop")
+	}
+	tlsReq := httptest.NewRequest("GET", "https://example.org/", nil)
+	if !isHTTPS(tlsReq, 0) || !IsHTTPS(tlsReq) {
+		t.Error("TLS request not seen as HTTPS")
+	}
+
+	var got bool
+	h := Observe(quiet, nil, 1)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = IsHTTPS(r)
+	}))
+	h.ServeHTTP(httptest.NewRecorder(), spoofed)
+	if !got {
+		t.Error("IsHTTPS after Observe with num_proxies=1")
+	}
+}
+
 func TestSecureHeadersNonce(t *testing.T) {
 	var seen string
 	h := SecureHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

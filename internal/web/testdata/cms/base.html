@@ -1,0 +1,29 @@
+{{/*
+Test fixture: base.html of the contestant site of CMS (cms/server/contest/templates/base.html),
+ported line by line to html/template to check that internal/web renders it to the same bytes.
+Copyright © 2018 Luca Wehrstedt, © 2010-2018 Stefano Maggiolo and the CMS contributors (AGPL-3.0-or-later).
+*/}}
+<!DOCTYPE html>
+<html lang="{{lang}}">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{{block "title" .}}{{end}}</title>
+
+        <link rel="shortcut icon" href="{{static "favicon.ico"}}" />
+        <link rel="stylesheet" href="{{static "css" "bootstrap.css"}}">
+        <link rel="stylesheet" href="{{static "cws_style.css"}}">
+
+        <script src="{{static "jq" "jquery-3.6.0.min.js"}}"></script>
+        {{/* For compatibility with Bootstrap 2.x */}}
+        <script src="{{static "jq" "jquery-migrate-3.3.2.min.js"}}"></script>
+        <script src="{{static "js" "bootstrap.js"}}"></script>
+        <script src="{{static "cws_utils.js"}}"></script>
+
+        {{block "js" .}}{{end}}
+    </head>
+    <body>
+        {{block "body" .}}{{end}}
+    </body>
+</html>
