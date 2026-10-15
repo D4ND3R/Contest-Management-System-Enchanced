@@ -1,0 +1,71 @@
+{{/*
+Ported from cms/server/contest/templates/documentation.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca Wehrstedt and the CMS
+contributors.
+Data: documentationData (pages.go). The messages are translated with
+CMS's _(), whose result is escaped: print turns T's trusted HTML into text.
+*/}}
+{{/* extends "contest.html" */}}
+
+{{define "core"}}
+<div class="span9">
+
+<div class="page-header">
+    <h1>{{T "Documentation"}}</h1>
+</div>
+
+<h2>{{T "Programming languages and libraries"}}</h2>
+
+{{range .LanguageDocs}}
+<h3>{{.Name}}</h3>
+<p><a href="{{url "docs" .Ext "index.html"}}">{{T "Documentation"}}</a></p>
+{{end}}
+
+{{if .HasJava}}
+<h3>Java</h3>
+
+<p>{{T "The main Java class of the solution should have exactly the same name as the task."}}</p>
+{{end}}
+
+
+<h2>{{T "Submission details for compilation"}}</h2>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th style="width: 30%;">{{T "Message"}}</th>
+      <th>{{T "Explanation"}}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .CompilationMessages}}
+    <tr>
+      <td><em>{{print (T .Message)}}</em></td>
+      <td>{{print (T .HelpText)}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+
+<h2>{{T "Submission details for evaluation"}}</h2>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th style="width: 30%;">{{T "Message"}}</th>
+      <th>{{T "Explanation"}}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .EvaluationMessages}}
+    <tr>
+      <td><em>{{print (T .Message)}}</em></td>
+      <td>{{print (T .HelpText)}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+
+</div>
+{{end}}

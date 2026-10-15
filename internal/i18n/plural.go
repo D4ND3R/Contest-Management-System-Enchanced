@@ -5,6 +5,7 @@ package i18n
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -12,10 +13,32 @@ import (
 // PluralFunc maps a count to the index of the plural form.
 type PluralFunc func(n int64) int
 
+// PluralFloatFunc maps a count that may have a fraction to the index of
+// the plural form, as Python's gettext does: CMS passes floats (token
+// generation intervals in minutes) and booleans to ngettext, and Python
+// evaluates the C expression of the catalog on them (c2py: "/" is floor
+// division, "%" Python's modulo, the result truncated by int()).
+type PluralFloatFunc func(n float64) int
+
 // ParsePluralForms parses a gettext Plural-Forms header such as
 // "nplurals=2; plural=(n != 1);". The expression is the C subset gettext
 // allows: n, integers, ?:, ||, &&, comparisons, + - * / %, ! and parens.
 func ParsePluralForms(header string) (int, PluralFunc, error) {
+	n, f, err := ParsePluralFormsFloat(header)
+	if err != nil {
+		return 0, nil, err
+	}
+	return n, func(n int64) int {
+		if n < 0 {
+			n = -n
+		}
+		return f(float64(n))
+	}, nil
+}
+
+// ParsePluralFormsFloat is ParsePluralForms for counts with a fraction
+// (see PluralFloatFunc).
+func ParsePluralFormsFloat(header string) (int, PluralFloatFunc, error) {
 	nplurals := 0
 	expr := ""
 	for _, part := range strings.Split(header, ";") {
@@ -47,11 +70,12 @@ func ParsePluralForms(header string) (int, PluralFunc, error) {
 		return 0, nil, fmt.Errorf("plural expression %q: unexpected %q", expr, p.tok)
 	}
 	np := nplurals
-	return nplurals, func(n int64) int {
-		if n < 0 {
-			n = -n
+	return nplurals, func(n float64) int {
+		v := e(n)
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return 0
 		}
-		i := int(e(n))
+		i := int(v) // Python's int(): toward zero
 		if i < 0 || i >= np {
 			return 0
 		}
@@ -59,7 +83,9 @@ func ParsePluralForms(header string) (int, PluralFunc, error) {
 	}, nil
 }
 
-type pexpr func(n int64) int64
+// pexpr evaluates a plural expression with Python's semantics on numbers
+// (integers are exact in a float64 up to 2^53).
+type pexpr func(n float64) float64
 
 type pluralParser struct {
 	src string
@@ -96,7 +122,7 @@ func (p *pluralParser) next() {
 	p.tok = string(c)
 }
 
-func b2i(b bool) int64 {
+func b2i(b bool) float64 {
 	if b {
 		return 1
 	}
@@ -124,7 +150,7 @@ func (p *pluralParser) ternary() (pexpr, error) {
 	if err != nil {
 		return nil, err
 	}
-	return func(n int64) int64 {
+	return func(n float64) float64 {
 		if cond(n) != 0 {
 			return a(n)
 		}
@@ -155,38 +181,43 @@ func (p *pluralParser) binary(sub func() (pexpr, error), ops ...string) (pexpr, 
 		l, r := left, right
 		switch op {
 		case "||":
-			left = func(n int64) int64 { return b2i(l(n) != 0 || r(n) != 0) }
+			left = func(n float64) float64 { return b2i(l(n) != 0 || r(n) != 0) }
 		case "&&":
-			left = func(n int64) int64 { return b2i(l(n) != 0 && r(n) != 0) }
+			left = func(n float64) float64 { return b2i(l(n) != 0 && r(n) != 0) }
 		case "==":
-			left = func(n int64) int64 { return b2i(l(n) == r(n)) }
+			left = func(n float64) float64 { return b2i(l(n) == r(n)) }
 		case "!=":
-			left = func(n int64) int64 { return b2i(l(n) != r(n)) }
+			left = func(n float64) float64 { return b2i(l(n) != r(n)) }
 		case "<":
-			left = func(n int64) int64 { return b2i(l(n) < r(n)) }
+			left = func(n float64) float64 { return b2i(l(n) < r(n)) }
 		case ">":
-			left = func(n int64) int64 { return b2i(l(n) > r(n)) }
+			left = func(n float64) float64 { return b2i(l(n) > r(n)) }
 		case "<=":
-			left = func(n int64) int64 { return b2i(l(n) <= r(n)) }
+			left = func(n float64) float64 { return b2i(l(n) <= r(n)) }
 		case ">=":
-			left = func(n int64) int64 { return b2i(l(n) >= r(n)) }
+			left = func(n float64) float64 { return b2i(l(n) >= r(n)) }
 		case "+":
-			left = func(n int64) int64 { return l(n) + r(n) }
+			left = func(n float64) float64 { return l(n) + r(n) }
 		case "-":
-			left = func(n int64) int64 { return l(n) - r(n) }
+			left = func(n float64) float64 { return l(n) - r(n) }
 		case "*":
-			left = func(n int64) int64 { return l(n) * r(n) }
+			left = func(n float64) float64 { return l(n) * r(n) }
 		case "/":
-			left = func(n int64) int64 {
+			left = func(n float64) float64 {
 				if d := r(n); d != 0 {
-					return l(n) / d
+					return math.Floor(l(n) / d) // c2py turns / into //
 				}
 				return 0
 			}
 		case "%":
-			left = func(n int64) int64 {
+			left = func(n float64) float64 {
 				if d := r(n); d != 0 {
-					return l(n) % d
+					// Python's modulo: the sign of the divisor.
+					m := math.Mod(l(n), d)
+					if m != 0 && (m < 0) != (d < 0) {
+						m += d
+					}
+					return m
 				}
 				return 0
 			}
@@ -208,7 +239,7 @@ func (p *pluralParser) unary() (pexpr, error) {
 		if err != nil {
 			return nil, err
 		}
-		return func(n int64) int64 { return b2i(e(n) == 0) }, nil
+		return func(n float64) float64 { return b2i(e(n) == 0) }, nil
 	}
 	return p.primary()
 }
@@ -217,7 +248,7 @@ func (p *pluralParser) primary() (pexpr, error) {
 	switch {
 	case p.tok == "n":
 		p.next()
-		return func(n int64) int64 { return n }, nil
+		return func(n float64) float64 { return n }, nil
 	case p.tok == "(":
 		p.next()
 		e, err := p.ternary()
@@ -235,7 +266,8 @@ func (p *pluralParser) primary() (pexpr, error) {
 			return nil, err
 		}
 		p.next()
-		return func(int64) int64 { return v }, nil
+		f := float64(v)
+		return func(float64) float64 { return f }, nil
 	case p.tok == "":
 		return nil, fmt.Errorf("unexpected end")
 	default:

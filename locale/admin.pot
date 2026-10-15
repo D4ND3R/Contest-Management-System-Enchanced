@@ -17,6 +17,23 @@ msgstr ""
 msgid "Execution killed because of a forbidden system call"
 msgstr ""
 
+#: ../internal/contestweb/templates/contest.html:88
+msgid "Live updates: connected"
+msgstr ""
+
+#: ../internal/contestweb/templates/contest.html:88
+#: ../internal/contestweb/templates/contest.html:88
+msgid "Live updates: connecting"
+msgstr ""
+
+#: ../internal/contestweb/templates/contest.html:88
+msgid "Live updates: disconnected, the page checks for news periodically"
+msgstr ""
+
+#: ../internal/contestweb/templates/contest.html:212
+msgid "Source code"
+msgstr ""
+
 #: ../internal/grading/steps/messages.go:109
 msgid "Your submission exceeded the memory limit while compiling. This might be caused by an excessive use of C++ templates, or too large global variables, for example."
 msgstr ""

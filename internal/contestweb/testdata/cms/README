@@ -1,0 +1,27 @@
+Pages of the contestant site of the original CMS (Contest Management System,
+https://github.com/cms-dev/cms, AGPL-3.0-or-later; copyright © the CMS
+contributors), version 1.6.dev0 (commit 1914a5a), as it served them for the
+demo contest of testdata/dumps/demo (the dump was exported from that same
+installation), captured with Python's urllib on 2026-10-15:
+
+  contest_list.html    GET /
+  login.html           GET /demo                      (not logged in)
+  login_error.html     GET /demo?login_error=true&next=%2Fdemo%2Fdocumentation
+  error_404.html       GET /nosuch                    (unknown contest)
+  overview.html        GET /demo                      (logged in as alice)
+  documentation.html   GET /demo/documentation        (logged in as alice;
+                       contest_web_server.docs_path set to a directory
+                       without language documentation)
+  register.html        GET /demo/register             (allow_registration and
+  login_register.html  GET /demo                       two teams, ita and arg)
+
+TestCMSPages (pages_test.go) renders the same pages and compares them byte
+for byte after replacing what changes between requests (static file hashes,
+CSRF tokens, times) and the documented differences of this fork (D10: CSP
+nonce, handlers moved out of the HTML, comments html/template drops; R5.8:
+live updates indicator; N8: link to the source code; R2.2: the
+explanation of the outcome of the seccomp filter in the documentation).
+
+token_rules.json holds what format_token_rules of CMS (formatting.py)
+returns for the token rules of TestFormatTokenRules (pages_test.go) in
+seven languages, recorded by calling it with CMS's own translations.

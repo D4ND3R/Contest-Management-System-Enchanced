@@ -69,7 +69,7 @@ func TestStaticHashAndURL(t *testing.T) {
 	if nilStatic.URL(".", "a.css") != "./static/a.css" || nilStatic.Hash("a") != "" {
 		t.Error("nil Static")
 	}
-	// The shared files are those of CMS's cms/server/static.
+	// The shared files are those of CMS's cms/server/static, plus live.js.
 	var names []string
 	_ = fs.WalkDir(SharedStatic, ".", func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
@@ -77,7 +77,7 @@ func TestStaticHashAndURL(t *testing.T) {
 		}
 		return err
 	})
-	if got := strings.Join(names, " "); got != "favicon.ico jq/jquery-3.6.0.min.js jq/jquery-migrate-3.3.2.min.js loading.gif" {
+	if got := strings.Join(names, " "); got != "favicon.ico jq/jquery-3.6.0.min.js jq/jquery-migrate-3.3.2.min.js live.js loading.gif" {
 		t.Errorf("shared files: %s", got)
 	}
 }

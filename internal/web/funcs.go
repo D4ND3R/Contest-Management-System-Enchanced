@@ -113,6 +113,9 @@ func init() {
 //	mime_icon mimetype        generic icon name (img/mimetypes/<icon>.png)
 //	dict "k" v…, list a b…, add, sub, mul, div, join sep list,
 //	replace old new s, default def v, tojson v
+//	comment " text "          an HTML comment, <!-- text --> (html/template
+//	                          drops the comments written in a template;
+//	                          CMS's pages have some)
 func (e *Engine) funcs(cur func() *Render) template.FuncMap {
 	rcOf := func() *Render {
 		if rc := cur(); rc != nil {
@@ -262,6 +265,7 @@ func (e *Engine) funcs(cur func() *Render) template.FuncMap {
 			b, err := json.Marshal(v)
 			return template.JS(b), err
 		},
+		"comment": HTMLComment,
 	}
 	if e.siteFns != nil {
 		for k, v := range e.siteFns(cur) {
@@ -628,4 +632,13 @@ func arith(a, b any, op byte) (any, error) {
 		return nil, errors.New("web: division by zero")
 	}
 	return fa / fb, nil
+}
+
+// HTMLComment returns the HTML comment <!--text--> (the template function
+// comment): html/template removes the comments of the template text, and
+// the pages of CMS have some ("<!-- Some hidden divs… -->"). Templates
+// pass constant text; "--" is replaced so the comment cannot end early.
+func HTMLComment(text string) template.HTML {
+	text = strings.ReplaceAll(text, "--", "- -")
+	return template.HTML("<!--" + text + "-->")
 }

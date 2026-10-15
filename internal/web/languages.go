@@ -72,10 +72,20 @@ func (l *Lang) Tc(ctx, msgid string) string {
 
 // Tn translates a message with plural forms chosen by n.
 func (l *Lang) Tn(msgid, plural string, n int) string {
+	if n < 0 {
+		n = -n
+	}
+	return l.TnFloat(msgid, plural, float64(n))
+}
+
+// TnFloat translates a message with plural forms chosen by a count that
+// may have a fraction, as CMS's ngettext with a float
+// (i18n.Catalog.TnFloat).
+func (l *Lang) TnFloat(msgid, plural string, n float64) string {
 	if l != nil {
 		for _, c := range l.cats {
 			if c.Has("", msgid) {
-				return c.Tn(msgid, plural, n)
+				return c.TnFloat(msgid, plural, n)
 			}
 		}
 	}

@@ -3,21 +3,79 @@
 
 // Package contestweb is the contestant site (CMS ContestWebServer): login,
 // statements, submissions, user tests, communication and the JSON API
-// under /api. Pages keep the HTML, CSS and JavaScript of CMS.
+// under /api. Pages keep the HTML, CSS and JavaScript of CMS
+// (cms/server/contest/templates and static, ported to html/template with
+// internal/web).
 //
-// Phase F0 only provides the skeleton (health, AGPL source link, metrics);
-// the pages arrive in F5 (see SPEC.md).
+// # URLs (D17)
+//
+// Without contest_web.contest, "/" lists the contests and each contest
+// lives under "/<name>" ("/<name>" is its overview, "/<name>/login"...);
+// with it, that contest is served at "/". /static holds the assets of
+// CMS (contest and shared), /docs the language documentation of
+// contest_web.docs_path, /healthz and /source (AGPL) the common
+// endpoints. routes.go lists every route and which file implements it.
+//
+// # Requests
+//
+// Every contest route runs through Server.contestRoute, which builds a
+// Ctx (CMS ContestHandler.prepare and render_params): the contest, the
+// interface language (the contest's allowed_localizations, the
+// "language" cookie, Accept-Language), the logged-in participation (IP
+// autologin, the <contest>_login cookie or the X-CMS-Authorization
+// header of the API, see auth.go), its phase (phase.go) and the render
+// state. The route's access rules then run as CMS's decorators:
+// tornado.web.authenticated, api_login_required and
+// actual_phase_required. Handlers receive the Ctx and render with
+// Ctx.Render, using a *Page (the context of contest.html) embedded in
+// their own data.
+//
+// A page runs a bounded number of queries, whatever the number of tasks,
+// users or submissions (N2): the contest with its main group, the
+// participation with its user and group, and the tasks (once, for the
+// menu and the task lookups) — three queries for a logged-in page.
+//
+// # Templates
+//
+// templates/ holds CMS's templates ported line by line to html/template
+// (internal/web explains the mapping): a page extends contest.html with
+// {{/* extends "contest.html" */}}, fills {{define "core"}} (and
+// "additional_js" for its script) and gets a data struct embedding *Page
+// (Ctx.Page). A {% trans %} block of CMS at the start of a line loses its
+// indentation and the newline after it, so the port writes {{T "..."}} at
+// column 0 and joins the next line (or uses {{- else}} / {{- end}} when a
+// block tag follows): the pages render to the bytes CMS sends, which
+// TestCMSPages checks against pages captured from CMS (testdata/cms).
+// html/template drops HTML comments: {{comment " text "}} writes them.
+// Inline <script> elements carry nonce="{{nonce}}" and inline handlers
+// go to static/cws_handlers.js (D10). Times of the contest (submissions,
+// messages) are shown with format_contest_time and the absolute time in
+// a title attribute (R5.9).
+//
+// # Live updates (R5.8)
+//
+// GET <contest>/events streams the live events of the participation (p:)
+// and of its contest (c:) with internal/live; live.js (shared by the
+// three sites, internal/web/static) shows the connection indicator next
+// to the user name (contest.html) and refreshes the regions marked
+// data-live="event…" (an element with an id; data-live-match-task="3"
+// limits it to the events of one task) by fetching the page again. While
+// the indicator is not green the pages poll: the regions every 15-30 s
+// and the notifications of CMS every 30 s. contest.html fetches the
+// notifications at once on announcement, message and answer events, and
+// reloads the page (after a random delay) on contest and participation
+// events.
 package contestweb
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgxpool"
+	"errors"
 
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/app"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/blob"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/db"
-	"github.com/d4nd3r/contest-management-system-enchanced/internal/httpx"
-	"github.com/d4nd3r/contest-management-system-enchanced/internal/kv"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/grading/language"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/live"
 )
 
 // Name is the subcommand and log name of the service.
@@ -27,25 +85,6 @@ const Name = "contest-web"
 // limits of the configuration (max_submission_length, max_input_length).
 const MaxBody = 64 << 20
 
-// Server is the contestant site.
-type Server struct {
-	rt   *app.Runtime
-	pool *pgxpool.Pool
-	kv   *kv.Client
-}
-
-// New returns the site with its dependencies.
-func New(rt *app.Runtime, pool *pgxpool.Pool, kvc *kv.Client) *Server {
-	return &Server{rt: rt, pool: pool, kv: kvc}
-}
-
-// Routes returns the router of the site.
-func (s *Server) Routes() *httpx.Router {
-	mux := httpx.NewRouter()
-	httpx.MountCommon(mux, s.rt.Health, s.rt.Config.SourceURL)
-	return mux
-}
-
 // Run serves the site until ctx is cancelled.
 func Run(ctx context.Context, rt *app.Runtime) error {
 	cfg := rt.Config
@@ -53,6 +92,10 @@ func Run(ctx context.Context, rt *app.Runtime) error {
 		return err
 	}
 	rt.Started()
+	langs, err := language.Load(cfg.LanguagesDir)
+	if err != nil {
+		return err
+	}
 	pool, err := db.OpenService(ctx, rt)
 	if err != nil {
 		return err
@@ -63,10 +106,44 @@ func Run(ctx context.Context, rt *app.Runtime) error {
 		return err
 	}
 	defer kvc.Close()
+	blobs, err := blob.Open(cfg.Storage, Name, rt.Metrics)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := blob.Close(blobs); err != nil {
+			rt.Log.Warn("closing the blob store", "err", err)
+		}
+	}()
+	rt.Health.Register("blob", func(ctx context.Context) error { return blob.Check(ctx, blobs) })
 
-	h := rt.WebHandler(New(rt, pool, kvc).Routes(), cfg.ContestWeb.NumProxies, MaxBody)
-	return app.Run(ctx,
+	hub := live.NewHub(kvc, rt.Log, rt.Metrics, live.HubOptions{})
+	rt.Health.Register("live", hub.Check)
+	pub := live.NewPublisher(kvc, rt.Log, rt.Metrics, live.PublisherOptions{})
+
+	s, err := New(ctx, Options{
+		Config:    cfg,
+		Log:       rt.Log,
+		Pool:      pool,
+		KV:        kvc,
+		Blobs:     blobs,
+		Hub:       hub,
+		Publisher: pub,
+		Languages: langs,
+		Health:    rt.Health,
+	})
+	if err != nil {
+		return err
+	}
+	h := rt.WebHandler(s.Handler(), cfg.ContestWeb.NumProxies, MaxBody)
+	err = app.Run(ctx,
+		hub.Run,
+		pub.Run,
 		rt.Ops(cfg.ContestWeb.OpsListen),
 		rt.Serve(Name, cfg.ContestWeb.Listen, h),
 	)
+	if errors.Is(err, context.Canceled) {
+		return nil
+	}
+	return err
 }

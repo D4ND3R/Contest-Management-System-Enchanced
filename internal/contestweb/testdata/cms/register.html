@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>    Demo Contest
+</title>
+
+        <link rel="shortcut icon" href="../static/favicon.ico?h=17fede7ab080d7aa9d6c0bc7" />
+        <link rel="stylesheet" href="../static/css/bootstrap.css?h=3183413584219f970cadfaf8">
+        <link rel="stylesheet" href="../static/cws_style.css?h=6dd8baf679536a9a7960c444">
+
+        <script src="../static/jq/jquery-3.6.0.min.js?h=ff1523fb7389539c84c65aba"></script>
+        <script src="../static/jq/jquery-migrate-3.3.2.min.js?h=029e0a2e809fd6b5dbe76abe"></script>
+        <script src="../static/js/bootstrap.js?h=7e890b200cd9039e2b131f1d"></script>
+        <script src="../static/cws_utils.js?h=41a1b461f5aad615220ea3dd"></script>
+
+    </head>
+    <body>
+
+<script>
+const registerFields = [
+    "first_name",
+    "last_name",
+    "email",
+    "password-confirm",
+];
+
+function clearErrors() {
+    // Reset error text
+    $("#password-input").removeClass("error");
+    $("#password-input span.help-block").text("");
+    $("#password-confirm-input").removeClass("error");
+    $("#password-confirm-input span.help-block").text("");
+    $("#username-input").removeClass("error");
+    $("#username-input span.help-block").text("");
+}
+
+$(document).ready(function() {
+    const passwordHelp = $("#password-input span.help-block").text();
+
+    $("#register-pill").click(function(e) {
+        clearErrors();
+        $("#password-input span.help-block").text(passwordHelp);
+        $('input[name=new_user]').val(true);
+        registerFields.forEach((fieldName) => {
+            $(`#${fieldName}`).prop("disabled", false);
+            $(`#${fieldName}`).closest(".control-group").show();
+        });
+        $("#form-divider").after($("#credentials"));
+        $("#form-divider").before($("#profile"));
+        $("#form-divider").show();
+    });
+
+    $("#join-pill").click(function(e) {
+        clearErrors();
+        $('input[name=new_user]').val(false);
+        registerFields.forEach((fieldName) => {
+            $(`#${fieldName}`).prop("disabled", true);
+            $(`#${fieldName}`).closest(".control-group").hide();
+        });
+        $("#form-divider").after($("#profile"));
+        $("#form-divider").before($("#credentials"));
+        $("#form-divider").hide();
+    });
+
+    $("#signup").submit(function(e) {
+        clearErrors();
+
+        let isNewUser = $('input[name=new_user]').val() == 'true';
+
+        // Check that passwords are the same
+        if (isNewUser && $("#password").val() !== $("#password-confirm").val()) {
+            $("#password-confirm-input").addClass("error");
+            $("#password-confirm-input span.help-block").text("The passwords do not match!");
+            $("#password-confirm").focus();
+        } else {
+            var data = $(this).serialize();
+            var url = $(this).attr('action');
+
+            $("#submit-button-loading").show();
+
+            $.post(url, data).done(function(data) {
+                $("#signup-mask").hide();
+                $("#confirmed-mask").show();
+                $("#show-username").text(data);
+            }).fail(function(data) {
+                if (data.status === 409) {
+                    if (isNewUser) {
+                        // Username is already used
+                        $("#username-input").addClass("error");
+                        $("#username-input span.help-block").text("This username is already taken, please choose a different one.");
+                        $("#username").focus();
+                    } else {
+                        // User is already participating in this contest
+                        $("#username-input").addClass("error");
+                        $("#username-input span.help-block").text("This user is already registered in the contest.");
+                        $("#username").focus();
+                    }
+                } else if (data.status === 404) {
+                    // Invalid username
+                    $("#username-input").addClass("error");
+                    $("#username-input span.help-block").text("No such user.");
+                    $("#username").focus();
+                } else if (data.status === 403) {
+                    // Password does not match
+                    $("#password-input").addClass("error");
+                    $("#password-input span.help-block").text("The password is not correct.");
+                    $("#password").focus();
+                }
+            }).always(function() {
+                $("#submit-button-loading").hide();
+            });
+        }
+
+        e.preventDefault();
+    });
+
+});
+</script>
+
+<div class="register_box hero-unit">
+    <div id="signup-mask">
+        <h1>Registration</h1>
+        <p>Please fill in the fields to register</p>
+        <ul class="nav nav-pills">
+            <li class="active" id="register-pill"><a href="#" data-toggle="tab">New user</a></li>
+            <li id="join-pill"><a href="#" data-toggle="tab">Join contest</a></li>
+        </ul>
+        <form id="signup" class="form-horizontal" action="../demo/register">
+            <input type="hidden" name="_xsrf" value="2|41994460|4c18eda35f6196d89dc55113152ed5fe|1792027452"/>
+            <input type="hidden" name="new_user" value="true" />
+            <fieldset>
+                <div id="profile">
+                    <div class="control-group">
+                        <label class="control-label" for="first_name">First name</label>
+                        <div class="controls">
+                            <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="first_name" id="first_name">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="last_name">Last name</label>
+                        <div class="controls">
+                            <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="last_name" id="last_name">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="email">E-mail</label>
+                        <div class="controls">
+                            <input minlength="0" maxlength="50" type="text" class="input-xlarge" name="email" id="email" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="team">Representing</label>
+                        <div class="controls">
+                            <select id="team" name="team">
+                                <option value="arg">Argentina</option>
+                                <option value="ita">Italy</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr id="form-divider">
+
+                <div id="credentials">
+                    <div id="username-input" class="control-group">
+                        <label class="control-label" for="username">Username</label>
+                        <div class="controls">
+                            <input required minlength="1" maxlength="50" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                    <div id="password-input" class="control-group">
+                        <label class="control-label" for="password">Password</label>
+                        <div class="controls">
+                            <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
+                            <span class="help-block">
+Must be 6 characters or more.                            </span>
+                        </div>
+                    </div>
+                    <div id="password-confirm-input" class="control-group">
+                        <label class="control-label" for="password-confirm">Confirm password</label>
+                        <div class="controls">
+                            <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">Register</button>
+                        <img id="submit-button-loading" style="display: none;" src="../static/loading.gif" alt="loading..." />
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="confirmed-mask" style="display: none;">
+        <h1>Registration</h1>
+
+        <p>Registered in the contest successfully!</p>
+
+        <p>Your username is:</p>
+
+        <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
+        </p>
+
+        <p>Your password is stored securely.</p>
+
+        <a href="../demo" class="btn btn-success btn-large">Back to login</a>
+    </div>
+
+</div>
+
+    </body>
+</html>

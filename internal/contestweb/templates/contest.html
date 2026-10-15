@@ -1,0 +1,220 @@
+{{/*
+Ported from cms/server/contest/templates/contest.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca Wehrstedt and the CMS
+contributors.
+Changes in this fork:
+- the inline <script> carries the CSP nonce; the onchange handler of the
+  language selector is in cws_handlers.js (D10);
+- the live updates indicator next to the user name, configured by its data-
+  attributes (live.js, R5.8); the notifications are fetched when an event
+  says there is news and polled every 30 s only while the live updates are
+  down; a change of the contest or of the participation reloads the page;
+- the link to the source code of the running server in the footer (N8).
+Trans blocks are written as CMS renders them: a {% trans %} at the start of a
+line loses its indentation and the newline after {% endtrans %} disappears.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "title"}}
+    {{.Contest.Description}}
+{{end}}
+
+{{define "js"}}
+
+
+    <script nonce="{{nonce}}">
+var LANGUAGES = {
+{{range .Languages}}
+    '{{.Name}}': {
+{{range .SourceExtensions}}
+        '{{.}}': true,
+{{end}}
+    },
+{{end}}
+};
+
+{{if not .Participation}}
+var utils = new CMS.CWSUtils("{{url}}", "{{contest_url}}", "{{.Contest.Name}}",
+                             0, 0, 0, 0, 0);
+{{else}}
+// FIXME use Date objects
+var utils = new CMS.CWSUtils("{{url}}", "{{contest_url}}", "{{.Contest.Name}}",
+                             {{make_timestamp now}},
+                             {{/* What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. */}}
+                             {{timezoned_timestamp now}},
+                             {{make_timestamp .CurrentPhaseBegin}},
+                             {{make_timestamp .CurrentPhaseEnd}},
+                             {{.ActualPhase}});
+$(document).ready(function () {
+    utils.update_time({{if .Participation.Group.PerUserTime}}true{{else}}false{{end}});
+    var timer = setInterval(function() {
+        utils.update_time({{if .Participation.Group.PerUserTime}}true{{else}}false{{end}}, timer);
+    }, 1000);
+    utils.update_unread_count(0{{if eq .PageName "communication"}}, 0{{end}});
+    utils.update_notifications(true);
+    setInterval(function() { if (CMS.live.polling()) { utils.update_notifications(); } }, 30000);
+    CMS.live.on("announcement message answer resync", function() { utils.update_notifications(); });
+    CMS.live.on("contest participation", function() { CMS.live.reload_page(); });
+    $('#main').css('top', $('#navigation_bar').outerHeight());
+});
+    {{end}}
+
+{{block "additional_js" .}}{{end}}
+    </script>
+{{end}}
+
+{{define "body"}}
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="{{contest_url}}">{{.Contest.Description}}</a>
+{{if gt (len .Choice.Available) 1}}
+                    <p class="navbar-text pull-right">
+                        <select id="lang" class="form-control btn btn-info">
+                            <option value=""{{if not .Choice.Cookie}} selected{{end}}>{{Format (T "Automatic (%(lang)s)") "lang" .Choice.Automatic.Name}}</option>
+                        {{range $code, $t := .Choice.ByID}}
+                            <option value="{{$code}}"{{if eq $t $.Choice.Cookie}} selected{{end}}>{{$t.Name}}</option>
+                        {{end}}
+                        </select>
+                    </p>
+{{end}}
+{{if .Participation}}
+                    <form action="{{contest_url "logout"}}" method="POST" class="navbar-form pull-right">
+                        {{xsrf_form_html}}
+                        <button type="submit" class="btn btn-warning">{{T "Logout"}}</button>
+                    </form>
+                    <p class="navbar-text pull-right">
+{{Format (T "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") "first_name" .Participation.User.FirstName "last_name" .Participation.User.LastName "username" .Participation.User.Username}} <span id="live_indicator" class="badge badge-warning" title="{{T "Live updates: connecting"}}" data-live-url="{{.LiveURL}}" data-live-since="{{.LiveSince}}" data-live-title-green="{{T "Live updates: connected"}}" data-live-title-yellow="{{T "Live updates: connecting"}}" data-live-title-red="{{T "Live updates: disconnected, the page checks for news periodically"}}">&nbsp;</span>                    </p>
+{{end}}
+                </div>
+            </div>
+        </div>
+{{if not .Participation}}
+    {{if .LoginError}}
+        <div id="notifications" class="notifications">
+            <div class="alert alert-block alert-error notification">
+                <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
+                <h4 class="alert-heading">{{T "Failed to log in."}}</h4>
+            </div>
+        </div>
+    {{end}}
+        <div class="login_container">
+            <div class="login_box hero-unit">
+                <h1>{{T "Welcome"}}</h1>
+                <p>{{T "Please log in"}}</p>
+                <form class="form-horizontal" action="{{contest_url "login"}}" method="POST">
+                    {{xsrf_form_html}}
+                    {{$next := .Next}}
+                    {{if $next}}
+                    <input type="hidden" name="next" value="{{$next}}">
+                    {{end}}
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="username">{{T "Username"}}</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" name="username" id="username" autofocus>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="password">{{T "Password"}}</label>
+                            <div class="controls">
+                                <input type="password" class="input-xlarge" name="password" id="password">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="controls">
+                                <button type="submit" class="btn btn-primary btn-large">{{T "Login"}}</button>
+                                <button type="reset" class="btn btn-large">{{T "Reset"}}</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+                {{if .Contest.AllowRegistration}}
+                <p style="margin: 9px 0 0;">
+{{T "Don't have an account?"}} <a href="{{contest_url "register"}}">{{T "Register"}}</a>
+                </p>
+                {{end}}
+            </div>
+        </div>
+{{else}}
+        <div id="notifications" class="notifications"></div>
+        {{comment " Some hidden divs to provide translations of strings used by JS "}}
+        <div style="display: none" id="translation_new_message">
+{{T "New message"}}        </div>
+        <div style="display: none" id="translation_new_announcement">
+{{T "New announcement"}}        </div>
+        <div style="display: none" id="translation_new_answer">
+{{T "New answer"}}        </div>
+        <div style="display: none" id="translation_unread">
+{{T "%d unread"}}        </div>
+        <div style="display: none" id="translation_until_contest_starts">
+{{T "Until contest starts:"}}        </div>
+        <div style="display: none" id="translation_until_contest_ends">
+{{T "Until contest ends:"}}        </div>
+        <div style="display: none" id="translation_until_analysis_starts">
+{{T "Until analysis starts:"}}        </div>
+        <div style="display: none" id="translation_until_analysis_ends">
+{{T "Until analysis ends:"}}        </div>
+        <div style="display: none" id="translation_time_left">
+{{T "Time left:"}}        </div>
+        {{comment " End "}}
+        <div id="main" class="container">
+            <div class="row">
+                <div class="span3">
+                    <h3 id="server_time_box">
+                        <span id="server_time_label">{{T "Server time:"}}</span>
+                        <span id="server_time"></span>
+                    </h3>
+                    <h3 id="countdown_box">
+                        <span id="countdown_label"></span>
+                        <span id="countdown"></span>
+                    </h3>
+                    <div class="well" style="padding: 8px 0;">
+                        <ul class="nav nav-list">
+
+                            <li{{if eq .PageName "overview"}} class="active"{{end}}>
+                                <a href="{{contest_url}}">{{T "Overview"}}</a>
+                            </li>
+                            <li{{if eq .PageName "communication"}} class="active"{{end}}>
+                                <a href="{{contest_url "communication"}}">{{T "Communication"}}                                    <span id="unread_count" class="label label-warning no_unread"></span>
+                                </a>
+                            </li>
+    {{if or (ge .ActualPhase 0) .Participation.Unrestricted}}
+        {{range .Tasks}}
+                            <li class="nav-header">
+                                {{.Name}}
+                            </li>
+                            <li{{if and (eq $.PageName "task_description") $.Task (eq $.Task.ID .ID)}} class="active"{{end}}>
+                                <a href="{{contest_url "tasks" .Name "description"}}">{{T "Statement"}}</a>
+                            </li>
+                            <li{{if and (eq $.PageName "task_submissions") $.Task (eq $.Task.ID .ID)}} class="active"{{end}}>
+                                <a href="{{contest_url "tasks" .Name "submissions"}}">{{T "Submissions"}}</a>
+                            </li>
+        {{end}}
+    {{end}}
+                            <li class="divider"></li>
+                            <li{{if eq .PageName "documentation"}} class="active"{{end}}>
+                                <a href="{{contest_url "documentation"}}">{{T "Documentation"}}</a>
+                            </li>
+    {{if or (eq .ActualPhase 0) .Participation.Unrestricted}}{{/* FIXME maybe >= 0? */}}
+        {{if .TestingEnabled}}
+                            <li{{if eq .PageName "test_interface"}} class="active"{{end}}>
+                                <a href="{{contest_url "testing"}}">{{T "Testing"}}</a>
+                            </li>
+        {{end}}
+    {{end}}
+                        </ul>
+                    </div>
+                    <span class="license_notice">
+                    <a href="https://github.com/cms-dev/cms" rel="author noreferrer" target="_blank">{{T "Contest Management System"}}</a>
+{{T "is released under the"}}                    <a href="https://www.gnu.org/licenses/agpl" rel="license noreferrer" target="_blank">{{T "GNU Affero General Public License"}}</a>.
+                    <a href="{{url "source"}}" rel="noreferrer" target="_blank">{{T "Source code"}}</a>.
+                    </span>
+                </div>
+    {{block "core" .}}{{end}}
+            </div>
+        </div>
+
+{{end}}
+{{end}}

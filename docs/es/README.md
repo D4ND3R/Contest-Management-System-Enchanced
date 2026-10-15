@@ -9,6 +9,7 @@
 | [Jueces (workers)](jueces.md) | disponible |
 | [Formato de paquete de problemas](formato-de-paquete.md) | disponible |
 | [Importar concursos, problemas y dumps de CMS](importar.md) | disponible |
+| [Sitio del concursante (configuración, entrada, idiomas, tiempo real)](sitio-concursante.md) | disponible |
 | Primeros pasos | F9 |
 | Instalación, requisitos y dimensionamiento | F9 |
 | Actualización y respaldos | F9 |

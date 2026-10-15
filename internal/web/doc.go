@@ -81,7 +81,7 @@
 // format_locale, format_status_text, today, mime_name, all, any,
 // dictselect, format (Python's %), markdown, make_timestamp, mimetype,
 // mime_icon, dict, list, add, sub, mul, div, join, replace, default,
-// tojson. Request-dependent functions read the Render passed to
+// tojson, comment. Request-dependent functions read the Render passed to
 // Engine.Execute; sites add their own (contest_url, get_score_class,
 // format_token_rules…) through EngineOptions.Funcs.
 //
@@ -142,7 +142,9 @@
 // current ?h= is cached for a year (immutable), others revalidate with
 // ETag/Last-Modified. SharedStatic is CMS's cms/server/static (jQuery 3.6.0
 // and jQuery Migrate 3.3.2, MIT licensed, the favicon and loading.gif of
-// CMS, AGPL).
+// CMS, AGPL) plus live.js, the browser side of internal/live shared by
+// the three sites (connection indicator, live regions, fallback to
+// polling; its header documents the data- attributes it reads).
 //
 // ServeBlob is CMS's FileServerMiddleware: a file streamed from the blob
 // store with the digest as ETag, Cache-Control: no-cache, private,

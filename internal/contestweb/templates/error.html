@@ -1,0 +1,28 @@
+{{/*
+Ported from cms/server/contest/templates/error.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca Wehrstedt and the CMS
+contributors.
+*/}}
+{{/* extends "base.html" */}}
+{{define "title"}}
+{{Format (T "Error %(status_code)s") "status_code" .StatusCode}}{{end}}
+{{define "body"}}
+
+<div class="span9">
+
+<div class="page-header">
+    <h1>{{Format (T "Error %(status_code)s") "status_code" .StatusCode}}</h1>
+</div>
+
+<p>
+{{T "An error occured while the server was handling your request."}}</p>
+
+<p>
+{{T "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."}}</p>
+
+<p>
+{{T "If you encountered this error during normal usage, please notify the contest administrators."}}</p>
+
+</div>
+{{end}}

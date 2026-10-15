@@ -24,3 +24,15 @@ msgstr "El envío intentó usar una llamada al sistema que no está permitida du
 
 msgid "Your submission was killed with the specified signal. This might be caused by a bug in the compiler, for example."
 msgstr "El envío fue terminado con la señal indicada. Esto podría deberse, por ejemplo, a un error del compilador."
+
+msgid "Live updates: connected"
+msgstr "Actualizaciones en vivo: conectado"
+
+msgid "Live updates: connecting"
+msgstr "Actualizaciones en vivo: conectando"
+
+msgid "Live updates: disconnected, the page checks for news periodically"
+msgstr "Actualizaciones en vivo: desconectado, la página busca novedades periódicamente"
+
+msgid "Source code"
+msgstr "Código fuente"

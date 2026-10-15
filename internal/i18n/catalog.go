@@ -21,7 +21,7 @@ type Catalog struct {
 	Lang     string
 	msgs     map[string][]string
 	nplurals int
-	plural   PluralFunc
+	plural   PluralFloatFunc
 }
 
 func key(ctx, id string) string {
@@ -31,19 +31,25 @@ func key(ctx, id string) string {
 	return ctx + "\x04" + id
 }
 
-// NewCatalog builds a catalog from a parsed .po file. Fuzzy and empty
-// translations are ignored, so the English text is shown instead of a
-// possibly wrong one.
+// NewCatalog builds a catalog from a parsed .po file as Babel's
+// compile_catalog builds the .mo files of CMS: fuzzy entries and empty
+// translations are left out, so the English text is shown instead of a
+// possibly wrong one; but plural entries stay even when some (or all) of
+// their forms are empty, the first form being msgid and the others
+// msgid_plural. That is why CMS, in a language whose first form is not
+// "one" (Arabic: zero; Chinese, Japanese: every number), shows the
+// singular English text of an untranslated plural message for other
+// counts; the contestant site shows the same.
 func NewCatalog(lang string, f *File) (*Catalog, error) {
 	c := &Catalog{Lang: lang, msgs: map[string][]string{}, nplurals: 2,
-		plural: func(n int64) int {
+		plural: func(n float64) int {
 			if n != 1 {
 				return 1
 			}
 			return 0
 		}}
 	if pf := f.Header["Plural-Forms"]; pf != "" {
-		n, fn, err := ParsePluralForms(pf)
+		n, fn, err := ParsePluralFormsFloat(pf)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", lang, err)
 		}
@@ -53,16 +59,24 @@ func NewCatalog(lang string, f *File) (*Catalog, error) {
 		if e.Fuzzy || len(e.Str) == 0 {
 			continue
 		}
-		complete := true
-		for _, s := range e.Str {
-			if s == "" {
-				complete = false
+		if e.Plural == "" {
+			if e.Str[0] != "" {
+				c.msgs[key(e.Context, e.ID)] = e.Str
 			}
-		}
-		if !complete {
 			continue
 		}
-		c.msgs[key(e.Context, e.ID)] = e.Str
+		forms := make([]string, len(e.Str))
+		for i, s := range e.Str {
+			switch {
+			case s != "":
+				forms[i] = s
+			case i == 0:
+				forms[i] = e.ID
+			default:
+				forms[i] = e.Plural
+			}
+		}
+		c.msgs[key(e.Context, e.ID)] = forms
 	}
 	return c, nil
 }
@@ -91,9 +105,19 @@ func (c *Catalog) Tc(ctx, msgid string) string {
 
 // Tn translates a message with a plural form chosen by n.
 func (c *Catalog) Tn(msgid, plural string, n int) string {
+	if n < 0 {
+		n = -n
+	}
+	return c.TnFloat(msgid, plural, float64(n))
+}
+
+// TnFloat translates a message with a plural form chosen by a count that
+// may have a fraction, as Python's ngettext with a float (see
+// PluralFloatFunc): "Every 0.5 minutes".
+func (c *Catalog) TnFloat(msgid, plural string, n float64) string {
 	if c != nil {
 		if s, ok := c.msgs[msgid]; ok {
-			if i := c.plural(int64(n)); i < len(s) {
+			if i := c.plural(n); i < len(s) {
 				return s[i]
 			}
 		}

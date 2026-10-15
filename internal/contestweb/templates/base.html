@@ -1,0 +1,35 @@
+{{/*
+Ported from cms/server/contest/templates/base.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca Wehrstedt and the CMS
+contributors.
+Changes in this fork: two scripts after cws_utils.js, cws_handlers.js (the
+inline event handlers of CMS, moved for the CSP: D10) and the shared live.js
+(live updates and their indicator: R5.8).
+*/}}
+<!DOCTYPE html>
+<html lang="{{lang}}">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{{block "title" .}}{{end}}</title>
+
+        <link rel="shortcut icon" href="{{static "favicon.ico"}}" />
+        <link rel="stylesheet" href="{{static "css" "bootstrap.css"}}">
+        <link rel="stylesheet" href="{{static "cws_style.css"}}">
+
+        <script src="{{static "jq" "jquery-3.6.0.min.js"}}"></script>
+        {{/* For compatibility with Bootstrap 2.x */}}
+        <script src="{{static "jq" "jquery-migrate-3.3.2.min.js"}}"></script>
+        <script src="{{static "js" "bootstrap.js"}}"></script>
+        <script src="{{static "cws_utils.js"}}"></script>
+        <script src="{{static "cws_handlers.js"}}"></script>
+        <script src="{{static "live.js"}}"></script>
+
+        {{block "js" .}}{{end}}
+    </head>
+    <body>
+        {{block "body" .}}{{end}}
+    </body>
+</html>

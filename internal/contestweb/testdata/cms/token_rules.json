@@ -1,0 +1,761 @@
+{
+"README": "format_token_rules of CMS (cms/server/contest/formatting.py) for the cases of TestFormatTokenRules, recorded from an installed CMS: [language, case, t_type, text]",
+"rows": [
+[
+"en",
+0,
+"",
+"You start with 2 tokens. Every 0.5 minutes you get another token, up to a maximum of 5 tokens. You can use no more than 10 tokens in total."
+],
+[
+"en",
+0,
+"contest",
+"You start with 2 contest-tokens. Every 0.5 minutes you get another contest-token, up to a maximum of 5 contest-tokens. You can use no more than 10 contest-tokens in total."
+],
+[
+"en",
+0,
+"task",
+"You start with 2 task-tokens. Every 0.5 minutes you get another task-token, up to a maximum of 5 task-tokens. You can use no more than 10 task-tokens in total."
+],
+[
+"en",
+1,
+"",
+"You start with one token. Every minute you get 3 other tokens. You can use a token every 90 seconds."
+],
+[
+"en",
+1,
+"contest",
+"You start with one contest-token. Every minute you get 3 other contest-tokens. You can use a contest-token every 90 seconds."
+],
+[
+"en",
+1,
+"task",
+"You start with one task-token. Every minute you get 3 other task-tokens. You can use a task-token every 90 seconds."
+],
+[
+"en",
+2,
+"",
+"You start with no tokens. You don't get other tokens. You can use a token every second and no more than one token in total."
+],
+[
+"en",
+2,
+"contest",
+"You start with no contest-tokens. You don't get other contest-tokens. You can use a contest-token every second and no more than one contest-token in total."
+],
+[
+"en",
+2,
+"task",
+"You start with no task-tokens. You don't get other task-tokens. You can use a task-token every second and no more than one task-token in total."
+],
+[
+"en",
+3,
+"",
+"You start with 5 tokens. Every 90 minutes you get 2 other tokens, up to a maximum of one token. You have no limitations on how you use them."
+],
+[
+"en",
+3,
+"contest",
+"You start with 5 contest-tokens. Every 90 minutes you get 2 other contest-tokens, up to a maximum of one contest-token. You have no limitations on how you use them."
+],
+[
+"en",
+3,
+"task",
+"You start with 5 task-tokens. Every 90 minutes you get 2 other task-tokens, up to a maximum of one task-token. You have no limitations on how you use them."
+],
+[
+"en",
+4,
+"",
+"You have an infinite number of tokens for this task."
+],
+[
+"en",
+4,
+"contest",
+"You have an infinite number of contest-tokens for this task."
+],
+[
+"en",
+4,
+"task",
+"You have an infinite number of task-tokens for this task."
+],
+[
+"en",
+5,
+"",
+"You don't have tokens available for this task."
+],
+[
+"en",
+5,
+"contest",
+"You don't have contest-tokens available for this task."
+],
+[
+"en",
+5,
+"task",
+"You don't have task-tokens available for this task."
+],
+[
+"ar",
+0,
+"",
+"You start with one token. كل 0.5 دقيقة you get 1 other tokens, up to a maximum of 5 tokens. You can use no more than 10 tokens in total."
+],
+[
+"ar",
+0,
+"contest",
+"You start with one contest-token. كل 0.5 دقيقة you get 1 other contest-tokens, up to a maximum of 5 contest-tokens. You can use no more than 10 contest-tokens in total."
+],
+[
+"ar",
+0,
+"task",
+"You start with one task-token. كل 0.5 دقيقة you get 1 other task-tokens, up to a maximum of 5 task-tokens. You can use no more than 10 task-tokens in total."
+],
+[
+"ar",
+1,
+"",
+"You start with 1 tokens. كل دقيقة you get 3 other tokens. You can use a token every 90 seconds."
+],
+[
+"ar",
+1,
+"contest",
+"You start with 1 contest-tokens. كل دقيقة you get 3 other contest-tokens. You can use a contest-token every 90 seconds."
+],
+[
+"ar",
+1,
+"task",
+"You start with 1 task-tokens. كل دقيقة you get 3 other task-tokens. You can use a task-token every 90 seconds."
+],
+[
+"ar",
+2,
+"",
+"You start with no tokens. You don't get other tokens. You can use a token every 1 seconds and no more than 1 tokens in total."
+],
+[
+"ar",
+2,
+"contest",
+"You start with no contest-tokens. You don't get other contest-tokens. You can use a contest-token every 1 seconds and no more than 1 contest-tokens in total."
+],
+[
+"ar",
+2,
+"task",
+"You start with no task-tokens. You don't get other task-tokens. You can use a task-token every 1 seconds and no more than 1 task-tokens in total."
+],
+[
+"ar",
+3,
+"",
+"You start with one token. كل 90 دقائق you get 2 other tokens, up to a maximum of 1 tokens. You have no limitations on how you use them."
+],
+[
+"ar",
+3,
+"contest",
+"You start with one contest-token. كل 90 دقائق you get 2 other contest-tokens, up to a maximum of 1 contest-tokens. You have no limitations on how you use them."
+],
+[
+"ar",
+3,
+"task",
+"You start with one task-token. كل 90 دقائق you get 2 other task-tokens, up to a maximum of 1 task-tokens. You have no limitations on how you use them."
+],
+[
+"ar",
+4,
+"",
+"You have an infinite number of tokens for this task."
+],
+[
+"ar",
+4,
+"contest",
+"You have an infinite number of contest-tokens for this task."
+],
+[
+"ar",
+4,
+"task",
+"You have an infinite number of task-tokens for this task."
+],
+[
+"ar",
+5,
+"",
+"You don't have tokens available for this task."
+],
+[
+"ar",
+5,
+"contest",
+"You don't have contest-tokens available for this task."
+],
+[
+"ar",
+5,
+"task",
+"You don't have task-tokens available for this task."
+],
+[
+"it",
+0,
+"",
+"All'inizio hai 2 token. Ogni 0.5 minuti riceverai un altro token, fino ad un massimo di 5 token. Non puoi usare più di 10 token in totale."
+],
+[
+"it",
+0,
+"contest",
+"All'inizio hai 2 contest-token. Ogni 0.5 minuti riceverai un altro contest-token, fino ad un massimo di 5 contest-token. Non puoi usare più di 10 contest-token in totale."
+],
+[
+"it",
+0,
+"task",
+"All'inizio hai 2 task-token. Ogni 0.5 minuti riceverai un altro task-token, fino ad un massimo di 5 task-token. Non puoi usare più di 10 task-token in totale."
+],
+[
+"it",
+1,
+"",
+"All'inizio hai un token. Ogni minuto riceverai altri 3 token. Puoi usare al massimo un token ogni 90 secondi."
+],
+[
+"it",
+1,
+"contest",
+"All'inizio hai un contest-token. Ogni minuto riceverai altri 3 contest-token. Puoi usare al massimo un contest-token ogni 90 secondi."
+],
+[
+"it",
+1,
+"task",
+"All'inizio hai un task-token. Ogni minuto riceverai altri 3 task-token. Puoi usare al massimo un task-token ogni 90 secondi."
+],
+[
+"it",
+2,
+"",
+"All'inizio hai zero token. Non riceverai altri token. Puoi usare al massimo un token ogni secondo e non più di un token in totale."
+],
+[
+"it",
+2,
+"contest",
+"All'inizio hai zero contest-token. Non riceverai altri contest-token. Puoi usare al massimo un contest-token ogni secondo e non più di un contest-token in totale."
+],
+[
+"it",
+2,
+"task",
+"All'inizio hai zero task-token. Non riceverai altri task-token. Puoi usare al massimo un task-token ogni secondo e non più di un task-token in totale."
+],
+[
+"it",
+3,
+"",
+"All'inizio hai 5 token. Ogni 90 minuti riceverai altri 2 token, fino ad un massimo di un token. Non hai limitazioni sul loro utilizzo."
+],
+[
+"it",
+3,
+"contest",
+"All'inizio hai 5 contest-token. Ogni 90 minuti riceverai altri 2 contest-token, fino ad un massimo di un contest-token. Non hai limitazioni sul loro utilizzo."
+],
+[
+"it",
+3,
+"task",
+"All'inizio hai 5 task-token. Ogni 90 minuti riceverai altri 2 task-token, fino ad un massimo di un task-token. Non hai limitazioni sul loro utilizzo."
+],
+[
+"it",
+4,
+"",
+"Hai un numero infinito di token per questo problema."
+],
+[
+"it",
+4,
+"contest",
+"Hai un numero infinito di contest-token per questo problema."
+],
+[
+"it",
+4,
+"task",
+"Hai un numero infinito di task-token per questo problema."
+],
+[
+"it",
+5,
+"",
+"Non hai token disponibili per questo problema."
+],
+[
+"it",
+5,
+"contest",
+"Non hai contest-token disponibili per questo problema."
+],
+[
+"it",
+5,
+"task",
+"Non hai task-token disponibili per questo problema."
+],
+[
+"zh-Hant-TW",
+0,
+"",
+"一開始您有 2 枚 Token。 每 0.5 分鐘 可獲得 1 枚 Token， 至多持有 5 枚 Token。 總共只能使用不超過 10 枚 Token。"
+],
+[
+"zh-Hant-TW",
+0,
+"contest",
+"一開始您有 2 枚 競賽-Token。 每 0.5 分鐘 可獲得 1 枚 競賽-Token， 至多持有 5 枚 競賽-Token。 總共只能使用不超過 10 枚 競賽-Token。"
+],
+[
+"zh-Hant-TW",
+0,
+"task",
+"一開始您有 2 枚 題目-Token。 每 0.5 分鐘 可獲得 1 枚 題目-Token， 至多持有 5 枚 題目-Token。 總共只能使用不超過 10 枚 題目-Token。"
+],
+[
+"zh-Hant-TW",
+1,
+"",
+"一開始您有 1 枚 Token。 每 1 分鐘 可獲得 3 枚 Token。 每 90 秒可以使用一枚 Token。"
+],
+[
+"zh-Hant-TW",
+1,
+"contest",
+"一開始您有 1 枚 競賽-Token。 每 1 分鐘 可獲得 3 枚 競賽-Token。 每 90 秒可以使用一枚 競賽-Token。"
+],
+[
+"zh-Hant-TW",
+1,
+"task",
+"一開始您有 1 枚 題目-Token。 每 1 分鐘 可獲得 3 枚 題目-Token。 每 90 秒可以使用一枚 題目-Token。"
+],
+[
+"zh-Hant-TW",
+2,
+"",
+"一開始您沒有任何 Token。 此後不會發放新的 Token。 每 1 秒可以使用一枚 Token， 且總共只能使用不超過 1 枚 Token。"
+],
+[
+"zh-Hant-TW",
+2,
+"contest",
+"一開始您沒有任何 競賽-Token。 此後不會發放新的 競賽-Token。 每 1 秒可以使用一枚 競賽-Token， 且總共只能使用不超過 1 枚 競賽-Token。"
+],
+[
+"zh-Hant-TW",
+2,
+"task",
+"一開始您沒有任何 題目-Token。 此後不會發放新的 題目-Token。 每 1 秒可以使用一枚 題目-Token， 且總共只能使用不超過 1 枚 題目-Token。"
+],
+[
+"zh-Hant-TW",
+3,
+"",
+"一開始您有 5 枚 Token。 每 90 分鐘 可獲得 2 枚 Token， 至多持有 1 枚 Token。 Token 的使用沒有其他限制。"
+],
+[
+"zh-Hant-TW",
+3,
+"contest",
+"一開始您有 5 枚 競賽-Token。 每 90 分鐘 可獲得 2 枚 競賽-Token， 至多持有 1 枚 競賽-Token。 競賽-Token 的使用沒有其他限制。"
+],
+[
+"zh-Hant-TW",
+3,
+"task",
+"一開始您有 5 枚 題目-Token。 每 90 分鐘 可獲得 2 枚 題目-Token， 至多持有 1 枚 題目-Token。 題目-Token 的使用沒有其他限制。"
+],
+[
+"zh-Hant-TW",
+4,
+"",
+"您有無限量的 Token 可供用於本題。"
+],
+[
+"zh-Hant-TW",
+4,
+"contest",
+"您有無限量的 競賽-Token 可供用於本題。"
+],
+[
+"zh-Hant-TW",
+4,
+"task",
+"您有無限量的 題目-Token 可供用於本題。"
+],
+[
+"zh-Hant-TW",
+5,
+"",
+"沒有可用於本題的 Token。"
+],
+[
+"zh-Hant-TW",
+5,
+"contest",
+"沒有可用於本題的 競賽-Token。"
+],
+[
+"zh-Hant-TW",
+5,
+"task",
+"沒有可用於本題的 題目-Token。"
+],
+[
+"ru",
+0,
+"",
+"Вы начинаете с 2 токен. Каждые 0.5 минут вы получаете токен,до максимально 5 токен Вы можете использовать не более 10 токен."
+],
+[
+"ru",
+0,
+"contest",
+"Вы начинаете с 2 contest-token. Каждые 0.5 минут вы получаете contest-token,до максимально 5 contest-token Вы можете использовать не более 10 contest-token."
+],
+[
+"ru",
+0,
+"task",
+"Вы начинаете с 2 task-token. Каждые 0.5 минут вы получаете task-token,до максимально 5 task-token Вы можете использовать не более 10 task-token."
+],
+[
+"ru",
+1,
+"",
+"Вы начинаете с одного токен. Каждую минуту вы получаете 2 токен. Вы можете использовать токен каждые 90 секунд"
+],
+[
+"ru",
+1,
+"contest",
+"Вы начинаете с одного contest-token. Каждую минуту вы получаете 2 contest-token. Вы можете использовать contest-token каждые 90 секунд"
+],
+[
+"ru",
+1,
+"task",
+"Вы начинаете с одного task-token. Каждую минуту вы получаете 2 task-token. Вы можете использовать task-token каждые 90 секунд"
+],
+[
+"ru",
+2,
+"",
+"Вы начинаете без токены. У вас нет токены. Вы можете использовать токен каждую секундуи не более одного токен"
+],
+[
+"ru",
+2,
+"contest",
+"Вы начинаете без contest-tokens. У вас нет contest-tokens. Вы можете использовать contest-token каждую секундуи не более одного contest-token"
+],
+[
+"ru",
+2,
+"task",
+"Вы начинаете без task-tokens. У вас нет task-tokens. Вы можете использовать task-token каждую секундуи не более одного task-token"
+],
+[
+"ru",
+3,
+"",
+"Вы начинаете с 5 токен. Каждые 90 минут вы получаете два токен,до максимально одного токен У вас нет ограничений по тому, как использовать их."
+],
+[
+"ru",
+3,
+"contest",
+"Вы начинаете с 5 contest-token. Каждые 90 минут вы получаете два contest-token,до максимально одного contest-token У вас нет ограничений по тому, как использовать их."
+],
+[
+"ru",
+3,
+"task",
+"Вы начинаете с 5 task-token. Каждые 90 минут вы получаете два task-token,до максимально одного task-token У вас нет ограничений по тому, как использовать их."
+],
+[
+"ru",
+4,
+"",
+"Для этой задачи у вас неограниченное количество токены."
+],
+[
+"ru",
+4,
+"contest",
+"Для этой задачи у вас неограниченное количество contest-tokens."
+],
+[
+"ru",
+4,
+"task",
+"Для этой задачи у вас неограниченное количество task-tokens."
+],
+[
+"ru",
+5,
+"",
+"Для этой задачи у вас нет токены."
+],
+[
+"ru",
+5,
+"contest",
+"Для этой задачи у вас нет contest-tokens."
+],
+[
+"ru",
+5,
+"task",
+"Для этой задачи у вас нет task-tokens."
+],
+[
+"lv",
+0,
+"",
+"Sākumā jums ir 2 žetoni. Ik pēc 0.5 minūtēm jums tiek piešķirts vēl 1 žetons, līdz ne vairāk kā 5 žetoni. Kopumā jūs varat lietot ne vairāk kā 10 žetoni."
+],
+[
+"lv",
+0,
+"contest",
+"Sākumā jums ir 2 sacensību žetoni. Ik pēc 0.5 minūtēm jums tiek piešķirts vēl 1 sacensību žetons, līdz ne vairāk kā 5 sacensību žetoni. Kopumā jūs varat lietot ne vairāk kā 10 sacensību žetoni."
+],
+[
+"lv",
+0,
+"task",
+"Sākumā jums ir 2 uzdevuma žetoni. Ik pēc 0.5 minūtēm jums tiek piešķirts vēl 1 uzdevuma žetons, līdz ne vairāk kā 5 uzdevuma žetoni. Kopumā jūs varat lietot ne vairāk kā 10 uzdevuma žetoni."
+],
+[
+"lv",
+1,
+"",
+"Sākumā jums ir 1 žetons. Ik pēc 1 minūtes jums tiek piešķirti vēl 3 žetoni. Katras 90 sekundes jūs varat lietot žetons."
+],
+[
+"lv",
+1,
+"contest",
+"Sākumā jums ir 1 sacensību žetons. Ik pēc 1 minūtes jums tiek piešķirti vēl 3 sacensību žetoni. Katras 90 sekundes jūs varat lietot sacensību žetons."
+],
+[
+"lv",
+1,
+"task",
+"Sākumā jums ir 1 uzdevuma žetons. Ik pēc 1 minūtes jums tiek piešķirti vēl 3 uzdevuma žetoni. Katras 90 sekundes jūs varat lietot uzdevuma žetons."
+],
+[
+"lv",
+2,
+"",
+"Sākumā jums nav žetoni. Jums netiek piešķirti citi žetoni. Katru 1 sekundi jūs varat lietot žetons un kopumā ne vairāk kā 1 žetons."
+],
+[
+"lv",
+2,
+"contest",
+"Sākumā jums nav sacensību žetoni. Jums netiek piešķirti citi sacensību žetoni. Katru 1 sekundi jūs varat lietot sacensību žetons un kopumā ne vairāk kā 1 sacensību žetons."
+],
+[
+"lv",
+2,
+"task",
+"Sākumā jums nav uzdevuma žetoni. Jums netiek piešķirti citi uzdevuma žetoni. Katru 1 sekundi jūs varat lietot uzdevuma žetons un kopumā ne vairāk kā 1 uzdevuma žetons."
+],
+[
+"lv",
+3,
+"",
+"Sākumā jums ir 5 žetoni. Ik pēc 90 minūtēm jums tiek piešķirti vēl 2 žetoni, līdz ne vairāk kā 1 žetons. Jūs varat izmantot tos bez ierobežojumiem."
+],
+[
+"lv",
+3,
+"contest",
+"Sākumā jums ir 5 sacensību žetoni. Ik pēc 90 minūtēm jums tiek piešķirti vēl 2 sacensību žetoni, līdz ne vairāk kā 1 sacensību žetons. Jūs varat izmantot tos bez ierobežojumiem."
+],
+[
+"lv",
+3,
+"task",
+"Sākumā jums ir 5 uzdevuma žetoni. Ik pēc 90 minūtēm jums tiek piešķirti vēl 2 uzdevuma žetoni, līdz ne vairāk kā 1 uzdevuma žetons. Jūs varat izmantot tos bez ierobežojumiem."
+],
+[
+"lv",
+4,
+"",
+"Šim uzdevumam jums ir neierobežots skaits žetoni."
+],
+[
+"lv",
+4,
+"contest",
+"Šim uzdevumam jums ir neierobežots skaits sacensību žetoni."
+],
+[
+"lv",
+4,
+"task",
+"Šim uzdevumam jums ir neierobežots skaits uzdevuma žetoni."
+],
+[
+"lv",
+5,
+"",
+"Jums šim uzdevumam nav žetoni."
+],
+[
+"lv",
+5,
+"contest",
+"Jums šim uzdevumam nav sacensību žetoni."
+],
+[
+"lv",
+5,
+"task",
+"Jums šim uzdevumam nav uzdevuma žetoni."
+],
+[
+"ja",
+0,
+"",
+"開始時に 2 個のトークンを使用可能です。 0.5 分ごとに、新たに 1 個のトークンが追加されます。ただし、同時に 5 個までしか保有できず、持ちきれなくなったトークンは破棄されます。 あなたはトークンを合計で 10 個までしか使うことはできません。"
+],
+[
+"ja",
+0,
+"contest",
+"開始時に 2 個のコンテストトークンを使用可能です。 0.5 分ごとに、新たに 1 個のコンテストトークンが追加されます。ただし、同時に 5 個までしか保有できず、持ちきれなくなったコンテストトークンは破棄されます。 あなたはコンテストトークンを合計で 10 個までしか使うことはできません。"
+],
+[
+"ja",
+0,
+"task",
+"開始時に 2 個の課題トークンを使用可能です。 0.5 分ごとに、新たに 1 個の課題トークンが追加されます。ただし、同時に 5 個までしか保有できず、持ちきれなくなった課題トークンは破棄されます。 あなたは課題トークンを合計で 10 個までしか使うことはできません。"
+],
+[
+"ja",
+1,
+"",
+"開始時に 1 個のトークンを使用可能です。 1 分ごとに、新たに 3 個のトークンが追加されます。 あなたは 90 秒につき一回までトークンを使うことができます。"
+],
+[
+"ja",
+1,
+"contest",
+"開始時に 1 個のコンテストトークンを使用可能です。 1 分ごとに、新たに 3 個のコンテストトークンが追加されます。 あなたは 90 秒につき一回までコンテストトークンを使うことができます。"
+],
+[
+"ja",
+1,
+"task",
+"開始時に 1 個の課題トークンを使用可能です。 1 分ごとに、新たに 3 個の課題トークンが追加されます。 あなたは 90 秒につき一回まで課題トークンを使うことができます。"
+],
+[
+"ja",
+2,
+"",
+"トークンがない状態から始まります。 これ以上トークンが追加されることはありません。 あなたは 1 秒につき一回までトークンを使うことができます。ただし、合計で 1 個までしか使うことはできません。"
+],
+[
+"ja",
+2,
+"contest",
+"コンテストトークンがない状態から始まります。 これ以上コンテストトークンが追加されることはありません。 あなたは 1 秒につき一回までコンテストトークンを使うことができます。ただし、合計で 1 個までしか使うことはできません。"
+],
+[
+"ja",
+2,
+"task",
+"課題トークンがない状態から始まります。 これ以上課題トークンが追加されることはありません。 あなたは 1 秒につき一回まで課題トークンを使うことができます。ただし、合計で 1 個までしか使うことはできません。"
+],
+[
+"ja",
+3,
+"",
+"開始時に 5 個のトークンを使用可能です。 90 分ごとに、新たに 2 個のトークンが追加されます。ただし、同時に 1 個までしか保有できず、持ちきれなくなったトークンは破棄されます。 トークンを使う間隔や回数に制限はありません。"
+],
+[
+"ja",
+3,
+"contest",
+"開始時に 5 個のコンテストトークンを使用可能です。 90 分ごとに、新たに 2 個のコンテストトークンが追加されます。ただし、同時に 1 個までしか保有できず、持ちきれなくなったコンテストトークンは破棄されます。 コンテストトークンを使う間隔や回数に制限はありません。"
+],
+[
+"ja",
+3,
+"task",
+"開始時に 5 個の課題トークンを使用可能です。 90 分ごとに、新たに 2 個の課題トークンが追加されます。ただし、同時に 1 個までしか保有できず、持ちきれなくなった課題トークンは破棄されます。 課題トークンを使う間隔や回数に制限はありません。"
+],
+[
+"ja",
+4,
+"",
+"この課題ではトークンを無制限に使用できます。"
+],
+[
+"ja",
+4,
+"contest",
+"この課題ではコンテストトークンを無制限に使用できます。"
+],
+[
+"ja",
+4,
+"task",
+"この課題では課題トークンを無制限に使用できます。"
+],
+[
+"ja",
+5,
+"",
+"この課題に対して使用可能なトークンはありません。"
+],
+[
+"ja",
+5,
+"contest",
+"この課題に対して使用可能なコンテストトークンはありません。"
+],
+[
+"ja",
+5,
+"task",
+"この課題に対して使用可能な課題トークンはありません。"
+]
+]
+}

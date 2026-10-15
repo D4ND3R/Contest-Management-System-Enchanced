@@ -1,0 +1,21 @@
+{{/*
+Ported from cms/server/contest/templates/contest_list.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca Wehrstedt and the CMS
+contributors.
+*/}}
+{{/* extends "base.html" */}}
+{{define "title"}}
+{{T "Choose a contest"}}{{end}}
+{{define "body"}}
+    <div class="hero-unit contest-list">
+        <h3>{{T "Choose a contest"}}</h3>
+        <ul class="nav nav-list">
+    {{range .Contests}}
+            <li>
+                <a {{if .Over}} style="color: #adadad" {{end}} href="{{url .Name}}">{{.Description}}</a>
+            </li>
+    {{end}}
+        </ul>
+    </div>
+{{end}}

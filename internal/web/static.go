@@ -27,14 +27,16 @@ import (
 )
 
 // shared holds cms/server/static of CMS (jQuery, jQuery Migrate, the
-// favicon and the loading animation), served by every site.
+// favicon and the loading animation), served by every site, and live.js
+// (the live updates of the three sites, R5.8).
 //
-//go:embed static/favicon.ico static/loading.gif static/jq
+//go:embed static/favicon.ico static/loading.gif static/jq static/live.js
 var shared embed.FS
 
 // SharedStatic is the static directory common to the CMS sites
 // (cms/server/static): favicon.ico, loading.gif, jq/jquery-3.6.0.min.js
-// and jq/jquery-migrate-3.3.2.min.js. A site passes it first to
+// and jq/jquery-migrate-3.3.2.min.js, plus this fork's live.js (live
+// updates, see its header and internal/live). A site passes it first to
 // NewStatic and its own directory after it.
 var SharedStatic fs.FS = mustSub(shared, "static")
 
