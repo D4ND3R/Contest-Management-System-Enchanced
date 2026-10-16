@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>    Demo Contest
+</title>
+
+        <link rel="shortcut icon" href="../static/favicon.ico?h=17fede7ab080d7aa9d6c0bc7" />
+        <link rel="stylesheet" href="../static/css/bootstrap.css?h=3183413584219f970cadfaf8">
+        <link rel="stylesheet" href="../static/cws_style.css?h=6dd8baf679536a9a7960c444">
+
+        <script src="../static/jq/jquery-3.6.0.min.js?h=ff1523fb7389539c84c65aba"></script>
+        <script src="../static/jq/jquery-migrate-3.3.2.min.js?h=029e0a2e809fd6b5dbe76abe"></script>
+        <script src="../static/js/bootstrap.js?h=7e890b200cd9039e2b131f1d"></script>
+        <script src="../static/cws_utils.js?h=41a1b461f5aad615220ea3dd"></script>
+
+
+
+    <script>
+var LANGUAGES = {
+    'C++17 / g++': {
+        '.cpp': true,
+        '.cc': true,
+        '.cxx': true,
+        '.c++': true,
+        '.C': true,
+    },
+    'C11 / gcc': {
+        '.c': true,
+    },
+    'Python 3 / CPython': {
+        '.py': true,
+    },
+    'Java / JDK': {
+        '.java': true,
+    },
+};
+
+// FIXME use Date objects
+var utils = new CMS.CWSUtils("..", "../demo", "demo",
+                             1792044165.916105,
+                             1792044165.916105,
+                             1735689600.0,
+                             1893456000.0,
+                             0);
+$(document).ready(function () {
+    utils.update_time(false);
+    var timer = setInterval(function() {
+        utils.update_time(false, timer);
+    }, 1000);
+    utils.update_unread_count(0, 0);
+    utils.update_notifications(true);
+    setInterval(function() { utils.update_notifications(); }, 30000);
+    $('#main').css('top', $('#navigation_bar').outerHeight());
+});
+
+    </script>
+    </head>
+    <body>
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="../demo">Demo Contest</a>
+                    <p class="navbar-text pull-right">
+                        <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
+                            <option value="" selected>Automatic (English)</option>
+                            <option value="ar">العربية</option>
+                            <option value="bg">български</option>
+                            <option value="bs">bosanski</option>
+                            <option value="cs">čeština</option>
+                            <option value="de">Deutsch</option>
+                            <option value="en">English</option>
+                            <option value="es">español</option>
+                            <option value="es-CL">español (Chile)</option>
+                            <option value="et">eesti</option>
+                            <option value="fr">français</option>
+                            <option value="he">עברית</option>
+                            <option value="hu">magyar</option>
+                            <option value="it">italiano</option>
+                            <option value="ja">日本語</option>
+                            <option value="ko">한국어</option>
+                            <option value="lt">lietuvių</option>
+                            <option value="lv">latviešu</option>
+                            <option value="nl">Nederlands</option>
+                            <option value="ro">română</option>
+                            <option value="ru">русский</option>
+                            <option value="sl">slovenščina</option>
+                            <option value="th">ไทย</option>
+                            <option value="uk">українська</option>
+                            <option value="vi">Tiếng Việt</option>
+                            <option value="zh-Hans-CN">中文 (简体, 中国)</option>
+                            <option value="zh-Hant-TW">中文 (繁體, 台灣)</option>
+                        </select>
+                    </p>
+                    <form action="../demo/logout" method="POST" class="navbar-form pull-right">
+                        <input type="hidden" name="_xsrf" value="2|8164b908|0ba5ab1afdab4e3b9b7a94c6830f6a63|1792044165"/>
+                        <button type="submit" class="btn btn-warning">Logout</button>
+                    </form>
+                    <p class="navbar-text pull-right">
+Logged in as <strong>Alice Liddell</strong> <em>(alice)</em>                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="notifications" class="notifications"></div>
+        <!-- Some hidden divs to provide translations of strings used by JS -->
+        <div style="display: none" id="translation_new_message">
+New message        </div>
+        <div style="display: none" id="translation_new_announcement">
+New announcement        </div>
+        <div style="display: none" id="translation_new_answer">
+New answer        </div>
+        <div style="display: none" id="translation_unread">
+%d unread        </div>
+        <div style="display: none" id="translation_until_contest_starts">
+Until contest starts:        </div>
+        <div style="display: none" id="translation_until_contest_ends">
+Until contest ends:        </div>
+        <div style="display: none" id="translation_until_analysis_starts">
+Until analysis starts:        </div>
+        <div style="display: none" id="translation_until_analysis_ends">
+Until analysis ends:        </div>
+        <div style="display: none" id="translation_time_left">
+Time left:        </div>
+        <!-- End -->
+        <div id="main" class="container">
+            <div class="row">
+                <div class="span3">
+                    <h3 id="server_time_box">
+                        <span id="server_time_label">Server time:</span>
+                        <span id="server_time"></span>
+                    </h3>
+                    <h3 id="countdown_box">
+                        <span id="countdown_label"></span>
+                        <span id="countdown"></span>
+                    </h3>
+                    <div class="well" style="padding: 8px 0;">
+                        <ul class="nav nav-list">
+
+                            <li>
+                                <a href="../demo">Overview</a>
+                            </li>
+                            <li class="active">
+                                <a href="../demo/communication">Communication                                    <span id="unread_count" class="label label-warning no_unread"></span>
+                                </a>
+                            </li>
+                            <li class="nav-header">
+                                sum
+                            </li>
+                            <li>
+                                <a href="../demo/tasks/sum/description">Statement</a>
+                            </li>
+                            <li>
+                                <a href="../demo/tasks/sum/submissions">Submissions</a>
+                            </li>
+                            <li class="nav-header">
+                                half
+                            </li>
+                            <li>
+                                <a href="../demo/tasks/half/description">Statement</a>
+                            </li>
+                            <li>
+                                <a href="../demo/tasks/half/submissions">Submissions</a>
+                            </li>
+                            <li class="nav-header">
+                                quiz
+                            </li>
+                            <li>
+                                <a href="../demo/tasks/quiz/description">Statement</a>
+                            </li>
+                            <li>
+                                <a href="../demo/tasks/quiz/submissions">Submissions</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="../demo/documentation">Documentation</a>
+                            </li>
+                            <li>
+                                <a href="../demo/testing">Testing</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <span class="license_notice">
+                    <a href="https://github.com/cms-dev/cms" rel="author noreferrer" target="_blank">Contest Management System</a>
+is released under the                    <a href="https://www.gnu.org/licenses/agpl" rel="license noreferrer" target="_blank">GNU Affero General Public License</a>.
+                    </span>
+                </div>
+<div class="span9">
+
+
+<div class="page-header">
+    <h1>Communication</h1>
+</div>
+
+
+
+
+
+
+
+
+</div>
+            </div>
+        </div>
+
+    </body>
+</html>

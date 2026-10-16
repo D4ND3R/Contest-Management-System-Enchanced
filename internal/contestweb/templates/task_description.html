@@ -1,0 +1,185 @@
+{{/*
+Ported from cms/server/contest/templates/task_description.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca
+Wehrstedt and the CMS contributors.
+Data: taskDescriptionData (tasks.go): the statements, sorted and named,
+carry their URLs (CMS statement_url adds the file name as a last component
+for the title browsers show); the attachments their type, icon and size.
+Trans blocks are written as CMS renders them (see contest.html).
+*/}}
+{{/* extends "contest.html" */}}
+
+{{define "core"}}
+
+
+<div class="span9 task_description">
+
+
+<div class="page-header">
+    <h1>{{Format (T "%(name)s (%(short_name)s) <small>description</small>") "name" .Task.Title "short_name" .Task.Name}}</h1>
+</div>
+
+
+<h2>{{T "Statement"}}</h2>
+
+{{if eq (len .Statements) 0}}
+<div class="row statement no_statements">
+    <div class="span9">
+{{T "no statement available"}}    </div>
+</div>
+{{else if eq (len .Statements) 1}}
+<div class="row statement one_statement">
+    <div class="span9">
+    {{range .Statements}}
+        <a href="{{.URL}}" target="_blank" class="btn btn-large btn-success">{{T "Download task statement"}}</a>
+    {{end}}
+    </div>
+</div>
+{{else}}
+<div class="statement many_statements">
+    <div class="main_statements">
+        <p>
+{{T "The statement for this task is available in multiple versions, in different languages."}}            {{T "You can see (and download) all of them using the list on the right."}}            {{T "Some suggested translations follow."}}        </p>
+    {{range .Statements}}
+        {{if .Primary}}
+        <a href="{{.URL}}" target="_blank" class="btn btn-large btn-success">
+            {{if .Bold}}
+{{Format (T "Statement in <b>%(lang)s</b>") "lang" .Name}}
+            {{- else}}
+{{Format (T "Statement in %(lang)s") "lang" .Name}}
+            {{- end}}        </a>
+        {{end}}
+    {{end}}
+    {{range .Statements}}
+        {{if and .Preferred (not .Primary)}}
+        <a href="{{.URL}}" target="_blank" class="btn btn-large">
+            {{if .Bold}}
+{{Format (T "Statement in <b>%(lang)s</b>") "lang" .Name}}
+            {{- else}}
+{{Format (T "Statement in %(lang)s") "lang" .Name}}
+            {{- end}}        </a>
+        {{end}}
+    {{end}}
+    </div>
+    <div class="all_statements well">
+        <div>
+            <ul>
+    {{range .Statements}}
+                <li>
+                    <a href="{{.URL}}" target="_blank">
+        {{if .Bold}}
+{{Format (T "<b>%(lang)s</b>") "lang" .Name}}
+        {{- else}}
+{{Format (T "%(lang)s") "lang" .Name}}
+        {{- end}}                    </a>
+                </li>
+    {{end}}
+            </ul>
+        </div>
+    </div>
+</div>
+{{end}}
+
+
+<h2>{{T "Some details"}}</h2>
+
+<table class="table table-bordered table-nohover" style="table-layout: fixed">
+    <colgroup>
+        <col style="width: 20%"/>
+        <col style="width: 20%"/>
+        <col style="width: 60%"/>
+    </colgroup>
+    <tbody>
+        <tr>
+            <th>{{T "Type"}}</th>
+            <td colspan="2">{{.TaskType}}</td>
+        </tr>
+{{if .TimeLimit}}
+        <tr>
+            <th>{{T "Time limit"}}</th>
+            <td colspan="2">{{format_duration .TimeLimit "long"}}</td>
+        </tr>
+{{end}}
+{{if .MemoryLimit}}
+        <tr>
+            <th>{{T "Memory limit"}}</th>
+            <td colspan="2">{{format_size .MemoryLimit}}</td>
+        </tr>
+{{end}}
+{{if .HasCommands}}
+<tr>
+    <th rowspan="{{len .Compilation}}">{{T "Compilation commands"}}</th>
+    {{range $i, $c := .Compilation}}
+        {{if $i}}
+</tr>
+<tr>
+        {{end}}
+    <td>{{$c.Language}}</td>
+    <td class="compilation_command_cell">
+{{range $c.Commands}}
+        <code class="compilation_command">{{.}}</code>
+{{end}}
+    </td>
+    {{end}}
+</tr>
+{{end}}
+
+{{if and (ne .TokensContest TOKEN_MODE_DISABLED) (ne .TokensTasks TOKEN_MODE_DISABLED)}}
+<tr>
+    <th>{{T "Tokens"}}</th>
+    <td colspan="2" class="token_rules">
+    {{if and (eq .TokensContest TOKEN_MODE_INFINITE) (eq .TokensTasks TOKEN_MODE_INFINITE)}}
+        <p>
+{{T "You have an infinite number of tokens."}}        </p>
+    {{else if eq .TokensContest TOKEN_MODE_INFINITE}}
+        <p>
+        {{format_token_rules .TaskRules}}
+        </p>
+    {{else if eq .TokensTasks TOKEN_MODE_INFINITE}}
+        <p>
+{{Format (T "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>.") "type_pl" (print (T "tokens")) "contest_root" contest_url}}        </p>
+    {{else}}
+        <p>
+        {{format_token_rules "task" .TaskRules}}
+        </p>
+
+        <p>
+{{T "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."}}        {{Format (T "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>.") "type_pl" (print (T "contest-tokens")) "contest_root" contest_url}}        </p>
+    {{end}}
+    </td>
+</tr>
+{{end}}
+    </tbody>
+</table>
+
+
+
+{{if .Attachments}}
+    <h2>{{T "Attachments"}}</h2>
+    <div id="attachments">
+        <ul>
+    {{range .Attachments}}
+            <li>
+                <a href="{{.URL}}" class="btn">
+            {{if .Icon}}
+                    <img src="{{static "img" "mimetypes" (print .Icon ".png")}}" alt="{{.MimeType}}" />
+            {{else}}
+                    <img src="{{static "img" "mimetypes" "unknown.png"}}" alt="{{T "unknown"}}" />
+            {{end}}
+                    <span class="first_line">
+                        <span class="name">{{.Filename}}</span>
+                        <span class="size">{{format_size .Size}}</span>
+                    </span>
+            {{if .MimeType}}
+                    <span class="type">{{.TypeName}}</span>
+            {{end}}
+                </a>
+            </li>
+    {{end}}
+        </ul>
+    </div>
+{{end}}
+
+</div>
+{{end}}

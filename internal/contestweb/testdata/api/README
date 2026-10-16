@@ -1,0 +1,32 @@
+Answers of the JSON API of the original CMS (Contest Management System,
+https://github.com/cms-dev/cms, AGPL-3.0-or-later; copyright © the CMS
+contributors), version 1.6.dev0 (commit 1914a5a), for the demo contest of
+testdata/dumps/demo (exported from that same installation), recorded on
+2026-10-15. TestCMSAPI (api_test.go) replays every step against this site and
+compares the status codes and the JSON values.
+
+  cms.json            the steps (tools/steps.py: SQL to run first, request,
+                      login_data to send) and CMS's answer to each: status,
+                      Content-Type, JSON body (or the start of an HTML body)
+                      and, for submissions, the official flag, language and
+                      comment stored. login_data values are replaced by
+                      "<login_data>" ("<sent login_data>" when CMS returned
+                      the header it received), and the ids of new
+                      submissions by "<id:N>" (also in later lists).
+  details.sql         the score details the steps use, computed with CMS's
+                      own GroupMin and Sum (tools/gen_details.py): alice's
+                      submission on sum (testcase 000 public, the rest
+                      private) and a new submission of alice on half; run
+                      on both databases before the steps.
+  tools/              the scripts: gen_details.py (run with CMS's Python,
+                      CMS_CONFIG set), steps.py and record_api.py
+                      (record_api.py OUT.json [BASE] [DBURL], against a
+                      CMS with contest_admin_token = "test-admin-token"
+                      whose database has details.sql applied).
+
+Documented differences (TestCMSAPI expects ours instead):
+  - the public details of a subtask with private testcases have no score
+    keys; CMS's get_json_details fails on them (500), ours returns the
+    subtask without them (internal/grading/scoretype);
+  - JSON is compact and numbers keep their value, not their spelling (40.0
+    may be written 40).

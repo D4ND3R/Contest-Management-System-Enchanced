@@ -10,6 +10,7 @@
 | [Task package format](package-format.md) | available |
 | [Importing contests, tasks and CMS dumps](importing.md) | available |
 | [Contestant site (configuration, login, languages, live updates)](contestant-site.md) | available |
+| [JSON API of the contestant site (scripts, impersonation)](api.md) | available |
 | Getting started | F9 |
 | Installation, requirements and sizing | F9 |
 | Upgrades and backups | F9 |

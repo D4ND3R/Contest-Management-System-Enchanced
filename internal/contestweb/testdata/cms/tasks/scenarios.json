@@ -1,0 +1,529 @@
+{
+  "comment": "States of the demo contest in which TestCMSTaskPages (tasks_test.go) compares the task, submission and user test pages with the original CMS. capture.py applies base + the scenario's sql to the reference CMS's database, logs in as user and saves what the pages answer (captured.json and the .html files); the test applies the same SQL to the demo dump. Placeholders: {NOW-<seconds>} and {NOW+<seconds>} are times relative to the capture, written as literals in captured.json. Digests are read from rows both databases have (CMS uses SHA-1, this fork SHA-256).",
+  "user": "carol",
+  "base": [
+    "DELETE FROM announcements",
+    "DELETE FROM messages",
+    "DELETE FROM questions",
+    "DELETE FROM submissions WHERE participation_id = (SELECT p.id FROM participations p JOIN users u ON u.id = p.user_id WHERE u.username = 'carol')",
+    "DELETE FROM user_tests WHERE participation_id = (SELECT p.id FROM participations p JOIN users u ON u.id = p.user_id WHERE u.username = 'carol')",
+    "UPDATE contests SET allow_questions = true, allow_user_tests = true, submissions_download_allowed = true, allow_unofficial_submission_before_analysis_mode = false, max_submission_number = NULL, max_user_test_number = NULL, min_submission_interval = NULL, min_user_test_interval = NULL, token_mode = 'finite', token_max_number = 10, token_min_interval = '0', token_gen_initial = 2, token_gen_number = 1, token_gen_interval = '30 seconds', token_gen_max = 5 WHERE name = 'demo'",
+    "UPDATE tasks SET token_mode = 'infinite', max_submission_number = NULL, max_user_test_number = NULL, min_submission_interval = NULL, min_user_test_interval = NULL, feedback_level = 'restricted' WHERE name IN ('sum', 'half')",
+    "UPDATE tasks SET token_mode = 'disabled', max_submission_number = NULL, max_user_test_number = NULL, min_submission_interval = NULL, min_user_test_interval = NULL, feedback_level = 'restricted' WHERE name = 'quiz'",
+    "UPDATE testcases SET public = (codename = '000') WHERE dataset_id = (SELECT active_dataset_id FROM tasks WHERE name = 'sum')",
+    "UPDATE testcases SET public = false WHERE dataset_id IN (SELECT active_dataset_id FROM tasks WHERE name IN ('half', 'quiz'))",
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2030-01-01 00:00:00+00', analysis_enabled = false, analysis_start = '2030-01-01 00:00:00+00', analysis_stop = '2030-01-01 00:00:00+00', per_user_time = NULL",
+    "UPDATE participations SET starting_time = NULL, delay_time = '0', extra_time = '0', unrestricted = false, hidden = false, ip = NULL, password = 'plaintext:demo'"
+  ],
+  "scenarios": [
+    {
+      "name": "empty",
+      "sql": [],
+      "pages": [
+        {
+          "file": "sum_description",
+          "path": "/demo/tasks/sum/description"
+        },
+        {
+          "file": "half_description",
+          "path": "/demo/tasks/half/description"
+        },
+        {
+          "file": "quiz_description",
+          "path": "/demo/tasks/quiz/description"
+        },
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "quiz_submissions",
+          "path": "/demo/tasks/quiz/submissions"
+        },
+        {
+          "file": "testing",
+          "path": "/demo/testing"
+        },
+        {
+          "file": "testing_half",
+          "path": "/demo/testing?task_name=half"
+        },
+        {
+          "file": "unknown_task",
+          "path": "/demo/tasks/nosuch/description"
+        },
+        {
+          "file": "unknown_submission",
+          "path": "/demo/tasks/sum/submissions/1000000000000000001"
+        },
+        {
+          "file": "statement",
+          "path": "/demo/tasks/sum/statements/it/sum.it.pdf",
+          "headers_only": true
+        },
+        {
+          "file": "attachment",
+          "path": "/demo/tasks/quiz/attachments/input_000.txt",
+          "headers_only": true
+        },
+        {
+          "file": "unknown_attachment",
+          "path": "/demo/tasks/quiz/attachments/nosuch.txt"
+        }
+      ]
+    },
+    {
+      "name": "submissions",
+      "sql": [
+        "UPDATE testcases SET public = (codename = '000') WHERE dataset_id = (SELECT active_dataset_id FROM tasks WHERE name = 'half')",
+        "INSERT INTO submissions (opaque_id, participation_id, task_id, timestamp, language, comment, official) SELECT v.o, p.id, t.id, v.ts::timestamptz, v.lang, '', v.official FROM (VALUES (1000000000000000001, 'sum', '2026-10-14 08:00:00+00', 'C++17 / g++', true), (1000000000000000002, 'sum', '2026-10-14 08:10:00+00', 'C++17 / g++', true), (1000000000000000003, 'sum', '2026-10-14 08:20:00+00', 'C11 / gcc', true), (1000000000000000004, 'sum', '2026-10-14 08:30:00+00', 'Python 3 / CPython', true), (1000000000000000005, 'sum', '2026-10-14 08:40:00+00', 'C++17 / g++', true), (1000000000000000006, 'sum', '2026-10-14 08:50:00+00', 'C++17 / g++', true), (1000000000000000007, 'sum', '2026-10-14 09:00:00+00', 'C++17 / g++', false), (1000000000000000011, 'half', '2026-10-14 09:10:00+00', 'C++17 / g++', true), (1000000000000000012, 'half', '2026-10-14 09:20:00+00', 'C++17 / g++', true), (1000000000000000021, 'quiz', '2026-10-14 09:30:00+00', NULL, true)) AS v(o, task, ts, lang, official) JOIN tasks t ON t.name = v.task JOIN participations p ON p.contest_id = t.contest_id JOIN users u ON u.id = p.user_id AND u.username = 'carol'",
+        "INSERT INTO files (submission_id, filename, digest) SELECT s.id, t.name || '.%l', (SELECT f.digest FROM files f JOIN submissions s2 ON s2.id = f.submission_id WHERE s2.opaque_id = 4926046975063954292) FROM submissions s JOIN tasks t ON t.id = s.task_id WHERE s.opaque_id BETWEEN 1000000000000000001 AND 1000000000000000012",
+        "INSERT INTO files (submission_id, filename, digest) SELECT s.id, v.f, (SELECT a.digest FROM attachments a WHERE a.filename = v.a) FROM submissions s, (VALUES ('output_000.txt', 'input_000.txt'), ('output_001.txt', 'input_001.txt')) AS v(f, a) WHERE s.opaque_id = 1000000000000000021",
+        "INSERT INTO submission_results (submission_id, dataset_id, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, evaluation_tries) SELECT s.id, t.active_dataset_id, v.ct::text[], 1, v.so, v.se, v.tm, v.tm, v.mem, 1 FROM (VALUES (1000000000000000002, 'fail', '{\"Compilation failed\"}', 'checking <stdout> & co', 'sum.cpp:3: error: expected ''}''', 0.25, 2097152, NULL), (1000000000000000003, 'ok', '{\"Compilation succeeded\"}', '', '', NULL, NULL, NULL), (1000000000000000004, 'ok', '{\"Compilation succeeded\"}', NULL, NULL, 0.5, 1048576, 'ok'), (1000000000000000005, 'ok', '{\"Compilation succeeded\"}', '', '', 0.5, 1048576, 'ok'), (1000000000000000006, 'ok', '{\"Compilation succeeded\"}', '', '', 0.5, 1048576, 'ok'), (1000000000000000007, 'ok', '{\"Compilation succeeded\"}', '', '', 0.5, 1048576, 'ok'), (1000000000000000011, 'ok', '{\"Compilation succeeded\"}', '', '', 0.5, 1048576, 'ok'), (1000000000000000012, 'ok', '{\"Compilation succeeded\"}', '', '', 0.5, 1048576, 'ok'), (1000000000000000021, 'ok', '{\"Compilation succeeded\"}', NULL, NULL, NULL, NULL, 'ok')) AS v(o, co, ct, so, se, tm, mem, eo) JOIN submissions s ON s.opaque_id = v.o JOIN tasks t ON t.id = s.task_id",
+        "UPDATE submission_results sr SET compilation_outcome = 'ok' FROM submissions s WHERE sr.submission_id = s.id AND s.opaque_id BETWEEN 1000000000000000003 AND 1000000000000000021",
+        "UPDATE submission_results sr SET compilation_outcome = 'fail' FROM submissions s WHERE sr.submission_id = s.id AND s.opaque_id = 1000000000000000002",
+        "UPDATE submission_results sr SET evaluation_outcome = 'ok' FROM submissions s WHERE sr.submission_id = s.id AND s.opaque_id BETWEEN 1000000000000000004 AND 1000000000000000021",
+        "UPDATE submission_results sr SET score = 60.0, score_details = '[{\"idx\": 0, \"score_fraction\": 0.0, \"score\": 0.0, \"max_score\": 40, \"testcases\": [{\"idx\": \"000\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.012, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 1048576, \"show_in_restricted_feedback\": true, \"show_in_oi_restricted_feedback\": true}, {\"idx\": \"001\", \"outcome\": \"Not correct\", \"text\": [\"Output isn''t correct\"], \"time\": 0.5, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 2097152, \"show_in_restricted_feedback\": false, \"show_in_oi_restricted_feedback\": false}]}, {\"idx\": 1, \"score_fraction\": 1.0, \"score\": 60.0, \"max_score\": 60, \"testcases\": [{\"idx\": \"002\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.25, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 3145728, \"show_in_restricted_feedback\": false, \"show_in_oi_restricted_feedback\": false}, {\"idx\": \"003\", \"outcome\": \"Correct\", \"text\": [\"Execution timed out\"], \"time\": 1.2, \"time_limit\": 1.0, \"time_limit_was_exceeded\": true, \"memory\": null, \"show_in_restricted_feedback\": false, \"show_in_oi_restricted_feedback\": false}]}]', public_score = 0.0, public_score_details = '[{\"idx\": 0, \"testcases\": [{\"idx\": \"000\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.012, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 1048576, \"show_in_restricted_feedback\": true, \"show_in_oi_restricted_feedback\": true}, {\"idx\": \"001\"}]}, {\"idx\": 1, \"testcases\": [{\"idx\": \"002\"}, {\"idx\": \"003\"}]}]', ranking_score_details = ARRAY['0', '60'], scored_at = '2026-10-14 09:00:00+00' FROM submissions s WHERE sr.submission_id = s.id AND s.opaque_id IN (1000000000000000005, 1000000000000000007)",
+        "UPDATE submission_results sr SET score = 40.0, score_details = '[{\"idx\": 0, \"score_fraction\": 1.0, \"score\": 40.0, \"max_score\": 40, \"testcases\": [{\"idx\": \"000\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.012, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 1048576, \"show_in_restricted_feedback\": true, \"show_in_oi_restricted_feedback\": true}, {\"idx\": \"001\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.5, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 2097152, \"show_in_restricted_feedback\": false, \"show_in_oi_restricted_feedback\": false}]}, {\"idx\": 1, \"score_fraction\": 0.0, \"score\": 0.0, \"max_score\": 60, \"testcases\": [{\"idx\": \"002\", \"outcome\": \"Not correct\", \"text\": [\"Output isn''t correct\"], \"time\": 0.25, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 3145728, \"show_in_restricted_feedback\": false, \"show_in_oi_restricted_feedback\": false}, {\"idx\": \"003\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.3, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 4194304, \"show_in_restricted_feedback\": false, \"show_in_oi_restricted_feedback\": false}]}]', public_score = 0.0, public_score_details = '[{\"idx\": 0, \"testcases\": [{\"idx\": \"000\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.012, \"time_limit\": 1.0, \"time_limit_was_exceeded\": false, \"memory\": 1048576, \"show_in_restricted_feedback\": true, \"show_in_oi_restricted_feedback\": true}, {\"idx\": \"001\"}]}, {\"idx\": 1, \"testcases\": [{\"idx\": \"002\"}, {\"idx\": \"003\"}]}]', ranking_score_details = ARRAY['40', '0'], scored_at = '2026-10-14 09:00:00+00' FROM submissions s WHERE sr.submission_id = s.id AND s.opaque_id = 1000000000000000006",
+        "UPDATE submission_results sr SET score = v.score, score_details = '[{\"idx\": \"000\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.01, \"memory\": 1048576}, {\"idx\": \"001\", \"outcome\": \"Partially correct\", \"text\": [\"Output is partially correct\"], \"time\": 0.02, \"memory\": 2097152}, {\"idx\": \"002\", \"outcome\": \"Not correct\", \"text\": [\"Output isn''t correct\"], \"time\": 0.03, \"memory\": null}]', public_score = 33.333333333333336, public_score_details = '[{\"idx\": \"000\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": 0.01, \"memory\": 1048576}, {\"idx\": \"001\"}, {\"idx\": \"002\"}]', ranking_score_details = ARRAY['50'], scored_at = '2026-10-14 10:00:00+00' FROM submissions s, (VALUES (1000000000000000011, 50.0), (1000000000000000012, 75.5)) AS v(o, score) WHERE sr.submission_id = s.id AND s.opaque_id = v.o",
+        "UPDATE submission_results sr SET score = 50.0, score_details = '[{\"idx\": \"000\", \"outcome\": \"Correct\", \"text\": [\"Output is correct\"], \"time\": null, \"memory\": null}, {\"idx\": \"001\", \"outcome\": \"Not correct\", \"text\": [\"Output isn''t correct\"], \"time\": null, \"memory\": null}]', public_score = 0.0, public_score_details = '[{\"idx\": \"000\"}, {\"idx\": \"001\"}]', ranking_score_details = ARRAY['50'], scored_at = '2026-10-14 10:00:00+00' FROM submissions s WHERE sr.submission_id = s.id AND s.opaque_id = 1000000000000000021",
+        "INSERT INTO tokens (submission_id, timestamp) SELECT s.id, v.ts::timestamptz FROM submissions s JOIN (VALUES (1000000000000000005, '2026-10-14 08:45:00+00'), (1000000000000000012, '2026-10-14 09:25:00+00')) AS v(o, ts) ON s.opaque_id = v.o"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "half_submissions",
+          "path": "/demo/tasks/half/submissions"
+        },
+        {
+          "file": "quiz_submissions",
+          "path": "/demo/tasks/quiz/submissions"
+        },
+        {
+          "file": "half_submissions_ja",
+          "path": "/demo/tasks/half/submissions",
+          "lang": "ja"
+        },
+        {
+          "file": "status_1",
+          "path": "/demo/tasks/sum/submissions/1000000000000000001"
+        },
+        {
+          "file": "status_2",
+          "path": "/demo/tasks/sum/submissions/1000000000000000002"
+        },
+        {
+          "file": "status_3",
+          "path": "/demo/tasks/sum/submissions/1000000000000000003"
+        },
+        {
+          "file": "status_4",
+          "path": "/demo/tasks/sum/submissions/1000000000000000004"
+        },
+        {
+          "file": "status_5",
+          "path": "/demo/tasks/sum/submissions/1000000000000000005"
+        },
+        {
+          "file": "status_6",
+          "path": "/demo/tasks/sum/submissions/1000000000000000006"
+        },
+        {
+          "file": "status_7",
+          "path": "/demo/tasks/sum/submissions/1000000000000000007"
+        },
+        {
+          "file": "status_11",
+          "path": "/demo/tasks/half/submissions/1000000000000000011"
+        },
+        {
+          "file": "status_12",
+          "path": "/demo/tasks/half/submissions/1000000000000000012"
+        },
+        {
+          "file": "status_12_es",
+          "path": "/demo/tasks/half/submissions/1000000000000000012",
+          "lang": "es"
+        },
+        {
+          "file": "status_21",
+          "path": "/demo/tasks/quiz/submissions/1000000000000000021"
+        },
+        {
+          "file": "status_other_task",
+          "path": "/demo/tasks/half/submissions/1000000000000000005"
+        },
+        {
+          "file": "status_other_user",
+          "path": "/demo/tasks/sum/submissions/4926046975063954292"
+        },
+        {
+          "file": "details_1",
+          "path": "/demo/tasks/sum/submissions/1000000000000000001/details"
+        },
+        {
+          "file": "details_2",
+          "path": "/demo/tasks/sum/submissions/1000000000000000002/details"
+        },
+        {
+          "file": "details_4",
+          "path": "/demo/tasks/sum/submissions/1000000000000000004/details"
+        },
+        {
+          "file": "details_5",
+          "path": "/demo/tasks/sum/submissions/1000000000000000005/details"
+        },
+        {
+          "file": "details_6",
+          "path": "/demo/tasks/sum/submissions/1000000000000000006/details"
+        },
+        {
+          "file": "details_11",
+          "path": "/demo/tasks/half/submissions/1000000000000000011/details"
+        },
+        {
+          "file": "details_12",
+          "path": "/demo/tasks/half/submissions/1000000000000000012/details"
+        },
+        {
+          "file": "details_12_it",
+          "path": "/demo/tasks/half/submissions/1000000000000000012/details",
+          "lang": "it"
+        },
+        {
+          "file": "details_21",
+          "path": "/demo/tasks/quiz/submissions/1000000000000000021/details"
+        },
+        {
+          "file": "file_5",
+          "path": "/demo/tasks/sum/submissions/1000000000000000005/files/sum.cpp",
+          "headers_only": true
+        },
+        {
+          "file": "file_3",
+          "path": "/demo/tasks/sum/submissions/1000000000000000003/files/sum.c",
+          "headers_only": true
+        },
+        {
+          "file": "file_21",
+          "path": "/demo/tasks/quiz/submissions/1000000000000000021/files/output_001.txt",
+          "headers_only": true
+        },
+        {
+          "file": "file_wrong_ext",
+          "path": "/demo/tasks/sum/submissions/1000000000000000005/files/sum.py"
+        },
+        {
+          "file": "file_other_user",
+          "path": "/demo/tasks/sum/submissions/4926046975063954292/files/sum.cpp"
+        }
+      ]
+    },
+    {
+      "name": "analysis",
+      "sql": [
+        "@submissions",
+        "UPDATE groups SET stop = '2026-10-01 00:00:00+00', analysis_enabled = true, analysis_start = '2026-10-02 00:00:00+00', analysis_stop = '2030-01-01 00:00:00+00'"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "status_6",
+          "path": "/demo/tasks/sum/submissions/1000000000000000006"
+        },
+        {
+          "file": "details_6",
+          "path": "/demo/tasks/sum/submissions/1000000000000000006/details"
+        },
+        {
+          "file": "details_11",
+          "path": "/demo/tasks/half/submissions/1000000000000000011/details"
+        },
+        {
+          "file": "testing",
+          "path": "/demo/testing"
+        }
+      ]
+    },
+    {
+      "name": "ended",
+      "sql": [
+        "@submissions",
+        "UPDATE groups SET stop = '2026-10-01 00:00:00+00'"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "sum_description",
+          "path": "/demo/tasks/sum/description"
+        }
+      ]
+    },
+    {
+      "name": "ended_unofficial",
+      "sql": [
+        "UPDATE groups SET stop = '2026-10-01 00:00:00+00'",
+        "UPDATE contests SET allow_unofficial_submission_before_analysis_mode = true"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        }
+      ]
+    },
+    {
+      "name": "limits",
+      "sql": [
+        "@submissions",
+        "UPDATE contests SET max_submission_number = 12, max_user_test_number = 5",
+        "UPDATE tasks SET max_submission_number = 9 WHERE name = 'sum'",
+        "UPDATE tasks SET max_user_test_number = 2 WHERE name = 'half'",
+        "UPDATE tasks SET max_submission_number = 1 WHERE name = 'quiz'"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "half_submissions",
+          "path": "/demo/tasks/half/submissions"
+        },
+        {
+          "file": "quiz_submissions",
+          "path": "/demo/tasks/quiz/submissions"
+        },
+        {
+          "file": "testing",
+          "path": "/demo/testing"
+        }
+      ]
+    },
+    {
+      "name": "no_tokens",
+      "sql": [
+        "@submissions",
+        "UPDATE contests SET token_mode = 'finite', token_max_number = NULL, token_min_interval = '0', token_gen_initial = 1, token_gen_number = 0, token_gen_interval = '1 hour', token_gen_max = NULL",
+        "UPDATE tasks SET token_mode = 'finite', token_max_number = NULL, token_min_interval = '0', token_gen_initial = 3, token_gen_number = 0, token_gen_interval = '1 hour', token_gen_max = NULL WHERE name = 'half'"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "half_submissions",
+          "path": "/demo/tasks/half/submissions"
+        },
+        {
+          "file": "half_description",
+          "path": "/demo/tasks/half/description"
+        }
+      ]
+    },
+    {
+      "name": "wait_tokens",
+      "sql": [
+        "@submissions",
+        "UPDATE contests SET token_mode = 'finite', token_max_number = NULL, token_min_interval = '1 day', token_gen_initial = 3, token_gen_number = 2, token_gen_interval = '1 day', token_gen_max = 4",
+        "UPDATE tokens SET timestamp = '{NOW-3600}' WHERE submission_id = (SELECT id FROM submissions WHERE opaque_id = 1000000000000000012)"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "half_submissions",
+          "path": "/demo/tasks/half/submissions"
+        },
+        {
+          "file": "sum_description",
+          "path": "/demo/tasks/sum/description"
+        }
+      ]
+    },
+    {
+      "name": "gen_tokens",
+      "sql": [
+        "@submissions",
+        "UPDATE contests SET token_mode = 'infinite'",
+        "UPDATE tasks SET token_mode = 'finite', token_max_number = 3, token_min_interval = '0', token_gen_initial = 1, token_gen_number = 1, token_gen_interval = '7 days', token_gen_max = NULL WHERE name = 'sum'"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "sum_description",
+          "path": "/demo/tasks/sum/description"
+        }
+      ]
+    },
+    {
+      "name": "no_download",
+      "sql": [
+        "@submissions",
+        "UPDATE contests SET submissions_download_allowed = false, token_mode = 'disabled'"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "file_5",
+          "path": "/demo/tasks/sum/submissions/1000000000000000005/files/sum.cpp"
+        },
+        {
+          "file": "sum_description",
+          "path": "/demo/tasks/sum/description"
+        }
+      ]
+    },
+    {
+      "name": "user_tests",
+      "sql": [
+        "INSERT INTO user_tests (participation_id, task_id, timestamp, language, input) SELECT p.id, t.id, v.ts::timestamptz, v.lang, (SELECT a.digest FROM attachments a WHERE a.filename = 'input_000.txt') FROM (VALUES ('sum', '2026-10-14 08:00:00+00', 'C++17 / g++'), ('sum', '2026-10-14 08:10:00+00', 'C++17 / g++'), ('sum', '2026-10-14 08:20:00+00', 'C11 / gcc'), ('sum', '2026-10-14 08:30:00+00', 'Python 3 / CPython'), ('sum', '2026-10-14 08:40:00+00', 'C++17 / g++'), ('half', '2026-10-14 08:50:00+00', 'Java / JDK')) AS v(task, ts, lang) JOIN tasks t ON t.name = v.task JOIN participations p ON p.contest_id = t.contest_id JOIN users u ON u.id = p.user_id AND u.username = 'carol'",
+        "INSERT INTO user_test_files (user_test_id, filename, digest) SELECT ut.id, t.name || '.%l', (SELECT f.digest FROM files f JOIN submissions s2 ON s2.id = f.submission_id WHERE s2.opaque_id = 4926046975063954292) FROM user_tests ut JOIN tasks t ON t.id = ut.task_id JOIN participations p ON p.id = ut.participation_id JOIN users u ON u.id = p.user_id AND u.username = 'carol'",
+        "INSERT INTO user_test_results (user_test_id, dataset_id, output, compilation_outcome, compilation_text, compilation_tries, compilation_stdout, compilation_stderr, compilation_time, compilation_wall_clock_time, compilation_memory, evaluation_outcome, evaluation_text, evaluation_tries, execution_time, execution_wall_clock_time, execution_memory) SELECT ut.id, t.active_dataset_id, CASE WHEN v.out THEN (SELECT a.digest FROM attachments a WHERE a.filename = 'input_001.txt') END, v.co, v.ct::text[], 1, v.so, v.se, 0.75, 0.8, 3145728, v.eo, v.et::text[], 1, v.et2, v.et2, v.em FROM (VALUES ('2026-10-14 08:10:00+00', 'fail', '{\"Compilation failed\"}', 'warning <x>', 'error: & y', NULL, '{}', false, NULL::float8, NULL::bigint), ('2026-10-14 08:20:00+00', 'ok', '{\"Compilation succeeded\"}', '', '', NULL, '{}', false, NULL, NULL), ('2026-10-14 08:30:00+00', 'ok', '{\"Compilation succeeded\"}', '', '', 'ok', '{\"Execution completed successfully\"}', true, 0.125, 5242880), ('2026-10-14 08:40:00+00', 'ok', '{\"Compilation succeeded\"}', NULL, NULL, 'ok', '{\"Execution timed out\"}', false, NULL, NULL), ('2026-10-14 08:50:00+00', 'ok', '{\"Compilation succeeded\"}', 'x', NULL, 'ok', '{\"Execution killed with signal %s\", \"11\"}', true, 1.5, 268435456)) AS v(ts, co, ct, so, se, eo, et, out, et2, em) JOIN user_tests ut ON ut.timestamp = v.ts::timestamptz JOIN tasks t ON t.id = ut.task_id JOIN participations p ON p.id = ut.participation_id JOIN users u ON u.id = p.user_id AND u.username = 'carol'"
+      ],
+      "pages": [
+        {
+          "file": "testing",
+          "path": "/demo/testing"
+        },
+        {
+          "file": "testing_half",
+          "path": "/demo/testing?task_name=half"
+        },
+        {
+          "file": "testing_ja",
+          "path": "/demo/testing",
+          "lang": "ja"
+        },
+        {
+          "file": "status_1",
+          "path": "/demo/tasks/sum/tests/1"
+        },
+        {
+          "file": "status_2",
+          "path": "/demo/tasks/sum/tests/2"
+        },
+        {
+          "file": "status_3",
+          "path": "/demo/tasks/sum/tests/3"
+        },
+        {
+          "file": "status_4",
+          "path": "/demo/tasks/sum/tests/4"
+        },
+        {
+          "file": "status_5",
+          "path": "/demo/tasks/sum/tests/5"
+        },
+        {
+          "file": "status_half_1",
+          "path": "/demo/tasks/half/tests/1"
+        },
+        {
+          "file": "status_6",
+          "path": "/demo/tasks/sum/tests/6"
+        },
+        {
+          "file": "details_1",
+          "path": "/demo/tasks/sum/tests/1/details"
+        },
+        {
+          "file": "details_2",
+          "path": "/demo/tasks/sum/tests/2/details"
+        },
+        {
+          "file": "details_3",
+          "path": "/demo/tasks/sum/tests/3/details"
+        },
+        {
+          "file": "details_4",
+          "path": "/demo/tasks/sum/tests/4/details"
+        },
+        {
+          "file": "details_5",
+          "path": "/demo/tasks/sum/tests/5/details"
+        },
+        {
+          "file": "details_half_1",
+          "path": "/demo/tasks/half/tests/1/details"
+        },
+        {
+          "file": "input_4",
+          "path": "/demo/tasks/sum/tests/4/input",
+          "headers_only": true
+        },
+        {
+          "file": "output_4",
+          "path": "/demo/tasks/sum/tests/4/output",
+          "headers_only": true
+        },
+        {
+          "file": "output_5",
+          "path": "/demo/tasks/sum/tests/5/output"
+        },
+        {
+          "file": "file_4",
+          "path": "/demo/tasks/sum/tests/4/files/sum.py",
+          "headers_only": true
+        },
+        {
+          "file": "file_half_1",
+          "path": "/demo/tasks/half/tests/1/files/half.java",
+          "headers_only": true
+        }
+      ]
+    },
+    {
+      "name": "today",
+      "sql": [
+        "INSERT INTO submissions (opaque_id, participation_id, task_id, timestamp, language, comment, official) SELECT 1000000000000000031, p.id, t.id, '{NOW-600}', 'C++17 / g++', '', true FROM tasks t JOIN participations p ON p.contest_id = t.contest_id JOIN users u ON u.id = p.user_id AND u.username = 'carol' WHERE t.name = 'sum'",
+        "INSERT INTO files (submission_id, filename, digest) SELECT s.id, 'sum.%l', (SELECT f.digest FROM files f JOIN submissions s2 ON s2.id = f.submission_id WHERE s2.opaque_id = 4926046975063954292) FROM submissions s WHERE s.opaque_id = 1000000000000000031",
+        "INSERT INTO user_tests (participation_id, task_id, timestamp, language, input) SELECT p.id, t.id, '{NOW-300}', 'C++17 / g++', (SELECT a.digest FROM attachments a WHERE a.filename = 'input_000.txt') FROM tasks t JOIN participations p ON p.contest_id = t.contest_id JOIN users u ON u.id = p.user_id AND u.username = 'carol' WHERE t.name = 'sum'",
+        "INSERT INTO user_test_managers (user_test_id, filename, digest) SELECT ut.id, 'grader.cpp', (SELECT a.digest FROM attachments a WHERE a.filename = 'input_001.txt') FROM user_tests ut WHERE ut.timestamp = '{NOW-300}'",
+        "INSERT INTO user_test_files (user_test_id, filename, digest) SELECT ut.id, 'sum.%l', (SELECT f.digest FROM files f JOIN submissions s2 ON s2.id = f.submission_id WHERE s2.opaque_id = 4926046975063954292) FROM user_tests ut WHERE ut.timestamp = '{NOW-300}'"
+      ],
+      "pages": [
+        {
+          "file": "sum_submissions",
+          "path": "/demo/tasks/sum/submissions"
+        },
+        {
+          "file": "testing",
+          "path": "/demo/testing"
+        },
+        {
+          "file": "manager",
+          "path": "/demo/tasks/sum/tests/1/files/grader.cpp",
+          "headers_only": true
+        },
+        {
+          "file": "testing_status",
+          "path": "/demo/tasks/sum/tests/1"
+        },
+        {
+          "file": "file",
+          "path": "/demo/tasks/sum/tests/1/files/sum.cpp",
+          "headers_only": true
+        }
+      ]
+    }
+  ]
+}

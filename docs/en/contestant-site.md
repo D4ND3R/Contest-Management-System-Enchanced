@@ -187,6 +187,76 @@ location ~ /events$ {
 With a proxy in front, set `num_proxies: 1` so the site sees the real
 addresses of the contestants (IP restriction and autologin, login limits).
 
+## Tasks, submissions and tests
+
+**Description.** The page of each task shows its statements, its limits,
+its type, the compilation commands of its languages, its token rules and
+its attachments (with their type and size), as in CMS. CMS only has PDF
+statements; here a statement can also be **Markdown** (shown inside the
+site, without raw HTML) or **LaTeX** source (downloaded as `.tex`): the
+site tells them apart by their content. With several statements the
+task's primary ones and those in the contestant's preferred languages are
+shown first.
+
+**Submitting.** One file per element of the submission format, with the
+language chosen in the list (choosing a file narrows the list to the
+languages of its extension, as in CMS) or, for tasks of several files, a
+`.zip` with all of them. The limits are CMS's, with its messages:
+
+| Setting (contest or task) | Effect |
+|---|---|
+| `max_submission_number` | submissions in total (contest) or on the task |
+| `min_submission_interval` | time between submissions; it does not apply in the last `min_submission_interval_grace_period` of the contestant's time |
+| `contest_web.max_submission_length` | bytes per file |
+
+The limits are checked again when the submission is stored, so
+simultaneous submissions cannot get past them. Submissions are official
+while the contestant competes; in analysis mode (and after their time, if
+`allow_unofficial_submission_before_analysis_mode`) they are unofficial
+and do not count.
+
+**Submissions.** The submissions page lists the latest 500 of the task,
+newest first. Their status and scores update themselves (as in CMS, and
+at once with live updates). "details" shows the score by subtask and the
+testcases the task's `feedback_level` allows (`full`, `restricted`,
+`oi_restricted`; everything in analysis mode or once a token was played)
+and the compilation output. Files can be downloaded if the contest allows
+it (`submissions_download_allowed`).
+
+**Tokens.** The rules of CMS: contest and task tokens, initial number,
+generation, maximum, total and minimum interval. A token shows the full
+result of a submission and makes it count for the score. Two simultaneous
+requests never play more tokens than are available.
+
+**Tests.** The Testing page (`allow_user_tests`) runs a solution on an
+input of the contestant for the tasks whose type allows it (not output
+only), with `max_user_test_number`, `min_user_test_interval` and
+`contest_web.max_input_length`. Tests are numbered per task from the
+oldest; the page lists the latest 200 of each task.
+
+## Communication
+
+The Communication page shows the announcements of the contest, the
+contestant's questions with their answers, and the private messages of
+the staff, newest first. Announcements, answers and messages are
+Markdown; questions are plain text. They appear without reloading: a
+notification pops up and the page's lists refresh themselves (on that page
+the "unread" counter stays at zero). When the news is the first of its
+kind (the page had no list of messages, for example), the page reloads
+within 10 seconds instead, waiting while a question is being written. The
+form to ask questions appears when the contest allows questions
+(`allow_questions`):
+
+- the subject has at most 50 characters and the text at most 2000, as in
+  CMS (a longer question is refused with "Question too long!");
+- the subject suggests the names of the tasks once the contest has started;
+- a contestant can ask 10 questions in a row, then one every 20 seconds
+  ("Too many questions!"), so that nobody floods the staff.
+
+The staff sees new questions at once in the administration.
+
+Programs (scripts, tools written for CMS) use the [JSON API](api.md).
+
 ## Security
 
 - Every form carries a CSRF token (`_xsrf`, as in CMS) and requests from
@@ -203,7 +273,16 @@ addresses of the contestants (IP restriction and autologin, login limits).
   every replica of the site sees them, not only the one that made them.
 - The session cookie holds neither the password nor its hash, but a signed
   fingerprint; it lasts `cookie_duration` after the last page.
-- Login attempts are rate limited; registration is limited per address.
-- Live updates and their indicator; a link to the source code in the
-  footer.
+- Login attempts are rate limited; registration is limited per address;
+  a contestant can ask 10 questions in a row, then one every 20 seconds.
+- Live updates and their indicator (the lists of the Communication page
+  refresh themselves); a link to the source code in the footer.
 - One time zone; contest time instead of the time of day.
+- Statements in Markdown and LaTeX besides PDF.
+- Lists are bounded: the latest 500 submissions and 200 tests of each
+  task (older ones keep their URLs).
+- The public testcases of a subtask that also has private ones are shown
+  ("details" and the API); CMS fails there with "Score details
+  temporarily unavailable.".
+- The times of the submission rows are written in the page's language
+  (CMS writes them in English).

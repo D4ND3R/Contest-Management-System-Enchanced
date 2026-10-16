@@ -103,6 +103,9 @@ type Server struct {
 	// loginByUser and loginByIP limit password attempts.
 	loginByUser *web.RateLimiter
 	loginByIP   *web.RateLimiter
+	// questions limits the questions of each participant
+	// (communication.go).
+	questions *web.RateLimiter
 	// bcryptSlots bounds the concurrent bcrypt verifications (≈ 250 ms
 	// of CPU each) so a burst of logins does not starve the other pages.
 	bcryptSlots chan struct{}
@@ -153,6 +156,7 @@ func New(ctx context.Context, o Options) (*Server, error) {
 	// since a whole contest hall may come from one NAT address.
 	s.loginByUser = web.NewRateLimiter(6*time.Second, 10, 0)
 	s.loginByIP = web.NewRateLimiter(100*time.Millisecond, 600, 0)
+	s.questions = web.NewRateLimiter(questionInterval, questionBurst, 0)
 	s.bcryptSlots = make(chan struct{}, max(1, runtime.GOMAXPROCS(0)/2))
 	s.notes = newNotifications(s.kv)
 	s.tz = newTZCache(s.cfg.Location(), s.loadTimezone)

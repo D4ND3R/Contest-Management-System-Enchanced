@@ -78,6 +78,7 @@ CMS.live = (function () {
     var pendingAll = false;
     var refreshTimer = null, lastRefresh = 0, refreshing = false;
     var reloadTimer = null;
+    var leaving = false;     // a navigation started: fetches in flight fail
 
     function now() { return Date.now(); }
     function jitter(lo, hi) { return lo + Math.random() * (hi - lo); }
@@ -410,7 +411,9 @@ CMS.live = (function () {
                 }
             })
             .catch(function (e) {
-                if (window.console) { console.warn(e); }
+                // A fetch cut short by leaving the page (a form submitted
+                // while a region refreshes) is not worth a warning.
+                if (window.console && !leaving) { console.warn(e); }
             })
             .then(function () {
                 refreshing = false;
@@ -456,6 +459,11 @@ CMS.live = (function () {
         }
         lastId = cfg.getAttribute("data-live-since") || "";
         document.addEventListener("visibilitychange", visibility);
+        window.addEventListener("beforeunload", function () {
+            leaving = true;
+            // Still here after a while: the navigation was a download.
+            setTimeout(function () { leaving = false; }, 5000);
+        });
         setInterval(watchdog, 1000);
         open();
     }

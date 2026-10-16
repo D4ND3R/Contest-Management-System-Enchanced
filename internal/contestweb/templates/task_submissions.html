@@ -1,0 +1,356 @@
+{{/*
+Ported from cms/server/contest/templates/task_submissions.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca
+Wehrstedt and the CMS contributors.
+Data: taskSubmissionsData (submissions.go): the scores are formatted and
+classed in Go (CMS score_type.format_score, get_score_class), the token
+flags are CMS's can_use_tokens… and .SR holds the status numbers of
+SubmissionResult.
+Changes in this fork: the inline <script> carries the CSP nonce (in
+contest.html) and the onchange handler of the file inputs is in
+cws_handlers.js (D10); the task score boxes and the submission tables
+(macro/submission.html) are live regions that refresh on the events of
+the task (data-live, R5.8).
+Trans blocks are written as CMS renders them (see contest.html).
+*/}}
+{{/* extends "contest.html" */}}
+
+{{define "additional_js"}}
+// Define TASK_LANGUAGES for task-specific language filtering
+var TASK_LANGUAGES = {
+{{range .TaskLanguages}}
+    '{{.Name}}': {
+{{range .Extensions}}
+        '{{.}}': true,
+{{end}}
+    },
+{{end}}
+};
+
+$(document).on("click", ".submission_list tbody tr td.status .details", function (event) {
+    var submission_id = $(this).parent().parent().attr("data-submission");
+    var modal = $("#submission_detail");
+    var modal_body = modal.children(".modal-body");
+    modal_body.html('<div class="loading"><img src="{{static "loading.gif"}}"/>{{T "loading..."}}</div>');
+    modal_body.load(utils.contest_url("tasks", "{{.Task.Name}}", "submissions", submission_id, "details"), function(response, status, xhr) {
+        if(status != "success") {
+            $(this).html("{{T "Error loading details, please refresh the page."}}");
+            return;
+        }
+        $(".score_details .subtask .subtask-head").each(function () {
+            $(this).prepend("<i class=\"icon-chevron-right\"></i>");
+        });
+        $(".score_details .subtask .subtask-head").click(function () {
+            $(this).parent().toggleClass("open");
+            if ($(this).parent().hasClass("open")) {
+                $(this).children("i").removeClass("icon-chevron-right").addClass("icon-chevron-down");
+            } else {
+                $(this).children("i").removeClass("icon-chevron-down").addClass("icon-chevron-right");
+            }
+        });
+        $(".score_details table.testcase-list").addClass("table table-bordered table-striped");
+        $(".score_details table.testcase-list tbody tr:not(.undefined) td.outcome").each(function () {
+            $(this).html("<span class=\"outcome\">" + $(this).text() + "</span>");
+        });
+    });
+    modal.modal("show");
+});
+
+function is_status_terminal (status) {
+    return status == {{.SR.JS .SR.CompilationFailed}}
+        || status == {{.SR.JS .SR.Scored}};
+};
+
+function get_score_class (score, max_score) {
+    if (score <= 0) {
+        return "score_0";
+    } else if (score >= max_score) {
+        return "score_100";
+    } else {
+        return "score_0_100";
+    }
+};
+
+/**
+ * Update the score (public or tokened) in the UI (both in the task score and in
+ * the submission row) given the results of a newly scored submisson
+ *
+ * score_elem: table cell with the submission score to update.
+ * task_score_elem: container element of the task score to update.
+ * score (Number): the score of the submission.
+ * score_message (String): the score of the submission as a string.
+ * task_score (Number): the current score of the task.
+ * task_score_message (String): the current score of the task as a string.
+ * task_score_is_partial (Boolean): if some submission has yet to be scored.
+ * max_score (Number): maximum score of the task.
+ */
+update_score = function(score_elem, task_score_elem,
+        score, score_message,
+        task_score, task_score_message, task_score_is_partial,
+        max_score) {
+    // Submission row.
+    if (score !== undefined) {
+        score_elem.addClass(get_score_class(score, max_score));
+        score_elem.removeClass("undefined");
+        score_elem.text(score_message);
+    }
+
+    // Task score.
+    var task_score_span = task_score_elem.find(".score");
+    task_score_span.text(task_score_message);
+    if (task_score_is_partial) {
+        task_score_span.append(
+            $("<img class=\"details\" src=\"{{static "loading.gif"}}\"/>"));
+    }
+    task_score_elem.removeClass("undefined");
+    task_score_elem.removeClass("score_0");
+    task_score_elem.removeClass("score_0_100");
+    task_score_elem.removeClass("score_100");
+    task_score_elem.addClass(get_score_class(task_score, max_score));
+};
+
+update_scores = function (submission_id, data) {
+    var row = $(".submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
+    row.attr("data-status", data["status"]);
+    row.children("td.status").text(data["status_text"]);
+    var terminal_status = is_status_terminal(data["status"]);
+    if (!terminal_status) {
+        row.children("td.status").append(
+            $("<img class=\"details\" src=\"{{static "loading.gif"}}\"/>"));
+    } else {
+        row.children("td.status").append(
+            $("<a class=\"details\">{{T "details"}}</a>"));
+    }
+    if (terminal_status) {
+        update_score(
+            row.children("td.public_score"), $("#task_score_public"),
+            data["public_score"], data["public_score_message"],
+            data["task_public_score"], data["task_public_score_message"],
+            data["task_score_is_partial"], data["max_public_score"]);
+{{if .CanUseTokens}}
+        update_score(
+            row.children("td.total_score"), $("#task_score_tokened"),
+            data["score"], data["score_message"],
+            data["task_tokened_score"], data["task_tokened_score_message"],
+            data["task_score_is_partial"], data["max_score"]);
+{{end}}
+    } else {
+        schedule_update_scores(submission_id);
+    }
+};
+
+schedule_update_scores = function (submission_id) {
+    if (typeof(schedule_update_scores.delays) === "undefined") {
+        schedule_update_scores.delays = {};
+    }
+    if (!schedule_update_scores.delays[submission_id]) {
+        schedule_update_scores.delays[submission_id] = 1000.0;
+    } else {
+        // We want exponential backoff, but slightly staggered across submissions to
+        // avoid asking about all of them at the same time, so we use 1.4 plus a
+        // value depending on the submission id.
+        var hash = (37 * parseInt(submission_id)) % 100 / 100.0;
+        schedule_update_scores.delays[submission_id] =
+            schedule_update_scores.delays[submission_id]
+                * (1.4 + hash * 0.2);
+    }
+    setTimeout(function () {
+        $.get(utils.contest_url("tasks", "{{.Task.Name}}", "submissions", submission_id), function (data) {
+            update_scores(submission_id, data);
+        });
+    }, schedule_update_scores.delays[submission_id]);
+};
+
+$(document).ready(function () {
+    $('.submission_list tbody tr[data-status][data-status!="{{.SR.JS .SR.CompilationFailed}}"][data-status!="{{.SR.JS .SR.Scored}}"]').each(function (idx, elem) {
+        schedule_update_scores($(this).attr("data-submission"));
+    });
+});
+
+{{end}}
+
+{{define "core"}}
+
+<div class="span9 task_submissions">
+
+<div class="page-header">
+    <h1>{{Format (T "%(name)s (%(short_name)s) <small>submissions</small>") "name" .Task.Title "short_name" .Task.Name}}</h1>
+</div>
+
+{{if .HasScoreType}}
+    {{$two := and (gt .MaxPublicScore 0.0) (lt .MaxPublicScore .MaxScore)}}
+<div class="task_score_container row-fluid">
+
+    {{if gt .MaxPublicScore 0.0}}
+        {{/* Show the public score (alone, if everything is public or tokens are disabled, or together with the tokened score). */}}
+    <div id="task_score_public"
+         class="{{if $two}}span6{{else}}span12{{end}} well well-small task_score {{.PublicScore.Class}}" data-live="task_score" data-live-match-task="{{.Task.ID}}">
+        <span>
+        {{if eq .MaxPublicScore .MaxScore}}
+{{T "Score:"}}
+        {{- else}}
+{{T "Public score:"}}
+        {{- end}}        </span>
+      <br/>
+        <span class="score">
+            {{.PublicScore.Text}}
+        {{if .IsScorePartial}}
+            <img src="{{static "loading.gif"}}" />
+        {{end}}
+        </span>
+    </div>
+    {{end}}
+
+    {{if lt .MaxPublicScore .MaxScore}}
+        {{/* Show the tokened score (alone if everything is non-public, or together with the public score). */}}
+    <div id="task_score_tokened"
+         class="{{if $two}}span6{{else}}span12{{end}}  well well-small task_score {{.TokenedScore.Class}}" data-live="task_score" data-live-match-task="{{.Task.ID}}">
+        <span>
+        {{if .CanUseTokens}}
+{{T "Score of tokened submissions:"}}
+        {{- else}}
+{{T "Total score:"}}
+        {{- end}}        </span>
+      <br/>
+        <span class="score">
+        {{if .CanUseTokens}}
+            {{.TokenedScore.Text}}
+            {{if .IsScorePartial}}
+            <img src="{{static "loading.gif"}}" />
+            {{end}}
+        {{else}}
+{{T "N/A"}}
+        {{- end}}        </span>
+    </div>
+    {{end}}
+
+</div>
+{{end}}
+
+{{if .CanSubmit}}
+
+<h2 style="margin-bottom: 10px">{{T "Submit a solution"}}</h2>
+
+  {{if .AllowPartial}}
+  <p><strong>{{T "You may submit any subset of outputs in a single submission."}}</strong></p>
+  {{end}}
+
+  {{if .SubmissionsLeft}}
+    <div class="span5">
+        <p>
+{{Format (T "You can submit %(submissions_left)s more solution(s).") "submissions_left" .SubmissionsLeft}}        </p>
+    </div>
+  {{end}}
+
+<div id="submit_solution" class="row">
+    <div class="span5">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{contest_url "tasks" .Task.Name "submit"}}" method="POST">
+            {{xsrf_form_html}}
+            <fieldset>
+  {{range $i, $f := .Task.SubmissionFormat}}
+                <div class="control-group">
+                    <label class="control-label" for="input{{$i}}">{{replace ".%l" ": " $f}}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge"
+                               id="input{{$i}}" name="{{$f}}"/>
+                    </div>
+                </div>
+  {{end}}
+  {{if .LanguageFormat}}
+                <div class="control-group">
+                    <div class="controls">
+                        <select name="language">
+  {{range .LanguageNames}}
+                            <option value="{{.}}">{{.}}</option>
+  {{end}}
+                        </select>
+                    </div>
+                </div>
+  {{end}}
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{{T "Submit"}}</button>
+                        <button type="reset" class="btn">{{T "Reset"}}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+  {{if .ZipForm}}
+    <div class="span4">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{contest_url "tasks" .Task.Name "submit"}}" method="POST">
+            {{xsrf_form_html}}
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="input_zip">{{T "submission.zip"}}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{{T "Submit"}}</button>
+                        <button type="reset" class="btn">{{T "Reset"}}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+  {{end}}
+</div>
+
+{{end}}
+
+<h2 style="margin: 40px 0 10px">{{T "Previous submissions"}}</h2>
+
+{{if and .CanUseTokensInContest (eq .ActualPhase 0)}}
+<div style="padding-bottom:10px">
+    {{if not .CanUseTokens}}
+{{T "Tokens are not allowed on this task."}}
+    {{- else if .CanPlayToken}}
+        {{if eq .TokensInfo.Available -1.0}}
+{{T "Right now, you have infinite tokens available on this task."}}
+        {{- else if eq .TokensInfo.Available 1.0}}
+{{T "Right now, you have one token available on this task."}}
+        {{- else}}
+{{Format (T "Right now, you have %(tokens)s tokens available on this task.") "tokens" .TokensInfo.String}}
+        {{- end}}
+        {{- if not .CanPlayTokenNow}}            {{Format (T "But you have to wait until %(expiration_time)s to use them.") "expiration_time" (format_datetime_smart .TokensInfo.Expiration)}}
+        {{- end}}
+        {{- if .TokensInfo.NextGen}}            {{Format (T "You will receive a new token at %(gen_time)s.") "gen_time" (format_datetime_smart .TokensInfo.NextGen)}}
+        {{- else}}            {{T "In the current situation, no more tokens will be generated."}}
+        {{- end}}
+    {{- else}}
+{{T "Right now, you do not have tokens available for this task."}}
+        {{- if and (eq .ActualPhase 0) .TokensInfo.NextGen}}        {{Format (T "You will receive a new token at %(gen_time)s.") "gen_time" (format_datetime_smart .TokensInfo.NextGen)}}
+            {{- if .WaitAfterGen}}                {{Format (T "But you will have to wait until %(expiration_time)s to use it.") "expiration_time" (format_datetime_smart .TokensInfo.Expiration)}}
+            {{- end}}
+        {{- else}}        {{T "In the current situation, no more tokens will be generated."}}
+        {{- end}}
+    {{- end}}</div>
+{{end}}
+
+
+{{if .HasUnofficial}}
+<h3>{{T "Unofficial submissions"}}</h3>
+  {{""}}{{template "submission_rows" .Unofficial}}{{""}}
+<h3>{{T "Official submissions"}}</h3>
+{{end}}
+
+{{""}}{{template "submission_rows" .Official}}{{""}}
+
+<div class="modal fade hide wide" id="submission_detail">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
+        <h3>{{T "Submission details"}}</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">{{T "Close"}}</a>
+    </div>
+</div>
+
+</div>
+{{end}}

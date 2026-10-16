@@ -1,0 +1,178 @@
+{{/*
+Ported from cms/server/contest/templates/macro/submission.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca
+Wehrstedt and the CMS contributors.
+
+submission_rows renders a submission table with all the (un)official
+submissions (CMS macro rows) from a submissionTable (submissions.go): its
+rows, newest first, and .D, the data of the page. The row (CMS macro row)
+is written inside the loop, so that the texts and URLs every row repeats
+are computed once per table; the rows come with their status text, scores
+(CMS score_type.format_score, get_score_class), file links (".%l" with the
+language's extension) and times computed in Go, since html/template calls
+functions slowly and a page may list hundreds of rows.
+
+A macro call is an expression in Jinja ({{ rows(...) }}): its line stays in
+the output, while a {{template}} line vanishes like a block tag. The empty
+{{""}} actions around the calls (task_submissions.html) keep their line
+and indentation; the newline and the indentation CMS writes before each
+row (the line of the call of row) are written by the loop.
+
+Changes in this fork: the table is a live region (id, data-live,
+data-live-match-task: R5.8) that live.js reloads when a submission of the
+task changes; the times are contest times with the time CMS shows as their
+title (R5.9).
+*/}}
+{{define "submission_rows"}}
+{{$d := .D}}
+{{$details := T "details"}}
+{{$na := T "N/A"}}
+{{$download := T "Download"}}
+{{$none := T "None"}}
+{{$played := T "Played"}}
+{{$play := T "Play!"}}
+{{$wait := T "Wait..."}}
+{{$notokens := T "No tokens"}}
+{{$loading := static "loading.gif"}}
+{{$xsrf := xsrf_form_html}}
+<table class="submission_list table table-bordered table-striped" id="submission_list_{{.Name}}" data-live="submission" data-live-match-task="{{$d.Task.ID}}">
+    <colgroup>
+{{if $d.ShowDate}}
+        <col class="datetime"/>
+{{else}}
+        <col class="time"/>
+{{end}}
+        <col class="status"/>
+{{if $d.HasScoreType}}
+    {{if $d.TwoScores}}
+        <col class="public_score"/>
+        <col class="total_score"/>
+    {{else}}
+        <col class="total_score"/>
+    {{end}}
+{{end}}
+{{if $d.DownloadAllowed}}
+        <col class="files"/>
+{{end}}
+{{if $d.TokenColumn}}
+        <col class="token"/>
+{{end}}
+    </colgroup>
+    <thead>
+        <tr>
+{{if $d.ShowDate}}
+            <th class="datetime">{{T "Date and time"}}</th>
+{{else}}
+            <th class="time">{{T "Time"}}</th>
+{{end}}
+            <th class="status">{{T "Status"}}</th>
+{{if $d.HasScoreType}}
+    {{if $d.TwoScores}}
+            <th class="public_score">{{T "Public score"}}</th>
+            <th class="total_score">{{T "Total score"}}</th>
+    {{else}}
+            <th class="total_score">{{T "Score"}}</th>
+    {{end}}
+{{end}}
+{{if $d.DownloadAllowed}}
+            <th class="files">{{T "Files"}}</th>
+{{end}}
+{{if $d.TokenColumn}}
+            <th class="token">{{T "Token"}}</th>
+{{end}}
+        </tr>
+    </thead>
+    <tbody>
+    {{range .Rows}}
+                {{""}}
+<tr data-submission="{{.Opaque}}" data-status="{{.Status}}">
+{{if $d.ShowDate}}
+    <td class="datetime" title="{{.TimeTitle}}">{{.TimeText}}</td>
+{{else}}
+    <td class="time" title="{{.TimeTitle}}">{{.TimeText}}</td>
+{{end}}
+    <td class="status">
+{{if .Final}}
+{{.StatusText}}        <a class="details">{{$details}}</a>
+{{else}}
+{{.StatusText}}      <img class="details" src="{{$loading}}" />
+{{end}}
+    </td>
+{{if $d.ShowPublic}}
+    {{if .PublicScore.Shown}}
+    <td class="public_score {{.PublicScore.Class}}">
+        {{.PublicScore.Text}}
+    </td>
+    {{else}}
+    <td class="public_score undefined">
+{{$na}}    </td>
+    {{end}}
+{{end}}
+{{if $d.ShowTotal}}
+    {{if .Score.Shown}}
+    <td class="total_score {{.Score.Class}}">
+        {{.Score.Text}}
+    </td>
+    {{else}}
+    <td class="total_score undefined">
+{{$na}}    </td>
+    {{end}}
+{{end}}
+{{if $d.DownloadAllowed}}
+    <td class="files">
+        {{/* '.%l' becomes the language's extension when it ends a name and no other file has that name (submissionFileLinks), so the download can reverse it. */}}
+        {{if .OneFile}}
+        <a class="btn" href="{{.OneFile.URL}}">
+{{$download}}        </a>
+        {{else if .Files}}
+        <div class="btn-group">
+            <a class="btn dropdown-toggle" data-toggle="dropdown">
+{{$download}}                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+            {{range .Files}}
+                <li>
+                    <a href="{{.URL}}">
+                        {{.Name}}
+                    </a>
+                </li>
+            {{end}}
+            </ul>
+        </div>
+        {{else}}
+        <a class="btn disabled">
+{{$none}}        </a>
+        {{end}}
+    </td>
+{{end}}
+{{if $d.TokenColumn}}
+    <td class="token">
+        {{if .Tokened}}
+        <a class="btn disabled">{{$played}}</a>
+        {{else}}
+            {{if $d.CanPlayTokenNow}}
+              {{/* Can play a token right now: show the button. */}}
+        <form action="{{.TokenURL}}" method="POST">
+            {{$xsrf}}
+            <button type="submit" class="btn btn-warning">{{$play}}</button>
+        </form>
+            {{else if $d.WaitToken}}
+              {{/* Can play a token, but only after a min_interval expires, or after the next token generation: ask to wait. */}}
+        <a class="btn btn-warning disabled">{{$wait}}</a>
+            {{else}}
+              {{/* No tokens to play at this moment, nor more will be generated: tell the user there are no tokens. */}}
+        <a class="btn disabled">{{$notokens}}</a>
+            {{end}}
+        {{end}}
+    </td>
+{{end}}
+</tr>
+    {{else}}
+        <tr>
+            <td colspan="{{$d.NumCols}}" class="no_submissions">{{T "no submissions"}}</td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>
+{{- end}}

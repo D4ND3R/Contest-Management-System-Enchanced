@@ -1,0 +1,57 @@
+{{/*
+Ported from cms/server/contest/templates/submission_details.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca
+Wehrstedt and the CMS contributors.
+Data: submissionDetailsData (submissions.go): .Details is the HTML of the
+score details (CMS get_html_details), .Result the compilation part of the
+result (nil if not compiled). A fragment loaded into the details dialog
+of task_submissions.html: it extends nothing. The comment after the
+heading of CMS (a TODO) takes the heading's newline with it.
+*/}}
+
+
+{{if .Details}}
+<div class="score_details">
+{{.Details.HTML}}
+</div>
+{{end}}
+
+{{with .Result}}
+<h3>{{T "Compilation output"}}</h3>{{/* TODO: trim long outputs and add facility to see raw */}}
+<table class="table table-bordered" style="table-layout: fixed;">
+    <tbody>
+        <tr>
+            <th>{{T "Compilation outcome:"}}</th>
+            <td>{{format_status_text .Text}}</td>
+        </tr>
+        <tr>
+            <th>{{T "Compilation time:"}}</th>
+            <td>
+{{if not .Time}}
+{{T "N/A"}}
+{{- else}}
+    {{format_duration .Time}}
+{{end}}
+            </td>
+        </tr>
+            <th>{{T "Memory used:"}}</th>
+            <td>
+{{if not .Memory}}
+{{T "N/A"}}
+{{- else}}
+    {{format_size .Memory}}
+{{end}}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{{if .Stdout}}
+<h4>{{T "Standard output"}}</h4>
+<pre>{{.Stdout}}</pre>
+{{end}}
+{{if .Stderr}}
+<h4>{{T "Standard error"}}</h4>
+<pre>{{.Stderr}}</pre>
+{{end}}
+{{end}}

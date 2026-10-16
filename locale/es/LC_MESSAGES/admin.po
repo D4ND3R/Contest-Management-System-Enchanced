@@ -36,3 +36,9 @@ msgstr "Actualizaciones en vivo: desconectado, la página busca novedades perió
 
 msgid "Source code"
 msgstr "Código fuente"
+
+msgid "Too many questions!"
+msgstr "¡Demasiadas preguntas!"
+
+msgid "Please wait a few seconds before asking another question."
+msgstr "Espera unos segundos antes de hacer otra pregunta."

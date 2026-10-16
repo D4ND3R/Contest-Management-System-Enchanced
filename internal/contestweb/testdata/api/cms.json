@@ -1,0 +1,2081 @@
+{
+ "about": "Answers of the JSON API of the original CMS (1.6.dev0, commit 1914a5a) to the steps of tools/steps.py, recorded by tools/record_api.py. See README.",
+ "steps": [
+  {
+   "name": "login: wrong password",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "password": "wrong"
+   },
+   "sql": [
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2030-01-01 00:00:00+00', analysis_enabled = false, analysis_start = '2100-01-01 00:00:00+00', analysis_stop = '2100-01-01 00:00:00+00', per_user_time = NULL",
+    "UPDATE contests SET ip_restriction = true, block_hidden_participations = false, min_submission_interval = NULL, max_submission_number = NULL",
+    "UPDATE tasks SET feedback_level = 'restricted', max_submission_number = NULL, min_submission_interval = NULL",
+    "UPDATE participations SET ip = NULL, hidden = false, unrestricted = false"
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "login: unknown user",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "nobody",
+    "password": "demo"
+   },
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "login: no arguments",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "login",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "password": "demo"
+   },
+   "save": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<login_data>"
+    }
+   }
+  },
+  {
+   "name": "login: bob",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "bob",
+    "password": "demo"
+   },
+   "save": "bob",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<login_data>"
+    }
+   }
+  },
+  {
+   "name": "login: wrong admin token",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "admin_token": "nope"
+   },
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "login: admin token, unknown user",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "nobody",
+    "admin_token": "test-admin-token"
+   },
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "login: impersonation",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "admin_token": "test-admin-token"
+   },
+   "save": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<login_data>"
+    }
+   }
+  },
+  {
+   "name": "login: logged in as another user",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "auth": "alice",
+   "form": {
+    "username": "bob",
+    "password": "demo"
+   },
+   "cms": {
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Logged in as alice but trying to login as bob"
+    }
+   }
+  },
+  {
+   "name": "login: logged in, same user",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "auth": "alice",
+   "form": {
+    "username": "alice",
+    "password": "x"
+   },
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<sent login_data>"
+    }
+   }
+  },
+  {
+   "name": "login: logged in, no username",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<sent login_data>"
+    }
+   }
+  },
+  {
+   "name": "login: invalid login_data",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "auth": "garbage",
+   "form": {
+    "username": "alice",
+    "password": "demo"
+   },
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<login_data>"
+    }
+   }
+  },
+  {
+   "name": "task_list: no login",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "An authenticated user is required"
+    }
+   }
+  },
+  {
+   "name": "task_list: invalid login_data",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "garbage",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "An authenticated user is required"
+    }
+   }
+  },
+  {
+   "name": "task_list",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "task_list: impersonated",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "submission_list",
+   "method": "GET",
+   "path": "/demo/api/sum/submission_list",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "list": [
+      {
+       "id": "4926046975063954292"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "submission_list: half",
+   "method": "GET",
+   "path": "/demo/api/half/submission_list",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "list": [
+      {
+       "id": "1111111111111111111"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "submission_list: no submissions",
+   "method": "GET",
+   "path": "/demo/api/quiz/submission_list",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "list": []
+    }
+   }
+  },
+  {
+   "name": "submission_list: bob",
+   "method": "GET",
+   "path": "/demo/api/sum/submission_list",
+   "auth": "bob",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "list": [
+      {
+       "id": "8732919409223706904"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "submission_list: unknown task",
+   "method": "GET",
+   "path": "/demo/api/nosuch/submission_list",
+   "auth": "alice",
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Not found"
+    }
+   }
+  },
+  {
+   "name": "submission_list: no login",
+   "method": "GET",
+   "path": "/demo/api/sum/submission_list",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "An authenticated user is required"
+    }
+   }
+  },
+  {
+   "name": "details: public, subtasks with private testcases",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "cms": {
+    "status": 500,
+    "content_type": "text/html; charset=UTF-8",
+    "body": "<!DOCTYPE html> <html lang=\"en\"> <head> <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>Error 500</tit"
+   }
+  },
+  {
+   "name": "details: Sum, restricted",
+   "method": "GET",
+   "path": "/demo/api/half/submissions/1111111111111111111/details",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": "000"
+      },
+      {
+       "idx": "001"
+      },
+      {
+       "idx": "002"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "details: unknown submission",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/123/details",
+   "auth": "alice",
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Submission not found"
+    }
+   }
+  },
+  {
+   "name": "details: submission of another task",
+   "method": "GET",
+   "path": "/demo/api/half/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Submission not found"
+    }
+   }
+  },
+  {
+   "name": "details: submission of another participant",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/8732919409223706904/details",
+   "auth": "alice",
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Submission not found"
+    }
+   }
+  },
+  {
+   "name": "details: unknown task",
+   "method": "GET",
+   "path": "/demo/api/nosuch/submissions/1/details",
+   "auth": "alice",
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Task not found"
+    }
+   }
+  },
+  {
+   "name": "details: not scored",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/8732919409223706904/details",
+   "auth": "bob",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": null
+    }
+   }
+  },
+  {
+   "name": "details: no login",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "An authenticated user is required"
+    }
+   }
+  },
+  {
+   "name": "full_details: not impersonated",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/full_details",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Admin impersonation required"
+    }
+   }
+  },
+  {
+   "name": "full_details: not impersonated, unknown task",
+   "method": "GET",
+   "path": "/demo/api/nosuch/submissions/1/full_details",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Admin impersonation required"
+    }
+   }
+  },
+  {
+   "name": "full_details",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/full_details",
+   "auth": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": 0,
+       "score_fraction": 0.0,
+       "score": 0.0,
+       "max_score": 40,
+       "testcases": [
+        {
+         "idx": "000",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ],
+         "time": 0.012,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 1048576
+        },
+        {
+         "idx": "001",
+         "outcome": "Not correct",
+         "text": [
+          "Output isn't correct"
+         ],
+         "time": 0.5,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 2097152
+        }
+       ]
+      },
+      {
+       "idx": 1,
+       "score_fraction": 1.0,
+       "score": 60.0,
+       "max_score": 60,
+       "testcases": [
+        {
+         "idx": "002",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ],
+         "time": 0.25,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 3145728
+        },
+        {
+         "idx": "003",
+         "outcome": "Correct",
+         "text": [
+          "Execution timed out"
+         ],
+         "time": 1.2,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": true,
+         "memory": null
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "full_details: Sum",
+   "method": "GET",
+   "path": "/demo/api/half/submissions/1111111111111111111/full_details",
+   "auth": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": "000",
+       "outcome": "Correct",
+       "text": [
+        "Output is correct"
+       ],
+       "time": 0.01,
+       "memory": 1048576
+      },
+      {
+       "idx": "001",
+       "outcome": "Partially correct",
+       "text": [
+        "Output is partially correct"
+       ],
+       "time": 0.02,
+       "memory": 2097152
+      },
+      {
+       "idx": "002",
+       "outcome": "Not correct",
+       "text": [
+        "Output isn't correct"
+       ],
+       "time": 0.03,
+       "memory": null
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "full_details: unknown submission",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/123/full_details",
+   "auth": "admin",
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Submission not found"
+    }
+   }
+  },
+  {
+   "name": "full_details: unknown task",
+   "method": "GET",
+   "path": "/demo/api/nosuch/submissions/1/full_details",
+   "auth": "admin",
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Task not found"
+    }
+   }
+  },
+  {
+   "name": "details: tokened, restricted",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "sql": [
+    "INSERT INTO tokens (submission_id, timestamp) VALUES ((SELECT id FROM submissions WHERE opaque_id = 4926046975063954292), '2026-10-08 11:00:00+00')"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": 0,
+       "score_fraction": 0.0,
+       "score": 0.0,
+       "max_score": 40,
+       "testcases": [
+        {
+         "idx": "000",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ]
+        },
+        {
+         "idx": "001"
+        }
+       ]
+      },
+      {
+       "idx": 1,
+       "score_fraction": 1.0,
+       "score": 60.0,
+       "max_score": 60,
+       "testcases": [
+        {
+         "idx": "002"
+        },
+        {
+         "idx": "003"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "details: tokened, oi_restricted",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "sql": [
+    "UPDATE tasks SET feedback_level = 'oi_restricted' WHERE name = 'sum'"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": 0,
+       "score_fraction": 0.0,
+       "score": 0.0,
+       "max_score": 40,
+       "testcases": [
+        {
+         "idx": "000",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ]
+        }
+       ]
+      },
+      {
+       "idx": 1,
+       "score_fraction": 1.0,
+       "score": 60.0,
+       "max_score": 60,
+       "testcases": []
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "details: tokened, full",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "sql": [
+    "UPDATE tasks SET feedback_level = 'full' WHERE name = 'sum'"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": 0,
+       "score_fraction": 0.0,
+       "score": 0.0,
+       "max_score": 40,
+       "testcases": [
+        {
+         "idx": "000",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ],
+         "time": 0.012,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 1048576
+        },
+        {
+         "idx": "001",
+         "outcome": "Not correct",
+         "text": [
+          "Output isn't correct"
+         ],
+         "time": 0.5,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 2097152
+        }
+       ]
+      },
+      {
+       "idx": 1,
+       "score_fraction": 1.0,
+       "score": 60.0,
+       "max_score": 60,
+       "testcases": [
+        {
+         "idx": "002",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ],
+         "time": 0.25,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 3145728
+        },
+        {
+         "idx": "003",
+         "outcome": "Correct",
+         "text": [
+          "Execution timed out"
+         ],
+         "time": 1.2,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": true,
+         "memory": null
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "details: Sum, full",
+   "method": "GET",
+   "path": "/demo/api/half/submissions/1111111111111111111/details",
+   "auth": "alice",
+   "sql": [
+    "UPDATE tasks SET feedback_level = 'full' WHERE name = 'half'"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": "000"
+      },
+      {
+       "idx": "001"
+      },
+      {
+       "idx": "002"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "details: Sum, oi_restricted",
+   "method": "GET",
+   "path": "/demo/api/half/submissions/1111111111111111111/details",
+   "auth": "alice",
+   "sql": [
+    "UPDATE tasks SET feedback_level = 'oi_restricted' WHERE name = 'half'"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": "000"
+      },
+      {
+       "idx": "001"
+      },
+      {
+       "idx": "002"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "task_list: contest over",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "sql": [
+    "UPDATE tasks SET feedback_level = 'restricted'",
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2026-01-01 00:00:00+00'"
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "submission_list: contest over",
+   "method": "GET",
+   "path": "/demo/api/sum/submission_list",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "details: contest over",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": 0,
+       "score_fraction": 0.0,
+       "score": 0.0,
+       "max_score": 40,
+       "testcases": [
+        {
+         "idx": "000",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ]
+        },
+        {
+         "idx": "001"
+        }
+       ]
+      },
+      {
+       "idx": 1,
+       "score_fraction": 1.0,
+       "score": 60.0,
+       "max_score": 60,
+       "testcases": [
+        {
+         "idx": "002"
+        },
+        {
+         "idx": "003"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "task_list: contest over, impersonated",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "admin",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "task_list: override_phase_check",
+   "method": "GET",
+   "path": "/demo/api/task_list?override_phase_check=1",
+   "auth": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "task_list: override_phase_check=0",
+   "method": "GET",
+   "path": "/demo/api/task_list?override_phase_check=0",
+   "auth": "admin",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "task_list: bad override_phase_check",
+   "method": "GET",
+   "path": "/demo/api/task_list?override_phase_check=yes",
+   "auth": "admin",
+   "cms": {
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Cannot parse boolean argument override_phase_check"
+    }
+   }
+  },
+  {
+   "name": "task_list: override_phase_check, not impersonated",
+   "method": "GET",
+   "path": "/demo/api/task_list?override_phase_check=1",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "task_list: contest over, unrestricted",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "sql": [
+    "UPDATE participations SET unrestricted = true WHERE id = (SELECT p.id FROM participations p JOIN users u ON u.id = p.user_id WHERE u.username = 'alice')"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "task_list: unrestricted, override_phase_check=0",
+   "method": "GET",
+   "path": "/demo/api/task_list?override_phase_check=0",
+   "auth": "admin",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "task_list: analysis",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "sql": [
+    "UPDATE participations SET unrestricted = false",
+    "UPDATE groups SET analysis_enabled = true, analysis_start = '2026-02-01 00:00:00+00', analysis_stop = '2030-01-01 00:00:00+00'",
+    "DELETE FROM tokens WHERE submission_id = (SELECT id FROM submissions WHERE opaque_id = 4926046975063954292)"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "details: analysis",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": 0,
+       "score_fraction": 0.0,
+       "score": 0.0,
+       "max_score": 40,
+       "testcases": [
+        {
+         "idx": "000",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ],
+         "time": 0.012,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 1048576
+        },
+        {
+         "idx": "001",
+         "outcome": "Not correct",
+         "text": [
+          "Output isn't correct"
+         ],
+         "time": 0.5,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 2097152
+        }
+       ]
+      },
+      {
+       "idx": 1,
+       "score_fraction": 1.0,
+       "score": 60.0,
+       "max_score": 60,
+       "testcases": [
+        {
+         "idx": "002",
+         "outcome": "Correct",
+         "text": [
+          "Output is correct"
+         ],
+         "time": 0.25,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": false,
+         "memory": 3145728
+        },
+        {
+         "idx": "003",
+         "outcome": "Correct",
+         "text": [
+          "Execution timed out"
+         ],
+         "time": 1.2,
+         "time_limit": 1.0,
+         "time_limit_was_exceeded": true,
+         "memory": null
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "details: Sum, analysis",
+   "method": "GET",
+   "path": "/demo/api/half/submissions/1111111111111111111/details",
+   "auth": "alice",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "details": [
+      {
+       "idx": "000",
+       "outcome": "Correct",
+       "text": [
+        "Output is correct"
+       ],
+       "time": 0.01,
+       "memory": 1048576
+      },
+      {
+       "idx": "001",
+       "outcome": "Partially correct",
+       "text": [
+        "Output is partially correct"
+       ],
+       "time": 0.02,
+       "memory": 2097152
+      },
+      {
+       "idx": "002",
+       "outcome": "Not correct",
+       "text": [
+        "Output isn't correct"
+       ],
+       "time": 0.03,
+       "memory": null
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "task_list: before the contest",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "sql": [
+    "UPDATE groups SET analysis_enabled = false, analysis_start = '2100-01-01 00:00:00+00', analysis_stop = '2100-01-01 00:00:00+00', start = '2029-01-01 00:00:00+00', stop = '2030-01-01 00:00:00+00'"
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "details: before the contest",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Wrong contest phase"
+    }
+   }
+  },
+  {
+   "name": "details: before the contest, override_phase_check",
+   "method": "GET",
+   "path": "/demo/api/sum/submissions/4926046975063954292/details?override_phase_check=1",
+   "auth": "admin",
+   "cms": {
+    "status": 500,
+    "content_type": "text/html; charset=UTF-8",
+    "body": "<!DOCTYPE html> <html lang=\"en\"> <head> <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>Error 500</tit"
+   }
+  },
+  {
+   "name": "login: IP restriction",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "password": "demo"
+   },
+   "sql": [
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2030-01-01 00:00:00+00', analysis_enabled = false, analysis_start = '2100-01-01 00:00:00+00', analysis_stop = '2100-01-01 00:00:00+00', per_user_time = NULL",
+    "UPDATE contests SET ip_restriction = true, block_hidden_participations = false, min_submission_interval = NULL, max_submission_number = NULL",
+    "UPDATE tasks SET feedback_level = 'restricted', max_submission_number = NULL, min_submission_interval = NULL",
+    "UPDATE participations SET ip = NULL, hidden = false, unrestricted = false",
+    "UPDATE participations SET ip = '{10.0.0.1/32}' WHERE id = (SELECT p.id FROM participations p JOIN users u ON u.id = p.user_id WHERE u.username = 'alice')"
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "task_list: IP restriction",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "An authenticated user is required"
+    }
+   }
+  },
+  {
+   "name": "login: IP restriction, impersonation",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "admin_token": "test-admin-token"
+   },
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<login_data>"
+    }
+   }
+  },
+  {
+   "name": "task_list: IP restriction, impersonated",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "login: hidden",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "password": "demo"
+   },
+   "sql": [
+    "UPDATE participations SET ip = NULL, hidden = true",
+    "UPDATE contests SET block_hidden_participations = true"
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "task_list: hidden",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "An authenticated user is required"
+    }
+   }
+  },
+  {
+   "name": "task_list: hidden, impersonated",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "login: password authentication off",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "password": "demo"
+   },
+   "sql": [
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2030-01-01 00:00:00+00', analysis_enabled = false, analysis_start = '2100-01-01 00:00:00+00', analysis_stop = '2100-01-01 00:00:00+00', per_user_time = NULL",
+    "UPDATE contests SET ip_restriction = true, block_hidden_participations = false, min_submission_interval = NULL, max_submission_number = NULL",
+    "UPDATE tasks SET feedback_level = 'restricted', max_submission_number = NULL, min_submission_interval = NULL",
+    "UPDATE participations SET ip = NULL, hidden = false, unrestricted = false",
+    "UPDATE contests SET allow_password_authentication = false"
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Login failed"
+    }
+   }
+  },
+  {
+   "name": "login: password authentication off, impersonation",
+   "method": "POST",
+   "path": "/demo/api/login",
+   "form": {
+    "username": "alice",
+    "admin_token": "test-admin-token"
+   },
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "login_data": "<login_data>"
+    }
+   }
+  },
+  {
+   "name": "task_list: password authentication off",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "alice",
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "An authenticated user is required"
+    }
+   }
+  },
+  {
+   "name": "task_list: password authentication off, impersonated",
+   "method": "GET",
+   "path": "/demo/api/task_list",
+   "auth": "admin",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "tasks": [
+      {
+       "name": "sum",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "sum.%l"
+       ]
+      },
+      {
+       "name": "half",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "half.%l"
+       ]
+      },
+      {
+       "name": "quiz",
+       "statements": [
+        "it"
+       ],
+       "submission_format": [
+        "output_000.txt",
+        "output_001.txt"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "submit",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "form": {
+    "language": "C++17 / g++"
+   },
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "sql": [
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2030-01-01 00:00:00+00', analysis_enabled = false, analysis_start = '2100-01-01 00:00:00+00', analysis_stop = '2100-01-01 00:00:00+00', per_user_time = NULL",
+    "UPDATE contests SET ip_restriction = true, block_hidden_participations = false, min_submission_interval = NULL, max_submission_number = NULL",
+    "UPDATE tasks SET feedback_level = 'restricted', max_submission_number = NULL, min_submission_interval = NULL",
+    "UPDATE participations SET ip = NULL, hidden = false, unrestricted = false",
+    "UPDATE contests SET allow_password_authentication = true"
+   ],
+   "check": "SELECT official::text || ' ' || coalesce(language, '-') || ' ' || comment FROM submissions ORDER BY id DESC LIMIT 1",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "id": "<id:0>"
+    },
+    "check": "true C++17 / g++ sum.cpp"
+   }
+  },
+  {
+   "name": "submit: language guessed",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "check": "SELECT official::text || ' ' || coalesce(language, '-') || ' ' || comment FROM submissions ORDER BY id DESC LIMIT 1",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "id": "<id:1>"
+    },
+    "check": "true C++17 / g++ sum.cpp"
+   }
+  },
+  {
+   "name": "submit: no files",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "form": {
+    "language": "C++17 / g++"
+   },
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Invalid submission format!",
+     "details": "Please select the correct files."
+    }
+   }
+  },
+  {
+   "name": "submit: wrong file",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "other.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Invalid submission format!",
+     "details": "Please select the correct files."
+    }
+   }
+  },
+  {
+   "name": "submit: unknown language",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "form": {
+    "language": "Cobol"
+   },
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Invalid submission format!",
+     "details": "Please select the correct files."
+    }
+   }
+  },
+  {
+   "name": "submit: unknown task",
+   "method": "POST",
+   "path": "/demo/api/nosuch/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 404,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Task not found"
+    }
+   }
+  },
+  {
+   "name": "submit: no login",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "text/html; charset=UTF-8",
+    "body": "A critical error has occurred :-("
+   }
+  },
+  {
+   "name": "submit: too frequent",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "sql": [
+    "UPDATE contests SET min_submission_interval = '60 seconds'"
+   ],
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Submissions too frequent!",
+     "details": "Among all tasks, you can submit again after 60 seconds from last submission."
+    }
+   }
+  },
+  {
+   "name": "submit: too frequent on the task",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "sql": [
+    "UPDATE contests SET min_submission_interval = NULL",
+    "UPDATE tasks SET min_submission_interval = '120 seconds' WHERE name = 'sum'"
+   ],
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Submissions too frequent!",
+     "details": "For this task, you can submit again after 120 seconds from last submission."
+    }
+   }
+  },
+  {
+   "name": "submit: override_min_interval, not impersonated",
+   "method": "POST",
+   "path": "/demo/api/sum/submit?override_min_interval=1",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Submissions too frequent!",
+     "details": "For this task, you can submit again after 120 seconds from last submission."
+    }
+   }
+  },
+  {
+   "name": "submit: override_min_interval",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "admin",
+   "form": {
+    "override_min_interval": "1"
+   },
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "id": "<id:2>"
+    }
+   }
+  },
+  {
+   "name": "submit: too many",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "sql": [
+    "UPDATE tasks SET min_submission_interval = NULL",
+    "UPDATE tasks SET max_submission_number = 2 WHERE name = 'sum'"
+   ],
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Too many submissions!",
+     "details": "You have reached the maximum limit of at most 2 submissions on this task."
+    }
+   }
+  },
+  {
+   "name": "submit: too many in the contest",
+   "method": "POST",
+   "path": "/demo/api/half/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "half.%l",
+     "filename": "half.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "sql": [
+    "UPDATE tasks SET max_submission_number = NULL",
+    "UPDATE contests SET max_submission_number = 3"
+   ],
+   "cms": {
+    "status": 422,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Too many submissions!",
+     "details": "You have reached the maximum limit of at most 3 submissions among all tasks."
+    }
+   }
+  },
+  {
+   "name": "submit: override_max_number",
+   "method": "POST",
+   "path": "/demo/api/half/submit?override_max_number=1",
+   "auth": "admin",
+   "files": [
+    {
+     "field": "half.%l",
+     "filename": "half.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "id": "<id:3>"
+    }
+   }
+  },
+  {
+   "name": "submit: bad override_max_number",
+   "method": "POST",
+   "path": "/demo/api/half/submit?override_max_number=2",
+   "auth": "admin",
+   "files": [
+    {
+     "field": "half.%l",
+     "filename": "half.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Cannot parse boolean argument override_max_number"
+    }
+   }
+  },
+  {
+   "name": "submit: bad override_official",
+   "method": "POST",
+   "path": "/demo/api/half/submit?override_official=true",
+   "auth": "admin",
+   "files": [
+    {
+     "field": "half.%l",
+     "filename": "half.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "cms": {
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "Cannot parse boolean argument override_official"
+    }
+   }
+  },
+  {
+   "name": "submit: contest over",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "sql": [
+    "UPDATE contests SET max_submission_number = NULL",
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2026-01-01 00:00:00+00'"
+   ],
+   "cms": {
+    "status": 403,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "error": "The contest is not open"
+    }
+   }
+  },
+  {
+   "name": "submit: contest over, override_phase_check",
+   "method": "POST",
+   "path": "/demo/api/sum/submit?override_phase_check=1",
+   "auth": "admin",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "check": "SELECT official::text || ' ' || coalesce(language, '-') || ' ' || comment FROM submissions ORDER BY id DESC LIMIT 1",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "id": "<id:4>"
+    },
+    "check": "false C++17 / g++ sum.cpp"
+   }
+  },
+  {
+   "name": "submit: analysis",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "alice",
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "sql": [
+    "UPDATE groups SET analysis_enabled = true, analysis_start = '2026-02-01 00:00:00+00', analysis_stop = '2030-01-01 00:00:00+00'"
+   ],
+   "check": "SELECT official::text || ' ' || coalesce(language, '-') || ' ' || comment FROM submissions ORDER BY id DESC LIMIT 1",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "id": "<id:5>"
+    },
+    "check": "false C++17 / g++ sum.cpp"
+   }
+  },
+  {
+   "name": "submit: analysis, override_official",
+   "method": "POST",
+   "path": "/demo/api/sum/submit",
+   "auth": "admin",
+   "form": {
+    "override_official": "1"
+   },
+   "files": [
+    {
+     "field": "sum.%l",
+     "filename": "sum.cpp",
+     "content": "#include <cstdio>\nint main() { int a, b; scanf(\"%d %d\", &a, &b); printf(\"%d\\n\", a + b); }\n"
+    }
+   ],
+   "check": "SELECT official::text || ' ' || coalesce(language, '-') || ' ' || comment FROM submissions ORDER BY id DESC LIMIT 1",
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "id": "<id:6>"
+    },
+    "check": "true C++17 / g++ sum.cpp"
+   }
+  },
+  {
+   "name": "submission_list: after the submissions",
+   "method": "GET",
+   "path": "/demo/api/sum/submission_list",
+   "auth": "alice",
+   "sql": [
+    "UPDATE groups SET start = '2025-01-01 00:00:00+00', stop = '2030-01-01 00:00:00+00', analysis_enabled = false, analysis_start = '2100-01-01 00:00:00+00', analysis_stop = '2100-01-01 00:00:00+00', per_user_time = NULL",
+    "UPDATE contests SET ip_restriction = true, block_hidden_participations = false, min_submission_interval = NULL, max_submission_number = NULL",
+    "UPDATE tasks SET feedback_level = 'restricted', max_submission_number = NULL, min_submission_interval = NULL",
+    "UPDATE participations SET ip = NULL, hidden = false, unrestricted = false"
+   ],
+   "cms": {
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "json": {
+     "list": [
+      {
+       "id": "4926046975063954292"
+      },
+      {
+       "id": "<id:0>"
+      },
+      {
+       "id": "<id:1>"
+      },
+      {
+       "id": "<id:2>"
+      },
+      {
+       "id": "<id:4>"
+      },
+      {
+       "id": "<id:5>"
+      },
+      {
+       "id": "<id:6>"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

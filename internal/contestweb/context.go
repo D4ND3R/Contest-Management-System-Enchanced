@@ -473,6 +473,9 @@ func (s *Server) contestRoute(a access, h func(*Ctx)) http.HandlerFunc {
 		if !ok {
 			return
 		}
+		if r.Method == http.MethodPost && !c.parseForm() {
+			return
+		}
 		switch a.auth {
 		case authPage:
 			if c.Participation == nil {
@@ -490,6 +493,30 @@ func (s *Server) contestRoute(a access, h func(*Ctx)) http.HandlerFunc {
 		}
 		h(c)
 	}
+}
+
+// formMemory bounds the memory used to parse a multipart body; larger
+// parts go to temporary files (as in the CSRF check).
+const formMemory = 8 << 20
+
+// parseForm parses the query and the body of a POST before the access
+// rules read their arguments (Tornado's get_argument reads both): the
+// CSRF check already parsed forms, except for the requests it lets
+// through without one (the API login, X-CMS-Authorization). It answers
+// 400 or 413 (JSON on the API) and returns false when the body cannot be
+// read.
+func (c *Ctx) parseForm() bool {
+	err := web.ParseForm(c.W, c.R, MaxBody, formMemory)
+	if err == nil {
+		return true
+	}
+	status := web.FormStatus(err)
+	if c.API {
+		c.JSONError(status, http.StatusText(status))
+	} else {
+		c.Error(status)
+	}
+	return false
 }
 
 // newCtx prepares a request (CMS ContestHandler.prepare): it answers

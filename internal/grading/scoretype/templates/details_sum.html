@@ -1,0 +1,66 @@
+{{/*
+Ported from the TEMPLATE of Sum in cms/grading/scoretypes/Sum.py of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2013-2018 Luca
+Wehrstedt and the CMS contributors. As in CMS, the rows of the testcases with
+an outcome have no </tr>.
+Lines holding only control actions vanish (Jinja's trim_blocks and
+lstrip_blocks); a {% trans %} block at the start of a line is written at
+column 0 joined to the next line, as CMS renders it (see details_html.go).
+*/}}
+{{$timing := .ShowTiming}}
+<table class="testcase-list">
+    <thead>
+        <tr>
+            <th class="idx">
+{{.T "#"}}            </th>
+            <th class="outcome">
+{{.T "Outcome"}}            </th>
+            <th class="details">
+{{.T "Details"}}            </th>
+    {{if $timing}}
+            <th class="execution-time">
+{{.T "Execution time"}}            </th>
+            <th class="memory-used">
+{{.T "Memory used"}}            </th>
+    {{end}}
+        </tr>
+    </thead>
+    <tbody>
+    {{range $i, $tc := .Testcases}}
+        {{if and (.Has "outcome") (.Has "text")}}
+            {{if eq .Outcome "Correct"}}
+        <tr class="correct">
+            {{else if eq .Outcome "Not correct"}}
+        <tr class="notcorrect">
+            {{else}}
+        <tr class="partiallycorrect">
+            {{end}}
+            <td class="idx">{{$.Index $i}}</td>
+            <td class="outcome">{{$.Outcome .Outcome}}</td>
+            <td class="details">{{$.StatusText .Text}}</td>
+            {{if $timing}}
+            <td class="execution-time">
+                {{if and (.Has "time") .Time}}
+                {{$.Duration .Time}}
+                {{else}}
+{{$.T "N/A"}}{{end}}            </td>
+            <td class="memory-used">
+                {{if and (.Has "memory") .Memory}}
+                {{$.Size .Memory}}
+                {{else}}
+{{$.T "N/A"}}{{end}}            </td>
+            {{end}}
+        {{else}}
+        <tr class="undefined">
+        {{if $timing}}
+            <td colspan="5">
+        {{else}}
+            <td colspan="3">
+        {{end}}
+{{$.T "N/A"}}            </td>
+        </tr>
+        {{end}}
+    {{end}}
+    </tbody>
+</table>

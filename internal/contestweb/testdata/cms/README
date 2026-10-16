@@ -14,14 +14,43 @@ installation), captured with Python's urllib on 2026-10-15:
                        without language documentation)
   register.html        GET /demo/register             (allow_registration and
   login_register.html  GET /demo                       two teams, ita and arg)
+  communication*.html  GET /demo/communication        (logged in as alice):
+                       communication.html with the announcements, messages
+                       and questions of insertCommunication
+                       (communication_test.go), _empty without them,
+                       _noquestions with allow_questions false, _before
+                       before the start of the contest
 
-TestCMSPages (pages_test.go) renders the same pages and compares them byte
+TestCMSPages (pages_test.go; TestCMSCommunication in communication_test.go
+for communication*.html) renders the same pages and compares them byte
 for byte after replacing what changes between requests (static file hashes,
 CSRF tokens, times) and the documented differences of this fork (D10: CSP
 nonce, handlers moved out of the HTML, comments html/template drops; R5.8:
 live updates indicator; N8: link to the source code; R2.2: the
-explanation of the outcome of the seccomp filter in the documentation).
+explanation of the outcome of the seccomp filter in the documentation;
+R5.5 and R5.9 on the communication page: the attributes of the live
+regions, their script, and contest times whose title is the time CMS
+shows).
 
 token_rules.json holds what format_token_rules of CMS (formatting.py)
 returns for the token rules of TestFormatTokenRules (pages_test.go) in
 seven languages, recorded by calling it with CMS's own translations.
+
+tasks/ holds what the same CMS answered on the task pages: descriptions,
+statements and attachments, the submissions of a task in every status
+(official or not, with and without tokens, limits, analysis mode, after
+the end), the status JSON, the details of each score type, the file
+downloads (headers), the testing page, its JSON, details and downloads,
+in a few languages. scenarios.json lists the states (SQL on the demo
+contest, for user carol) and the requests; capture.py applied them to a
+copy of the reference database and recorded the answers in
+captured.json.gz. TestCMSTaskPages (tasks_cms_test.go) applies the same
+SQL to the demo dump, sets the clock to the time of each capture and
+compares status, Location, Content-Type, Content-Disposition, the JSON
+values and the pages (normalized as above, plus: the attributes of the
+live regions, the contest times of the rows whose title is the time CMS
+shows, the onchange handlers of the file inputs and the comments of the
+scripts). Two answers differ on purpose and are checked for what this
+fork shows: the public details of a subtask with private testcases (CMS
+fails and says "Score details temporarily unavailable."; R5.4) and the
+times of the submission rows in Japanese (CMS formats them in English).

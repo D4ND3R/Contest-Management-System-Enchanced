@@ -193,6 +193,81 @@ Con un proxy delante, poner `num_proxies: 1` para que el sitio vea la
 dirección real de los concursantes (restricción y entrada por IP, límites
 de intentos).
 
+## Problemas, envíos y pruebas
+
+**Descripción.** La página de cada problema muestra sus enunciados, sus
+límites, su tipo, los comandos de compilación de sus lenguajes, sus reglas
+de tokens y sus adjuntos (con su tipo y tamaño), como CMS. CMS solo tiene
+enunciados PDF; aquí un enunciado también puede ser **Markdown** (se
+muestra dentro del sitio, sin HTML crudo) o fuente **LaTeX** (se descarga
+como `.tex`): el sitio los distingue por su contenido. Con varios
+enunciados se muestran primero los principales del problema y los de los
+idiomas preferidos del concursante.
+
+**Enviar.** Un archivo por elemento del formato de envío, con el lenguaje
+elegido en la lista (al elegir un archivo la lista se reduce a los
+lenguajes de su extensión, como en CMS) o, en problemas de varios
+archivos, un `.zip` con todos. Los límites son los de CMS, con sus
+mensajes:
+
+| Ajuste (concurso o problema) | Efecto |
+|---|---|
+| `max_submission_number` | envíos en total (concurso) o en el problema |
+| `min_submission_interval` | tiempo entre envíos; no se aplica en los últimos `min_submission_interval_grace_period` del tiempo del concursante |
+| `contest_web.max_submission_length` | bytes por archivo |
+
+Los límites se vuelven a comprobar al guardar el envío, así que envíos
+simultáneos no pueden saltarlos. Los envíos son oficiales mientras el
+concursante compite; en modo análisis (y después de su tiempo, si
+`allow_unofficial_submission_before_analysis_mode`) no son oficiales y no
+cuentan.
+
+**Envíos.** La página de envíos lista los últimos 500 del problema, del
+más nuevo al más viejo. Su estado y sus puntajes se actualizan solos (como
+en CMS, y al instante con las actualizaciones en vivo). "detalles" muestra
+el puntaje por subtarea y los casos que permite el `feedback_level` del
+problema (`full`, `restricted`, `oi_restricted`; todo en modo análisis o
+después de usar un token) y la salida de la compilación. Los archivos se
+pueden descargar si el concurso lo permite
+(`submissions_download_allowed`).
+
+**Tokens.** Las reglas de CMS: tokens del concurso y del problema, número
+inicial, generación, máximo, total e intervalo mínimo. Un token muestra el
+resultado completo de un envío y lo hace contar para el puntaje. Dos
+pedidos simultáneos nunca usan más tokens de los disponibles.
+
+**Pruebas.** La página Testing (`allow_user_tests`) ejecuta una solución
+con una entrada del concursante en los problemas cuyo tipo lo permite (no
+en los de solo salida), con `max_user_test_number`,
+`min_user_test_interval` y `contest_web.max_input_length`. Las pruebas se
+numeran por problema desde la más vieja; la página lista las últimas 200
+de cada problema.
+
+## Comunicación
+
+La página Comunicación muestra los anuncios del concurso, las preguntas
+del concursante con sus respuestas y los mensajes privados del staff, de
+la más nueva a la más antigua. Los anuncios, las respuestas y los mensajes
+son Markdown; las preguntas, texto plano. Aparecen sin recargar: se
+muestra una notificación y las listas de la página se actualizan solas (en
+esa página el contador de "sin leer" queda en cero). Cuando la novedad
+es la primera de su tipo (la página no tenía lista de mensajes, por
+ejemplo), la página se recarga antes de 10 segundos, esperando si se está
+escribiendo una pregunta. El formulario para preguntar aparece cuando el
+concurso permite preguntas (`allow_questions`):
+
+- el asunto tiene a lo sumo 50 caracteres y el texto 2000, como en CMS
+  (una pregunta más larga se rechaza con "¡La pregunta es demasiado larga!");
+- el asunto sugiere los nombres de los problemas una vez empezado el
+  concurso;
+- un concursante puede hacer 10 preguntas seguidas y después una cada 20
+  segundos ("¡Demasiadas preguntas!"), para que nadie inunde al staff.
+
+El staff ve las preguntas nuevas al instante en la administración.
+
+Los programas (scripts, herramientas escritas para CMS) usan la
+[API JSON](api.md).
+
 ## Seguridad
 
 - Cada formulario lleva un token CSRF (`_xsrf`, como CMS) y las peticiones
@@ -209,6 +284,17 @@ de intentos).
   cualquier réplica del sitio, no solo la que las generó.
 - La cookie de sesión no contiene la contraseña ni su hash, sino una huella
   firmada; dura `cookie_duration` desde la última página.
-- Entrada limitada en frecuencia; registro limitado por dirección.
-- Indicador y actualizaciones en vivo; enlace al código fuente en el pie.
+- Entrada limitada en frecuencia; registro limitado por dirección; un
+  concursante puede hacer 10 preguntas seguidas y después una cada 20
+  segundos.
+- Indicador y actualizaciones en vivo (las listas de la página
+  Comunicación se actualizan solas); enlace al código fuente en el pie.
 - Una sola zona horaria; tiempo de concurso en lugar de la hora.
+- Enunciados en Markdown y LaTeX además de PDF.
+- Las listas están acotadas: los últimos 500 envíos y 200 pruebas de cada
+  problema (los más viejos conservan sus URLs).
+- Se muestran los casos públicos de una subtarea que también tiene casos
+  privados ("detalles" y la API); CMS falla ahí con "Score details
+  temporarily unavailable.".
+- Las horas de las filas de envíos se escriben en el idioma de la página
+  (CMS las escribe en inglés).

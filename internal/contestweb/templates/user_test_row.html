@@ -1,0 +1,84 @@
+{{/*
+Ported from cms/server/contest/templates/user_test_row.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca
+Wehrstedt and the CMS contributors.
+A row of the user tests of a task, included by test_interface.html with a
+userTestRow (usertests.go): .Num is CMS's t_idx, .Tab the tab of its task;
+the status text, times, sizes and file links (".%l" with the language's
+extension) come computed in Go, since html/template calls functions slowly
+and a page may list hundreds of rows.
+Change in this fork: the time is a contest time with the time CMS shows as
+its title (R5.9).
+*/}}
+<tr data-user-test="{{.Num}}" data-status="{{.Status}}">
+{{if .Tab.ShowDate}}
+    <td class="datetime" title="{{.TimeTitle}}">{{.TimeText}}</td>
+{{else}}
+    <td class="time" title="{{.TimeTitle}}">{{.TimeText}}</td>
+{{end}}
+    <td class="status">
+{{if .Final}}
+{{.StatusText}}        <a class="details">{{T "details"}}</a>
+{{else}}
+{{.StatusText}}
+{{- end}}
+    </td>
+{{if .Time}}
+    <td class="execution_time">
+        {{.Time}}
+    </td>
+{{else}}
+    <td class="execution_time undefined">
+{{T "N/A"}}    </td>
+{{end}}
+{{if .Memory}}
+    <td class="memory">
+        {{.Memory}}
+    </td>
+{{else}}
+    <td class="memory undefined">
+{{T "N/A"}}    </td>
+{{end}}
+    <td class="input">
+        <a class="btn" href="{{.InputURL}}">
+{{T "Download"}}        </a>
+    </td>
+    <td class="output">
+    {{if .Waiting}}
+        <a class="btn btn-primary disabled">
+{{T "Wait..."}}        </a>
+    {{else if .HasOutput}}
+        <a class="btn btn-primary" href="{{.OutputURL}}">
+{{T "Download"}}        </a>
+    {{else}}
+        <a class="btn btn-primary disabled">
+{{T "N/A"}}        </a>
+    {{end}}
+    </td>
+    <td class="files">
+        {{/* '.%l' becomes the language's extension (userTestRow). */}}
+        {{if .OneFile}}
+        <a class="btn" href="{{.OneFile.URL}}">
+{{T "Download"}}        </a>
+        {{else if .Files}}
+        <div class="btn-group">
+            <a class="btn dropdown-toggle" data-toggle="dropdown">
+{{T "Download"}}                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+            {{range .Files}}
+                <li>
+                    <a href="{{.URL}}">
+                        {{.Name}}
+                    </a>
+                </li>
+            {{end}}
+            </ul>
+        </div>
+        {{else}}
+        <a class="btn disabled">
+{{T "None"}}        </a>
+        {{end}}
+    </td>
+</tr>

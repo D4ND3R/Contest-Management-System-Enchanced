@@ -1,0 +1,253 @@
+{{/*
+Ported from cms/server/contest/templates/test_interface.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca
+Wehrstedt and the CMS contributors.
+Data: testInterfaceData (usertests.go): a tab per task of the contest
+(.Tabs: testable, active, tests left, file fields, rows newest first) and
+the languages of every task (TASK_LANGUAGES).
+Changes in this fork: the inline <script> carries the CSP nonce (in
+contest.html) and the onchange handler of the file inputs is in
+cws_handlers.js (D10); the tables of tests are live regions that refresh
+on the user test events of their task (R5.8).
+Trans blocks are written as CMS renders them (see contest.html).
+*/}}
+{{/* extends "contest.html" */}}
+
+{{define "additional_js"}}
+// Define TASK_LANGUAGES for task-specific language filtering
+var TASK_LANGUAGES = {
+{{range .TaskLanguages}}
+  '{{.TaskName}}': {
+    {{range .Languages}}
+      '{{.Name}}': {
+        {{range .Extensions}}
+          '{{.}}': true,
+        {{end}}
+      },
+    {{end}}
+  },
+{{end}}
+};
+
+$(document).on("click", ".user_test_list tbody tr td.status .details", function (event) {
+    var $this = $(this);
+    var task_id = $this.parent().parent().parent().parent().attr("data-task");
+    var user_test_id = $this.parent().parent().attr("data-user-test");
+    var modal = $("#user_test_detail");
+    var modal_body = modal.children(".modal-body");
+    modal_body.html('<div class="loading"><img src="{{static "loading.gif"}}"/>{{T "loading..."}}</div>');
+    modal_body.load(utils.contest_url("tasks", task_id, "tests", user_test_id, "details"), function(response, status, xhr) {
+        if(status != "success") {
+            $(this).html("{{T "Error loading details, please refresh the page."}}");
+        }
+    });
+    modal.modal("show");
+});
+
+update_user_test_row = function (task_id, user_test_id, data) {
+    var row = $(".user_test_list[data-task=\"" + task_id + "\"] tbody tr[data-user-test=\"" + user_test_id + "\"]");
+    row.attr("data-status", data["status"]);
+    row.children("td.status").html(data["status_text"]);
+    if (data["status"] == {{.UT.JS .UT.Evaluated}}) {
+        if (data["output"]) {
+            var btn = row.children("td.output").children("a.btn");
+            btn.text('{{T "Download"}}');
+            btn.removeClass("disabled");
+            btn.attr("href", utils.contest_url("tasks", task_id, "tests", user_test_id, "output"));
+        } else {
+            row.children("td.output").children("a.btn").text("{{T "N/A"}}");
+        }
+        if (data["execution_time"] != null) {
+            row.children("td.execution_time").removeClass("undefined");
+            row.children("td.execution_time").text(data["execution_time"]);
+        }
+        if (data["memory"] != null) {
+            row.children("td.memory").removeClass("undefined");
+            row.children("td.memory").text(data["memory"]);
+        }
+    } else if (data["status"] == {{.UT.JS .UT.CompilationFailed}}) {
+        row.children("td.output").children("a.btn").text("{{T "N/A"}}");
+    } else {
+        schedule_update_user_test_row(task_id, user_test_id);
+    }
+}
+
+schedule_update_user_test_row = function (task_id, user_test_id) {
+    setTimeout(function () {
+        $.get(utils.contest_url("tasks", task_id, "tests", user_test_id), function (data) {
+            update_user_test_row(task_id, user_test_id, data);
+        });
+    }, 2000);
+}
+
+$(document).ready(function () {
+    $('.user_test_list tbody tr[data-status][data-status!="{{.UT.JS .UT.CompilationFailed}}"][data-status!="{{.UT.JS .UT.Evaluated}}"]').each(function (idx, elem) {
+        var $this = $(this);
+        schedule_update_user_test_row($this.parent().parent().attr("data-task"), $this.attr("data-user-test"));
+    });
+});
+{{end}}
+
+{{define "core"}}
+
+
+<div class="span9 test_interface">
+
+<div class="page-header">
+    <h1>{{T "Testing"}}</h1>
+</div>
+
+
+<ul class="nav nav-tabs">
+{{range .Tabs}}
+    {{if .Testable}}
+    <li{{if .Active}} class="active"{{end}}><a href="#test_{{.Task.Name}}" data-toggle="tab">{{.Task.Name}}</a></li>
+    {{end}}
+{{end}}
+</ul>
+
+<div class="tab-content">
+{{range $tab := .Tabs}}
+    {{if .Testable}}
+<div class="tab-pane{{if .Active}} active{{end}}" id="test_{{.Task.Name}}">
+
+<h2 style="margin-bottom: 10px">{{T "Submit a test"}}</h2>
+
+{{if .Left}}
+    <div class="span5">
+        <p>
+{{Format (T "You can submit %(user_tests_left)s more test(s).") "user_tests_left" .Left}}        </p>
+    </div>
+{{end}}
+
+<div class="submit_test row">
+    <div class="span5">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{contest_url "tasks" .Task.Name "test"}}" method="POST">
+            {{xsrf_form_html}}
+            <fieldset>
+{{range $i, $f := .Fields}}
+                <div class="control-group">
+                    <label class="control-label" for="input{{$i}}">{{replace ".%l" "" $f}}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge"
+                               id="input{{$i}}" name="{{$f}}"/>
+                    </div>
+                </div>
+{{end}}
+                <div class="control-group">
+                    <label class="control-label" for="input_file">{{T "input"}}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input_file" name="input"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <select name="language">
+{{range .LanguageNames}}
+                            <option value="{{.}}">{{.}}</option>
+{{end}}
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{{T "Submit"}}</button>
+                        <button type="reset" class="btn">{{T "Reset"}}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{{if .ZipForm}}
+    <div class="span4">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{contest_url "tasks" .Task.Name "test"}}" method="POST">
+            {{xsrf_form_html}}
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="input_zip">{{T "submission.zip"}}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{{T "Submit"}}</button>
+                        <button type="reset" class="btn">{{T "Reset"}}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{{end}}
+</div>
+
+
+<h2 style="margin: 40px 0 10px">{{T "Previous tests"}}</h2>
+
+{{/* show_date: .ShowDate */}}
+
+
+<table class="user_test_list table table-bordered table-striped" data-task="{{.Task.Name}}" id="user_test_list_{{.Task.Name}}" data-live="user_test" data-live-match-task="{{.Task.ID}}">
+    <colgroup>
+{{if .ShowDate}}
+        <col class="datetime"/>
+{{else}}
+        <col class="time"/>
+{{end}}
+        <col class="status"/>
+        <col class="time"/>
+        <col class="memory"/>
+        <col class="input"/>
+        <col class="output"/>
+        <col class="files"/>
+    </colgroup>
+    <thead>
+        <tr>
+{{if .ShowDate}}
+            <th class="datetime">{{T "Date and time"}}</th>
+{{else}}
+            <th class="time">{{T "Time"}}</th>
+{{end}}
+            <th class="status">{{T "Status"}}</th>
+            <th class="time">{{T "Execution time"}}</th>
+            <th class="memory">{{T "Memory used"}}</th>
+            <th class="input">{{T "Input"}}</th>
+            <th class="output">{{T "Output"}}</th>
+            <th class="files">{{T "Files"}}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{range .Rows}}
+        {{template "user_test_row.html" .}}
+    {{else}}
+        <tr>
+            <td colspan="7" class="no_user_tests">{{T "no tests yet"}}</td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>
+
+
+
+
+</div>
+    {{end}}
+{{end}}
+</div>
+
+<div class="modal fade hide" id="user_test_detail">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
+        <h3>{{T "Test details"}}</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">{{T "Close"}}</a>
+    </div>
+</div>
+
+</div>
+
+{{end}}

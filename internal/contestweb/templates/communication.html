@@ -1,0 +1,160 @@
+{{/*
+Ported from cms/server/contest/templates/communication.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2018 Luca Wehrstedt and the CMS
+contributors.
+Data: communicationData (communication.go). Changes in this fork:
+- the lists of announcements, questions and messages are live regions
+  (R5.5): an id and data-live naming the events that refresh them, on the
+  list elements themselves (a wrapper would break the CSS rule
+  "div.page-header + h2"). A list that was empty when the page loaded does
+  not exist: news of its kind reload the page instead (additional_js). On
+  this page the unread counter stays at 0, since the page shows the news;
+- times are contest times with the time CMS shows (format_datetime_smart)
+  as tooltip (R5.9).
+Trans blocks are written as CMS renders them (see contest.html).
+*/}}
+{{/* extends "contest.html" */}}
+
+{{define "additional_js"}}
+utils.update_unread_count = (function (update) {
+    return function () { update.call(this, 0, 0); };
+})(utils.update_unread_count);
+utils.display_notification = (function (display) {
+    var lists = {announcement: "communication_announcements", message: "communication_messages",
+                 question: "communication_questions"};
+    return function (type, timestamp, subject, text, level, hush) {
+        display.apply(this, arguments);
+        if (!hush && lists[type] && document.getElementById(lists[type]) === null
+                && (type !== "question" || document.getElementById("input_subject") !== null)) {
+            CMS.live.reload_page();
+        }
+    };
+})(utils.display_notification);
+{{end}}
+
+{{define "core"}}
+<div class="span9">
+
+
+<div class="page-header">
+    <h1>{{T "Communication"}}</h1>
+</div>
+
+{{if .Announcements}}
+<h2>{{T "Announcements"}}</h2>
+<div class="announcement_list" id="communication_announcements" data-live="announcement">
+    {{range .Announcements}}
+    <div class="announcement">
+        {{if .Subject}}
+        <h4 class="subject">{{.Subject}}</h4>
+        {{else}}
+        <h4 class="subject empty">{{T "(no subject)"}}</h4>
+        {{end}}
+        <span class="timestamp" title="{{format_datetime_smart .Timestamp}}">{{format_contest_time .Timestamp}}</span>
+        {{if .Text}}
+        <div class="body">{{markdown .Text}}</div>
+        {{end}}
+    </div>
+    {{end}}
+</div>
+{{end}}
+
+
+
+{{if .QuestionsEnabled}}
+
+<h2>{{T "Questions"}}</h2>
+<div class="well question_submit">
+    <form class="form-horizontal" action="{{contest_url "question"}}" method="POST">
+        {{xsrf_form_html}}
+        <fieldset>
+            <div class="control-group">
+                <label class="control-label" for="input_subject">{{T "Subject"}}</label>
+                <div class="controls">
+                    <input type="text" name="question_subject" id="input_subject" class="input-xlarge" maxlength="50" list="task_names_list" autocomplete="off">
+                    <datalist id="task_names_list">
+                        {{if ge .ActualPhase 0}}
+                            {{range .Tasks}}
+                        <option value="{{.Name}}">
+                            {{end}}
+                        {{end}}
+                    </datalist>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="input_text">{{T "Text"}}</label>
+                <div class="controls">
+                    <textarea id="input_text" class="input-xlarge" name="question_text" rows="5" maxlength="2000"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">{{T "Ask question"}}</button>
+                    <button type="reset" class="btn">{{T "Reset"}}</button>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+
+{{if .Questions}}
+<div class="question_list" id="communication_questions" data-live="answer">
+    {{range .Questions}}
+    <div class="question">
+        {{if .Subject}}
+        <h4 class="subject">{{.Subject}}</h4>
+        {{else}}
+        <h4 class="subject empty">{{T "(no subject)"}}</h4>
+        {{end}}
+        <span class="timestamp" title="{{format_datetime_smart .Timestamp}}">{{format_contest_time .Timestamp}}</span>
+        {{if .Text}}
+        <div class="body">{{.Text}}</div>
+        {{end}}
+    </div>
+        {{if .ReplyTimestamp}}
+    <div class="answer">
+            {{if .ReplySubject}}
+        <h4 class="subject">{{.ReplySubject}}</h4>
+            {{else}}
+        <h4 class="subject empty">{{T "(no subject)"}}</h4>
+            {{end}}
+        <span class="timestamp" title="{{format_datetime_smart .ReplyTimestamp}}">{{format_contest_time .ReplyTimestamp}}</span>
+            {{if .ReplyText}}
+        <div class="body">{{markdown .ReplyText}}</div>
+            {{end}}
+    </div>
+        {{else}}
+    <div class="no_answer">
+{{T "no answer yet"}}    </div>
+        {{end}}
+    {{end}}
+</div>
+{{end}}
+
+{{end}}
+
+
+{{if .Messages}}
+<h2>{{T "Messages"}}</h2>
+<div class="message_list" id="communication_messages" data-live="message">
+    {{range .Messages}}
+    <div class="message">
+        {{if .Subject}}
+        <h4 class="subject">{{.Subject}}</h4>
+        {{else}}
+        <h4 class="subject empty">{{T "(no subject)"}}</h4>
+        {{end}}
+        <span class="timestamp" title="{{format_datetime_smart .Timestamp}}">{{format_contest_time .Timestamp}}</span>
+        {{if .Text}}
+        <div class="body">{{markdown .Text}}</div>
+        {{end}}
+    </div>
+    {{end}}
+</div>
+{{end}}
+
+
+</div>
+{{end}}

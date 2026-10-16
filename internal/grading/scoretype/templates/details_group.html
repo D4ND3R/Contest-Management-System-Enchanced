@@ -1,0 +1,102 @@
+{{/*
+Ported from the TEMPLATE of ScoreTypeGroup in cms/grading/scoretypes/abc.py
+of CMS (Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2010-2018 Stefano Maggiolo, © 2013-2018 Luca
+Wehrstedt and the CMS contributors. The details of GroupMin, GroupMul and
+GroupThreshold.
+Lines holding only control actions vanish (Jinja's trim_blocks and
+lstrip_blocks); a {% trans %} block at the start of a line is written at
+column 0 joined to the next line, as CMS renders it (see details_html.go).
+*/}}
+{{range .Subtasks}}
+    {{if .Has "score_fraction"}}
+        {{if ge .ScoreFraction 1.0}}
+<div class="subtask correct">
+        {{else if le .ScoreFraction 0.0}}
+<div class="subtask notcorrect">
+        {{else}}
+<div class="subtask partiallycorrect">
+        {{end}}
+    {{else}}
+<div class="subtask undefined">
+    {{end}}
+    <div class="subtask-head">
+        <span class="title">
+{{$.Subtask .Idx}}        </span>
+    {{if and (.Has "score") (.Has "max_score")}}
+        <span class="score">
+            ({{$.Decimal .Score}}
+             / {{$.Decimal .MaxScore}})
+        </span>
+    {{else}}
+        <span class="score">
+            ({{$.T "N/A"}})
+        </span>
+    {{end}}
+    </div>
+    <div class="subtask-body">
+        <table class="testcase-list">
+            <thead>
+                <tr>
+                    <th class="idx">
+{{$.T "#"}}                    </th>
+                    <th class="outcome">
+{{$.T "Outcome"}}                    </th>
+                    <th class="details">
+{{$.T "Details"}}                    </th>
+    {{$timing := .ShowTiming}}
+    {{if $timing}}
+                    <th class="execution-time">
+{{$.T "Execution time"}}                    </th>
+                    <th class="memory-used">
+{{$.T "Memory used"}}                    </th>
+    {{end}}
+                </tr>
+            </thead>
+            <tbody>
+    {{range $i, $tc := .Testcases}}
+        {{if .Has "outcome"}}
+            {{if eq .Outcome "Correct"}}
+                <tr class="correct">
+            {{else if eq .Outcome "Not correct"}}
+                <tr class="notcorrect">
+            {{else}}
+                <tr class="partiallycorrect">
+            {{end}}
+                    <td class="idx">{{$.Index $i}}</td>
+                    <td class="outcome">{{$.Outcome .Outcome}}</td>
+                    <td class="details">
+                      {{$.StatusText .Text}}
+                    </td>
+            {{if $timing}}
+                    <td class="execution-time">
+                {{if and (.Has "time_limit_was_exceeded") .TimeLimitWasExceeded}}
+                        &gt; {{$.Duration .TimeLimit}}
+                {{else if and (.Has "time") .Time}}
+                        {{$.Duration .Time}}
+                {{else}}
+{{$.T "N/A"}}{{end}}                    </td>
+                    <td class="memory-used">
+                {{if and (.Has "memory") .Memory}}
+                        {{$.Size .Memory}}
+                {{else}}
+{{$.T "N/A"}}{{end}}                    </td>
+            {{end}}
+                </tr>
+        {{else}}
+                <tr class="undefined">
+                    <td class="idx">{{$.Index $i}}</td>
+                {{if $timing}}
+                    <td colspan="4">
+                {{else}}
+                    <td colspan="2">
+                {{end}}
+{{$.T "N/A"}}                    </td>
+                </tr>
+        {{end}}
+    {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}

@@ -30,8 +30,16 @@ msgstr ""
 msgid "Live updates: disconnected, the page checks for news periodically"
 msgstr ""
 
+#: ../internal/contestweb/communication.go:142
+msgid "Please wait a few seconds before asking another question."
+msgstr ""
+
 #: ../internal/contestweb/templates/contest.html:212
 msgid "Source code"
+msgstr ""
+
+#: ../internal/contestweb/communication.go:141
+msgid "Too many questions!"
 msgstr ""
 
 #: ../internal/grading/steps/messages.go:109
