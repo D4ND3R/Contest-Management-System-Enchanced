@@ -4,14 +4,15 @@
 package web
 
 import (
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 )
 
 // TestMarkdownLikeMarkdownIt compares with the output of markdown-it-py
 // 3.0 ("js-default", the preset of CMS's markdown filter) for the same
-// inputs. Known difference: a rejected link written "[a](<javascript:x>)"
-// is shown without the angle brackets (both are plain text).
+// inputs (TestMarkdownCorpus has many more).
 func TestMarkdownLikeMarkdownIt(t *testing.T) {
 	cases := []struct{ in, want string }{
 		{"hello *world*",
@@ -146,6 +147,14 @@ func TestMarkdownSafety(t *testing.T) {
 		"[a](<javascript:alert(1)>)",
 		"[a](java\\script:alert(1))",
 		"<vbscript:x>",
+		// Rejected links shown as their source, escaped.
+		"[x]( javascript:a \"<script>alert(1)</script>\")",
+		"[x](<javascript:a><script>)",
+		"[a]: javascript:x \"<script>\"\n\n[a]",
+		"> [a]: javascript:x\n> <script>\n\n[a]",
+		// Host names in punycode.
+		"[x](http://ä\"><script>.de/)",
+		"<http://ä.de/\"><script>>",
 	} {
 		got := strings.ToLower(string(Markdown(in)))
 		for _, bad := range []string{"<script", "<img src=x", "<iframe", "<a href=\"javascript", "href=\"vbscript",
@@ -154,5 +163,38 @@ func TestMarkdownSafety(t *testing.T) {
 				t.Errorf("Markdown(%q) = %q contains %q", in, got, bad)
 			}
 		}
+	}
+}
+
+// knownMarkdownDifferences are the inputs of the corpus where the filter
+// differs from markdown-it-py: a link rejected by validateLink is shown
+// as its source text, where markdown-it also parses emphasis and other
+// inline syntax in the "](…)" part (or across it).
+var knownMarkdownDifferences = map[string]bool{
+	"[x](javascript:*a*)":   true,
+	"*a [x](javascript:b*)": true,
+}
+
+// TestMarkdownCorpus renders the corpus of testdata/markdown (the
+// examples of the CommonMark specification and cases of this fork) and
+// compares with markdown-it-py's output (README there).
+func TestMarkdownCorpus(t *testing.T) {
+	for _, file := range []string{"commonmark_spec.json", "cases.json"} {
+		b, err := os.ReadFile("testdata/markdown/" + file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var cases []struct{ In, Out string }
+		if err := json.Unmarshal(b, &cases); err != nil {
+			t.Fatal(err)
+		}
+		bad := 0
+		for _, c := range cases {
+			if got := string(Markdown(c.In)); got != c.Out && !knownMarkdownDifferences[c.In] {
+				bad++
+				t.Errorf("%s: Markdown(%q)\n got %q\nwant %q", file, c.In, got, c.Out)
+			}
+		}
+		t.Logf("%s: %d cases, %d differ", file, len(cases), bad)
 	}
 }

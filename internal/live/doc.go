@@ -80,9 +80,12 @@
 //
 // Stream-level events, written by Stream itself:
 //
-//	ping    {"v":1,"interval":15000,"live":true,"time":1767225600000}
+//	ping    {"v":1,"interval":15000,"live":true,"time":1767225600000,"spread":7500}
 //	        interval: ms between pings; live: false while this server
-//	        receives no events (Valkey down); time: server clock (ms).
+//	        receives no events (Valkey down); time: server clock (ms);
+//	        spread: ms over which pages spread the requests every page
+//	        makes on a broadcast event (as a resync's, for the server's
+//	        current number of streams).
 //	resync  {"v":1,"reason":"reconnect","spread":7500}
 //	        reason: overflow | reconnect | gap; spread: ms (ResyncSpread:
 //	        2 s for overflow, otherwise 5 ms per open stream of the

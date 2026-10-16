@@ -106,9 +106,9 @@ type Server struct {
 	// questions limits the questions of each participant
 	// (communication.go).
 	questions *web.RateLimiter
-	// bcryptSlots bounds the concurrent bcrypt verifications (≈ 250 ms
-	// of CPU each) so a burst of logins does not starve the other pages.
-	bcryptSlots chan struct{}
+	// bcrypt bounds the concurrent bcrypt computations (≈ 250 ms of CPU
+	// each) and serves the waiting ones fairly (loginlimit.go).
+	bcrypt *bcryptGate
 
 	tz    *tzCache
 	notes *notifications
@@ -152,12 +152,15 @@ func New(ctx context.Context, o Options) (*Server, error) {
 	}
 	s.signer = web.NewSigner(s.cfg.DeriveKey("contest-web/login-cookie"))
 	s.pwKey = s.cfg.DeriveKey("contest-web/password-fingerprint")
-	// Per user: 10 attempts, then one every 6 s. Per address: generous,
-	// since a whole contest hall may come from one NAT address.
+	// Per user: 10 failed attempts, then one every 6 s. Per address:
+	// generous, since a whole contest hall may come from one NAT address
+	// (loginlimit.go).
 	s.loginByUser = web.NewRateLimiter(6*time.Second, 10, 0)
 	s.loginByIP = web.NewRateLimiter(100*time.Millisecond, 600, 0)
 	s.questions = web.NewRateLimiter(questionInterval, questionBurst, 0)
-	s.bcryptSlots = make(chan struct{}, max(1, runtime.GOMAXPROCS(0)/2))
+	// One bcrypt per core: pages stay fast (they need little CPU) and a
+	// login wave uses the whole machine.
+	s.bcrypt = newBcryptGate(runtime.GOMAXPROCS(0), bcryptQueuePerAddr, bcryptQueueTotal)
 	s.notes = newNotifications(s.kv)
 	s.tz = newTZCache(s.cfg.Location(), s.loadTimezone)
 	s.tz.refresh(ctx)
@@ -214,9 +217,10 @@ func csrfExempt(r *http.Request) bool {
 }
 
 // Handler returns the site: every route (routes.go) behind the CSRF
-// check. Run wraps it with the middleware of internal/httpx.
+// check, with bodies capped at MaxFormBody except for uploads. Run wraps
+// it with the middleware of internal/httpx (which caps them at MaxBody).
 func (s *Server) Handler() http.Handler {
-	return s.csrf.Protect(s.routes())
+	return limitBodies(s.csrf.Protect(s.routes()))
 }
 
 // now returns the time of a request, with the microsecond precision of

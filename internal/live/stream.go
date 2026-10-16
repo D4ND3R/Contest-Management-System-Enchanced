@@ -225,6 +225,10 @@ func (st *stream) ping(id uint64) {
 	d = strconv.AppendBool(d, st.live)
 	d = append(d, `,"time":`...)
 	d = strconv.AppendInt(d, time.Now().UnixMilli(), 10)
+	// How long pages spread what they all do on a broadcast event (the
+	// notifications fetched on an announcement), as a resync.
+	d = append(d, `,"spread":`...)
+	d = strconv.AppendInt(d, ResyncSpread("reconnect", st.hub.Subscribers()).Milliseconds(), 10)
 	d = append(d, '}')
 	st.buf = appendFrame(st.buf[:0], id, EventPing, d)
 	st.write(st.buf)

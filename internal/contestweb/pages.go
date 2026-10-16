@@ -16,6 +16,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -47,6 +48,11 @@ func (s *Server) contestListPage(w http.ResponseWriter, r *http.Request) {
 	ch := s.ui.Choose(r, s.ui.All())
 	rc := s.site.NewRender(w, r, ch.Lang)
 	rc.Now = now
+	if r.Method == http.MethodHead {
+		// As the contest routes (contestRoute).
+		s.site.Error(w, r, rc, http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Cache-Control", "no-cache, must-revalidate")
 	rows, err := s.st.Q.CWSContestList(r.Context())
 	if err != nil {
@@ -102,10 +108,20 @@ func (s *Server) loginPage(c *Ctx) {
 	username := c.ArgDefault("username", "")
 	password := c.ArgDefault("password", "")
 	addr := clientAddr(c.R)
-	if !s.allowLogin(c, username, addr.String()) {
+	key, wait, ok := s.takeLoginTokens(c.Contest.Name, username, addr)
+	if !ok {
+		web.TooManyRequests(c.W, wait)
 		return
 	}
 	res, err := s.ValidateLogin(c.Context(), c.Contest, c.Now, username, password, addr, "")
+	if err != nil || res.Participation != nil {
+		// Only failed attempts count (loginlimit.go).
+		s.loginByUser.Refund(key)
+	}
+	if errors.Is(err, errBcryptBusy) {
+		web.TooManyRequests(c.W, bcryptBusyRetry)
+		return
+	}
 	if err != nil {
 		c.Fail(err)
 		return
@@ -116,21 +132,6 @@ func (s *Server) loginPage(c *Ctx) {
 		return
 	}
 	c.Redirect(nextPage)
-}
-
-// allowLogin applies the login rate limits (per contest and user name,
-// and a generous one per address, since a contest hall may share one);
-// when a limit is hit it answers 429 and returns false.
-func (s *Server) allowLogin(c *Ctx, username, addr string) bool {
-	ok, wait := s.loginByUser.Allow(c.Contest.Name + "\x00" + username)
-	if ok {
-		ok, wait = s.loginByIP.Allow(addr)
-	}
-	if !ok {
-		s.log.Warn("too many login attempts", "contest", c.Contest.Name, "username", username, "ip", addr)
-		web.TooManyRequests(c.W, wait)
-	}
-	return ok
 }
 
 // logoutPage is POST <contest>/logout (CMS LogoutHandler).
@@ -242,6 +243,11 @@ type errStatus int
 
 func (e errStatus) Error() string { return http.StatusText(int(e)) }
 
+// errTooMany is a 429 answer, with the time to wait.
+type errTooMany time.Duration
+
+func (e errTooMany) Error() string { return http.StatusText(http.StatusTooManyRequests) }
+
 // registerPost is POST <contest>/register (CMS RegistrationHandler.post):
 // it creates the participation of an existing user (new_user=false, with
 // their password) or of a new one, in the main group, and answers with
@@ -253,7 +259,7 @@ func (s *Server) registerPost(c *Ctx) {
 		c.Error(http.StatusNotFound)
 		return
 	}
-	if ok, wait := s.loginByIP.Allow(clientAddr(c.R).String()); !ok {
+	if ok, wait := s.loginByIP.Allow(addrKey(clientAddr(c.R))); !ok {
 		web.TooManyRequests(c.W, wait)
 		return
 	}
@@ -281,7 +287,12 @@ func (s *Server) registerPost(c *Ctx) {
 		}
 	}
 	var st errStatus
+	var tooMany errTooMany
 	switch {
+	case errors.As(err, &tooMany):
+		web.TooManyRequests(c.W, time.Duration(tooMany))
+	case errors.Is(err, errBcryptBusy):
+		web.TooManyRequests(c.W, bcryptBusyRetry)
 	case errors.As(err, &st):
 		c.Error(int(st))
 	case err != nil:
@@ -318,7 +329,7 @@ func (s *Server) newUserParams(c *Ctx) (*q.CreateUserParams, error) {
 		!usernamePattern.MatchString(username) || !inRange(password, minPasswordLength) {
 		return nil, errStatus(http.StatusBadRequest)
 	}
-	hashed, err := s.hashPassword(c.Context(), password)
+	hashed, err := s.hashPassword(c.Context(), clientAddr(c.R), password)
 	if err != nil {
 		return nil, err
 	}
@@ -329,15 +340,17 @@ func (s *Server) newUserParams(c *Ctx) (*q.CreateUserParams, error) {
 	return p, nil
 }
 
-// hashPassword is HashPassword sharing the bcrypt slots of the logins.
-func (s *Server) hashPassword(ctx context.Context, password string) (string, error) {
-	select {
-	case s.bcryptSlots <- struct{}{}:
-		defer func() { <-s.bcryptSlots }()
-	case <-ctx.Done():
-		return "", ctx.Err()
+// hashPassword is HashPassword in a bcrypt slot of the client address
+// (shared with the logins).
+func (s *Server) hashPassword(ctx context.Context, addr netip.Addr, password string) (string, error) {
+	var (
+		hashed string
+		err    error
+	)
+	if gerr := s.withBcrypt(ctx, addr, func() { hashed, err = HashPassword(password) }); gerr != nil {
+		return "", gerr
 	}
-	return HashPassword(password)
+	return hashed, err
 }
 
 // existingUser finds the user joining the contest and checks their
@@ -355,8 +368,19 @@ func (s *Server) existingUser(c *Ctx) (*q.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	ok, err := s.checkPassword(c.Context(), u.Password, password)
-	if err != nil && c.Context().Err() != nil {
+	// A password check: it shares the per-user tokens of the logins
+	// (the address one was taken by registerPost).
+	key := userKey(c.Contest.Name, username)
+	if ok, wait := s.loginByUser.Allow(key); !ok {
+		s.log.Warn("too many login attempts for the user (registration)", "contest", c.Contest.Name,
+			"username", clip(username), "ip", clientAddr(c.R).String())
+		return nil, errTooMany(wait)
+	}
+	ok, err := s.checkPassword(c.Context(), clientAddr(c.R), u.Password, password)
+	if ok || err != nil {
+		s.loginByUser.Refund(key)
+	}
+	if err != nil && (c.Context().Err() != nil || errors.Is(err, errBcryptBusy)) {
 		return nil, err
 	}
 	if !ok {

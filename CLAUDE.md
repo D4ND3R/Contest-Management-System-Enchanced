@@ -42,6 +42,8 @@ Para correr un paquete a mano: `source .infra/env` (después de
 | `internal/live` | eventos en vivo (Valkey pub/sub → hub por proceso → SSE) |
 | `internal/grading` | `language`, `steps`, `checker`, `tasktype`, `scoretype`, `scoring` (semántica de CMS) |
 | `internal/importer` | modelo y escritor de importación; loaders `italy`, `polygon`, `tps`, `pkg` (formato propio); `dump` (dumps de CMS) |
+| `internal/web` | núcleo compartido de las webs: plantillas, idiomas, CSRF, cookies, estáticos, descargas, Markdown |
+| `internal/l10n` | formatos de fecha y número (CLDR de babel 2.12.1, `make l10n`) |
 | `internal/httpx` | servidor HTTP, middleware, CSP, `/healthz`, `/metrics`, `/source`, pprof |
 | `internal/obs` | logs JSON, registro Prometheus, health checks |
 | `internal/i18n` | `.po`, formas plurales, catálogos, `Format` de `%(x)s`; `extract/` para los `.pot` |

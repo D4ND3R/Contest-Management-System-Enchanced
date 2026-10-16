@@ -100,11 +100,14 @@ SELECT id FROM participations WHERE id = $1 FOR UPDATE;
 
 -- name: CWSParticipationTokens :many
 -- The tokens played by a participant with the task of each (CMS
--- tokens_available), oldest first.
+-- tokens_available), oldest first. The tokens are looked up from the
+-- participant's submissions (tokens_submission_id_key): joined the
+-- usual way the planner hashes every token of the installation.
 SELECT tk.timestamp, s.task_id
 FROM tokens tk
 JOIN submissions s ON s.id = tk.submission_id
-WHERE s.participation_id = $1
+WHERE tk.submission_id = ANY (ARRAY(SELECT x.id FROM submissions x WHERE x.participation_id = @participation_id::integer))
+  AND s.participation_id = @participation_id::integer
 ORDER BY tk.timestamp, tk.id;
 
 -- name: CWSUserTests :many

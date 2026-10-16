@@ -62,14 +62,18 @@
 // limits it to the events of one task) by fetching the page again. While
 // the indicator is not green the pages poll: the regions every 15-30 s
 // and the notifications of CMS every 30 s. contest.html fetches the
-// notifications at once on announcement, message and answer events, and
-// reloads the page (after a random delay) on contest and participation
-// events.
+// notifications at once on message and answer events (they go to one
+// participant) and after a random delay on announcement events
+// (CMS.live.later: every page of the contest gets them at the same
+// time), and reloads the page (after a random delay) on contest and
+// participation events.
 package contestweb
 
 import (
 	"context"
 	"errors"
+	"net/http"
+	"strings"
 
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/app"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/blob"
@@ -81,9 +85,34 @@ import (
 // Name is the subcommand and log name of the service.
 const Name = "contest-web"
 
-// MaxBody caps request bodies; submission handlers enforce the per-file
-// limits of the configuration (max_submission_length, max_input_length).
+// MaxBody caps the bodies of the uploads (submissions and user tests,
+// multipart); their handlers enforce the per-file limits of the
+// configuration (max_submission_length, max_input_length).
 const MaxBody = 64 << 20
+
+// MaxFormBody caps the bodies of every other request (login,
+// registration, questions, tokens...): a urlencoded form is read whole
+// into memory, before any login.
+const MaxFormBody = 1 << 20
+
+// limitBodies applies MaxFormBody to the requests that are not uploads
+// (MaxBody, applied by the middleware of internal/httpx, is the cap of
+// those).
+func limitBodies(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Body != nil && r.Body != http.NoBody && !isUpload(r) {
+			r.Body = http.MaxBytesReader(w, r.Body, MaxFormBody)
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// isUpload reports the routes that take files: <contest>/tasks/<t>/submit,
+// <contest>/tasks/<t>/test and <contest>/api/<t>/submit.
+func isUpload(r *http.Request) bool {
+	p := r.URL.Path
+	return r.Method == http.MethodPost && (strings.HasSuffix(p, "/submit") || strings.HasSuffix(p, "/test"))
+}
 
 // Run serves the site until ctx is cancelled.
 func Run(ctx context.Context, rt *app.Runtime) error {

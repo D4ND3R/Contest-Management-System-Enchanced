@@ -249,6 +249,15 @@ func TestAccessRules(t *testing.T) {
 		{"GET", "/demo/register", 404, "", "Error 404"},
 		// The common endpoints.
 		{"GET", "/healthz", 200, "", `"status"`},
+		// CMS's handlers have no head(): 405 after prepare (404 for an
+		// unknown contest); static files serve HEAD.
+		{"HEAD", "/", 405, "", ""},
+		{"HEAD", "/demo", 405, "", ""},
+		{"HEAD", "/demo/tasks/sum/description", 405, "", ""},
+		{"HEAD", "/demo/api/task_list", 405, "", ""},
+		{"HEAD", "/nosuch", 404, "", ""},
+		{"HEAD", "/static/cws_utils.js", 200, "", ""},
+		{"OPTIONS", "/demo", 405, "", "Error 405"},
 	} {
 		req, _ := http.NewRequest(c.method, ts.URL+c.path, nil)
 		r := anon.Do(req)
@@ -258,6 +267,9 @@ func TestAccessRules(t *testing.T) {
 	}
 	if r := anon.Get("/demo/login"); r.Header.Get("Allow") != "POST" {
 		t.Errorf("Allow: %q", r.Header.Get("Allow"))
+	}
+	if r := anon.Do(mustRequest(t, "OPTIONS", ts.URL+"/demo")); r.Header.Get("Allow") != "GET" {
+		t.Errorf("Allow of a page: %q", r.Header.Get("Allow"))
 	}
 	if r := anon.Post("/demo/documentation", nil); r.Status != http.StatusMethodNotAllowed {
 		t.Errorf("POST documentation: %d", r.Status)
@@ -649,4 +661,13 @@ func TestFormatTokenRules(t *testing.T) {
 			t.Errorf("%s, case %d, %q:\n got %q\nwant %q", code, i, tType, got, want)
 		}
 	}
+}
+
+func mustRequest(t *testing.T, method, url string) *http.Request {
+	t.Helper()
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return req
 }

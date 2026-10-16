@@ -93,3 +93,34 @@ func TestTooManyRequests(t *testing.T) {
 		t.Errorf("%d %q", rec.Code, rec.Header().Get("Retry-After"))
 	}
 }
+
+func TestRateLimiterRefund(t *testing.T) {
+	l := NewRateLimiter(time.Hour, 2, 100)
+	now := time.Unix(0, 0)
+	l.now = func() time.Time { return now }
+	for i := 0; i < 5; i++ {
+		// Refunded tokens never run out.
+		if ok, _ := l.Allow("u"); !ok {
+			t.Fatalf("refunded attempt %d denied", i)
+		}
+		l.Refund("u")
+	}
+	l.Allow("u")
+	l.Allow("u")
+	if ok, _ := l.Allow("u"); ok {
+		t.Fatal("burst exceeded")
+	}
+	// Refunds never go above the burst.
+	for i := 0; i < 5; i++ {
+		l.Refund("u")
+	}
+	l.Allow("u")
+	l.Allow("u")
+	if ok, _ := l.Allow("u"); ok {
+		t.Error("refunds went above the burst")
+	}
+	l.Refund("unknown") // no bucket: nothing happens
+	if n := l.Len(); n != 1 {
+		t.Errorf("%d keys", n)
+	}
+}

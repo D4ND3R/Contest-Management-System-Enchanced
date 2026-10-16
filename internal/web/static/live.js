@@ -39,6 +39,10 @@
  *   CMS.live.polling()  true while the page must poll (not green);
  *   CMS.live.state()    "green", "yellow", "red" or "off" (no stream);
  *   CMS.live.refresh()  reloads every live region now;
+ *   CMS.live.later(fn)  runs fn after a random delay below the spread of
+ *       the server's last ping (2-30 s, by its number of streams): for
+ *       what every page does on a broadcast event (the notifications on
+ *       an announcement), so the server does not get them all at once;
  *   CMS.live.reload_page()  reloads the page after a random delay (up to
  *       10 s, so that a whole contest does not reload at once), waiting
  *       while the user is filling in a form.
@@ -65,6 +69,7 @@ CMS.live = (function () {
     var es = null;           // the EventSource
     var lastId = "";         // id of the last event received
     var interval = 15000;    // ping interval announced by the server
+    var spread = 2000;       // spread of broadcast reactions (ping)
     var lastPing = 0;        // when the last ping came (ms)
     var openedAt = 0;        // when the stream was opened (ms)
     var serverLive = false;  // the last ping said live: true
@@ -213,6 +218,9 @@ CMS.live = (function () {
             }
             if (d.interval > 0) {
                 interval = d.interval;
+            }
+            if (d.spread > 0) {
+                spread = d.spread;
             }
             serverLive = d.live !== false;
             lastPing = now();
@@ -487,6 +495,7 @@ CMS.live = (function () {
         state: function () { return current; },
         refresh: refresh,
         reload_page: reloadPage,
+        later: function (fn) { setTimeout(fn, Math.random() * spread); },
         start: start
     };
 })();

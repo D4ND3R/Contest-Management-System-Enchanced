@@ -66,6 +66,18 @@ func TestStatements(t *testing.T) {
 	if r := carol.Get("/demo/tasks/nosuch/statements/it"); r.Status != http.StatusNotFound {
 		t.Errorf("unknown task: %d", r.Status)
 	}
+	// An empty language reaches the handler, as CMS's statements/(.*):
+	// the error page of the contest, not Tornado's plain 404.
+	if r := carol.Get("/demo/tasks/sum/statements/"); r.Status != http.StatusNotFound || !strings.Contains(r.Body, "<title>Error 404</title>") {
+		t.Errorf("empty language: %d\n%s", r.Status, r.Body)
+	}
+	if r := ts.Client().Get("/demo/tasks/sum/statements/"); r.Status != http.StatusFound {
+		t.Errorf("empty language, anonymous: %d", r.Status)
+	}
+	ts.Exec(`INSERT INTO statements (task_id, language, digest) SELECT task_id, '', digest FROM statements WHERE language = 'it'`)
+	if r := carol.Get("/demo/tasks/sum/statements/"); r.Status != http.StatusOK {
+		t.Errorf("statement with an empty language: %d", r.Status)
+	}
 	if r := ts.Client().Get(path); r.Status != http.StatusFound {
 		t.Errorf("anonymous: %d", r.Status)
 	}

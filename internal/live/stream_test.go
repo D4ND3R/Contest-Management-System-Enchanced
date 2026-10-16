@@ -75,7 +75,8 @@ func TestStreamHeadersAndFirstPing(t *testing.T) {
 	}
 	var p PingPayload
 	ping.json(t, &p)
-	if p.V != 1 || p.Interval != 15000 || !p.Live || abs(time.Now().UnixMilli()-p.Time) > 5000 {
+	if p.V != 1 || p.Interval != 15000 || !p.Live || abs(time.Now().UnixMilli()-p.Time) > 5000 ||
+		p.Spread != MinResyncSpread.Milliseconds() {
 		t.Errorf("ping %+v", p)
 	}
 }

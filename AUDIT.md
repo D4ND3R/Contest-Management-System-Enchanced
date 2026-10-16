@@ -4,7 +4,7 @@ Cada requisito de SPEC.md con su código, su prueba y su estado:
 **hecho**, **parcial**, **falta** o **requiere hardware** (necesita una
 máquina que esta VM no ofrece, p. ej. cgroups v2 para isolate).
 
-Actualizada al cerrar F8.
+Actualizada al cerrar F5.
 
 ## F0 — Cimientos
 
@@ -46,7 +46,7 @@ Actualizada al cerrar F8.
 | R4.4 Reevaluación | hecho — `judging.Invalidate`, `cms ctl reevaluate`; pruebas por alcance y nivel |
 | R4.5 Datasets en segundo plano y cambio en vivo | hecho — autojudge y `ActivateDataset`; prueba de carrera con resultados |
 | R4.6 Caos | hecho — `TestChaos` (binario real, `kill -9`) |
-| R5.1–R5.9 Sitio del concursante | falta (esqueleto: `/healthz`, `/source`) |
+| R5.1–R5.9 Sitio del concursante | hecho — `internal/contestweb`, `internal/web`, `internal/l10n`; comparado con el CMS original en 61 páginas/estados; API contra respuestas del original; `live.js` probado en navegador |
 | R6.1–R6.9 Administración | falta (esqueleto) |
 | R7.1–R7.4 Scoreboard público | falta (esqueleto) |
 | R8.1 Loaders italy_yaml, Polygon, TPS | hecho — `internal/importer/{italy,polygon,tps}`, comparados con los loaders del original en pruebas |
@@ -58,13 +58,13 @@ Actualizada al cerrar F8.
 
 | Req. | Estado |
 |---|---|
-| N1 Rendimiento (k6) | parcial: dispatcher (`TestLoad`, 2 CPU) y SSE (1500 conexiones) medidos; las páginas, con F5–F7; k6 en hardware real pendiente |
-| N2 Sin N+1 | parcial: consultas probadas con `QueryCounter`; las páginas se prueban al construirlas |
+| N1 Rendimiento (k6) | parcial: dispatcher (`TestLoad`, 2 CPU), SSE (1500 conexiones) y sitio del concursante (500 concursantes, p95 ≤ 31 ms) medidos con un generador en Go; admin y ranking con F6–F7; k6 en hardware real pendiente |
+| N2 Sin N+1 | parcial: consultas y páginas del concursante probadas con `CountingDB`; admin y ranking con F6–F7 |
 | N3 Durabilidad | hecho: colas durables, ACK tras commit, resultados idempotentes con generación, lease con fencing; `TestChaos` |
 | N4 Seguridad del juez | hecho: seccomp, batería maliciosa, entorno del worker fuera de la caja, sin `/etc` en compilaciones (D28–D30) |
-| N5 Seguridad web | parcial: CSP con nonce, cabeceras, límites de cuerpo; CSRF, cookies y límites de frecuencia en F5 |
+| N5 Seguridad web | parcial: CSP con nonce, CSRF, cookies HttpOnly + SameSite, límites de cuerpo y de entrada, bcrypt (D42) en el sitio del concursante; admin en F6 |
 | N6 Observabilidad | hecho para los esqueletos |
-| N7 Traducible | parcial: infraestructura y pruebas; textos a medida que llegan las páginas |
-| N8 AGPL | parcial: `/source` en las tres webs; enlace en el pie con las plantillas (F5–F7) |
-| N9 Misma interfaz | falta (F5–F7) |
+| N7 Traducible | parcial: sitio del concursante con los msgids de CMS y los textos nuevos en español; admin en F6 |
+| N8 AGPL | parcial: `/source` en las tres webs; enlace en el pie del sitio del concursante; admin y ranking en F6–F7 |
+| N9 Misma interfaz | parcial: sitio del concursante comparado lado a lado (D43); admin y ranking en F6–F7 |
 | N10 Operación | falta (F9) |

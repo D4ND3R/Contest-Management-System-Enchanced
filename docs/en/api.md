@@ -70,8 +70,9 @@ curl -s -H "X-CMS-Authorization: $LOGIN" "$SITE/api/task_list"
 
 What applies to the login form applies to the API: the contest must allow
 password authentication, the IP restriction and the block of hidden
-participations apply, and so do the login limits (10 attempts in a row
-per user, then one every 6 seconds; a 429 says how long to wait). The
+participations apply, and so do the login limits (10 failed attempts in
+a row per user, then one every 6 seconds, and a limit per address; a 429
+says how long to wait). The
 login data expires `cookie_duration` (3 hours by default) after the login:
 log in again when a call answers 403 `An authenticated user is required`.
 Changing the contestant's password invalidates it.

@@ -54,7 +54,8 @@ $(document).ready(function () {
     utils.update_unread_count(0{{if eq .PageName "communication"}}, 0{{end}});
     utils.update_notifications(true);
     setInterval(function() { if (CMS.live.polling()) { utils.update_notifications(); } }, 30000);
-    CMS.live.on("announcement message answer resync", function() { utils.update_notifications(); });
+    CMS.live.on("message answer resync", function() { utils.update_notifications(); });
+    CMS.live.on("announcement", function() { CMS.live.later(function() { utils.update_notifications(); }); });
     CMS.live.on("contest participation", function() { CMS.live.reload_page(); });
     $('#main').css('top', $('#navigation_bar').outerHeight());
 });

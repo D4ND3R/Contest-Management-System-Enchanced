@@ -91,10 +91,29 @@ vence después de `cookie_duration` **sin actividad** (las consultas en
 segundo plano, como las notificaciones, no la renuevan). Cambiar la
 contraseña del concursante cierra sus sesiones. "Salir" la borra.
 
-Los intentos de entrada tienen un límite: 10 seguidos por usuario y
-concurso y después uno cada 6 segundos (respuesta 429), y un límite amplio
-por dirección, porque un laboratorio entero puede salir por una sola
-dirección.
+Los intentos de entrada tienen límites (respuesta 429 con `Retry-After`):
+uno amplio por dirección (una dirección IPv6 cuenta por su `/64`), porque
+un laboratorio entero puede salir por una sola dirección, y después 10
+intentos fallidos seguidos por usuario y concurso y luego uno cada 6
+segundos. Las entradas con la contraseña correcta no cuentan, ni los
+intentos que rechaza el límite por dirección. Inscribirse como usuario
+existente (que comprueba su contraseña) cuenta como una entrada.
+
+Comprobar una contraseña bcrypt cuesta alrededor de un cuarto de segundo
+de CPU con el costo que usa CMS (12): el sitio hace una comprobación por
+núcleo a la vez y atiende a las que esperan dirección por dirección, así
+que una dirección con muchos intentos solo retrasa los suyos; cuando
+esperan demasiadas responde 429 en el acto. Con 2 vCPU caben unas 7
+entradas bcrypt por segundo: 500 concursantes que entran en el mismo
+minuto esperan hasta cerca de un minuto. En concursos donde todos entran
+al comienzo, escalone las entradas o use contraseñas `plaintext:` puestas
+por la administración (como suele hacerse en CMS), que no cuestan nada de
+comprobar.
+
+Las peticiones de formularios (entrada, inscripción, preguntas...) aceptan
+cuerpos de hasta 1 MiB; solo los envíos y las pruebas aceptan cuerpos
+mayores (64 MiB en total, y los límites de la configuración para cada
+archivo).
 
 ## Horarios
 

@@ -30,6 +30,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/jackc/pgx/v5"
 
@@ -979,13 +980,37 @@ func withCharset(ct string) string {
 
 // replaceExtension turns a downloaded file name back into the stored one
 // (CMS re.sub(r'%s$' % extension, '.%l', filename): the extension is a
-// regular expression there, so its dot matches any character).
+// regular expression there, so its dot matches any character but a
+// newline). Extensions are letters and dots, compared from the end
+// without compiling anything; one with other regular expression syntax
+// is compiled as CMS does.
 func replaceExtension(filename, ext string) string {
-	re, err := regexp.Compile("(?:" + ext + ")$")
-	if err != nil {
-		return filename
+	if strings.ContainsAny(ext, `\^$*+?()[]{}|`) {
+		re, err := regexp.Compile("(?:" + ext + ")$")
+		if err != nil {
+			return filename
+		}
+		return re.ReplaceAllLiteralString(filename, ".%l")
 	}
-	return re.ReplaceAllLiteralString(filename, ".%l")
+	end := len(filename)
+	for i := len(ext) - 1; i >= 0; i-- {
+		if end == 0 {
+			return filename
+		}
+		if ext[i] == '.' {
+			r, n := utf8.DecodeLastRuneInString(filename[:end])
+			if r == '\n' {
+				return filename
+			}
+			end -= n
+			continue
+		}
+		if filename[end-1] != ext[i] {
+			return filename
+		}
+		end--
+	}
+	return filename[:end] + ".%l"
 }
 
 // serveFile sends a file of the blob store (CMS FileHandler.fetch): the

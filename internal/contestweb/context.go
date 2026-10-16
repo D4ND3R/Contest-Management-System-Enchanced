@@ -473,6 +473,12 @@ func (s *Server) contestRoute(a access, h func(*Ctx)) http.HandlerFunc {
 		if !ok {
 			return
 		}
+		if r.Method == http.MethodHead {
+			// CMS's handlers do not implement HEAD: Tornado answers 405
+			// after prepare (the router serves HEAD with the GET route).
+			c.Error(http.StatusMethodNotAllowed)
+			return
+		}
 		if r.Method == http.MethodPost && !c.parseForm() {
 			return
 		}

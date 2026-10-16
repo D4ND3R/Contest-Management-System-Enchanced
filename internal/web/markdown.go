@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 
@@ -26,15 +27,23 @@ import (
 // tildes), raw HTML disabled (it is shown as text, escaped), no linkify,
 // no typographer, no hard breaks. Links and images with javascript:,
 // vbscript:, file: or data: (except data:image/png|gif|jpeg|webp) URLs
-// stay as text, as in markdown-it.
+// stay as text, as in markdown-it. markdown_it.go has the rules where
+// goldmark differs from markdown-it-py.
 var markdown = sync.OnceValue(func() goldmark.Markdown {
 	p := parser.NewParser(
 		parser.WithBlockParsers(without(parser.DefaultBlockParsers(), parser.NewHTMLBlockParser())...),
-		parser.WithInlineParsers(without(parser.DefaultInlineParsers(), parser.NewRawHTMLParser())...),
-		parser.WithParagraphTransformers(parser.DefaultParagraphTransformers()...),
-		parser.WithASTTransformers(util.Prioritized(unlinkDangerous{}, 1000)),
-		// markdown-it only strikes with two tildes (goldmark accepts one).
-		parser.WithInlineParsers(util.Prioritized(strikeParser{}, 500)),
+		parser.WithInlineParsers(without(parser.DefaultInlineParsers(),
+			parser.NewRawHTMLParser(), parser.NewEmphasisParser(), parser.NewLinkParser())...),
+		// markdown-it's rules (markdown_it.go).
+		parser.WithInlineParsers(
+			util.Prioritized(linkParser{parser.NewLinkParser()}, 200),
+			util.Prioritized(emphasisParser{}, 500),
+			util.Prioritized(strikeParser{}, 500),
+		),
+		parser.WithParagraphTransformers(without(parser.DefaultParagraphTransformers(),
+			parser.LinkReferenceParagraphTransformer)...),
+		parser.WithParagraphTransformers(util.Prioritized(refDefinitions{}, 100)),
+		parser.WithASTTransformers(util.Prioritized(mditTransformer{}, 1000)),
 	)
 	md := goldmark.New(
 		goldmark.WithParser(p),
@@ -42,52 +51,31 @@ var markdown = sync.OnceValue(func() goldmark.Markdown {
 			extension.NewTable(extension.WithTableCellAlignMethod(extension.TableCellAlignStyle)),
 		),
 	)
-	// markdown-it writes <s>, goldmark <del>.
-	md.Renderer().AddOptions(renderer.WithNodeRenderers(util.Prioritized(strikeRenderer{}, 100)))
+	// markdown-it writes <s>, goldmark <del>; empty blockquotes and
+	// punycode host names in autolinks (markdown_it.go).
+	md.Renderer().AddOptions(renderer.WithNodeRenderers(
+		util.Prioritized(strikeRenderer{}, 100),
+		util.Prioritized(blockquoteRenderer{}, 100),
+		util.Prioritized(autoLinkRenderer{}, 100),
+	))
 	return md
 })
-
-// strikeParser is goldmark's strikethrough parser restricted to runs of
-// exactly two tildes, as markdown-it's strikethrough rule.
-type strikeParser struct{}
-
-func (strikeParser) Trigger() []byte { return []byte{'~'} }
-
-func (strikeParser) Parse(_ ast.Node, block text.Reader, pc parser.Context) ast.Node {
-	before := block.PrecendingCharacter()
-	line, segment := block.PeekLine()
-	node := parser.ScanDelimiter(line, before, 2, strikeDelimiter{})
-	if node == nil || node.OriginalLength != 2 || before == '~' {
-		return nil
-	}
-	node.Segment = segment.WithStop(segment.Start + node.OriginalLength)
-	block.Advance(node.OriginalLength)
-	pc.PushDelimiter(node)
-	return node
-}
-
-func (strikeParser) CloseBlock(ast.Node, parser.Context) {}
-
-type strikeDelimiter struct{}
-
-func (strikeDelimiter) IsDelimiter(b byte) bool { return b == '~' }
-
-func (strikeDelimiter) CanOpenCloser(opener, closer *parser.Delimiter) bool {
-	return opener.Char == closer.Char
-}
-
-func (strikeDelimiter) OnMatch(int) ast.Node { return east.NewStrikethrough() }
 
 var (
 	badProto = regexp.MustCompile(`^(vbscript|javascript|file|data):`)
 	goodData = regexp.MustCompile(`^data:image/(gif|png|jpeg|webp);`)
 )
 
+// decodeDest decodes a destination as markdown-it does (backslash
+// escapes and character references).
+func decodeDest(dest []byte) []byte {
+	return util.ResolveNumericReferences(util.ResolveEntityNames(util.UnescapePunctuations(dest)))
+}
+
 // validLink is markdown-it's validateLink, on the destination decoded as
-// markdown-it decodes it (backslash escapes and character references).
+// markdown-it decodes it.
 func validLink(dest []byte) bool {
-	u := util.ResolveNumericReferences(util.ResolveEntityNames(util.UnescapePunctuations(dest)))
-	s := strings.ToLower(strings.TrimSpace(string(u)))
+	s := strings.ToLower(strings.TrimSpace(string(decodeDest(dest))))
 	if badProto.MatchString(s) {
 		return goodData.MatchString(s)
 	}
@@ -108,35 +96,52 @@ func (strikeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	})
 }
 
-// unlinkDangerous turns links, images and autolinks whose URL fails
-// markdown-it's validateLink back into their text, as markdown-it does
-// (goldmark would render them with an empty URL). The text is rebuilt
-// from the node: a destination written as <...> loses its brackets.
-type unlinkDangerous struct{}
+// mditTransformer applies markdown-it's rules after parsing: lone
+// tildes of strikethrough runs, dangerous links, host names in punycode,
+// Unicode whitespace around blocks.
+type mditTransformer struct{}
 
-func (unlinkDangerous) Transform(doc *ast.Document, reader text.Reader, _ parser.Context) {
+func (mditTransformer) Transform(doc *ast.Document, reader text.Reader, pc parser.Context) {
+	fixStrikes(pc)
+	unlinkDangerous(doc, reader.Source(), pc)
+	trimMarkdownBlocks(doc, reader.Source())
+}
+
+// unlinkDangerous turns links, images and autolinks whose URL fails
+// markdown-it's validateLink back into their source text, as markdown-it
+// does (goldmark would render them with an empty URL): the label keeps
+// its inline formatting, "](…)" is the text as written (markdown-it
+// would also parse emphasis in it). The other links get their host name
+// in punycode.
+func unlinkDangerous(doc *ast.Document, src []byte, pc parser.Context) {
 	var bad []ast.Node
 	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
 			return ast.WalkContinue, nil
 		}
+		var dest *[]byte
 		switch x := n.(type) {
 		case *ast.Link:
-			if !validLink(x.Destination) {
-				bad = append(bad, n)
-			}
+			dest = &x.Destination
 		case *ast.Image:
-			if !validLink(x.Destination) {
-				bad = append(bad, n)
-			}
+			dest = &x.Destination
 		case *ast.AutoLink:
-			if !validLink(x.URL(reader.Source())) {
+			if !validLink(x.URL(src)) {
 				bad = append(bad, n)
 			}
+			return ast.WalkContinue, nil
+		default:
+			return ast.WalkContinue, nil
+		}
+		if !validLink(*dest) {
+			bad = append(bad, n)
+		} else if bytes.Equal(decodeDest(*dest), *dest) {
+			// (A destination with escapes or references keeps its host.)
+			*dest = []byte(punycodeHost(string(*dest)))
 		}
 		return ast.WalkContinue, nil
 	})
-	src := reader.Source()
+	tails, _ := pc.Get(linkTails).(map[ast.Node][2]int)
 	for _, n := range bad {
 		parent := n.Parent()
 		str := func(s string) { parent.InsertBefore(parent, n, ast.NewString([]byte(s))) }
@@ -158,21 +163,25 @@ func (unlinkDangerous) Transform(doc *ast.Document, reader text.Reader, _ parser
 			parent.InsertBefore(parent, n, c)
 			c = next
 		}
-		tail := "](" + string(util.ResolveNumericReferences(util.ResolveEntityNames(dest)))
-		if title != nil {
-			tail += ` "` + string(title) + `"`
+		if span, ok := tails[n]; ok {
+			str(tailSource(n, src, span))
+		} else {
+			tail := "](" + string(util.ResolveNumericReferences(util.ResolveEntityNames(dest)))
+			if title != nil {
+				tail += ` "` + string(title) + `"`
+			}
+			str(tail + ")")
 		}
-		str(tail + ")")
 		parent.RemoveChild(parent, n)
 	}
 }
 
-// without drops the parsers of the same type as like (goldmark does not
-// export the types of its HTML parsers).
-func without(vs []util.PrioritizedValue, like any) []util.PrioritizedValue {
+// without drops the parsers of the same types as like (goldmark does
+// not export the types of its parsers).
+func without(vs []util.PrioritizedValue, like ...any) []util.PrioritizedValue {
 	out := make([]util.PrioritizedValue, 0, len(vs))
 	for _, v := range vs {
-		if reflect.TypeOf(v.Value) != reflect.TypeOf(like) {
+		if !slices.ContainsFunc(like, func(l any) bool { return reflect.TypeOf(v.Value) == reflect.TypeOf(l) }) {
 			out = append(out, v)
 		}
 	}

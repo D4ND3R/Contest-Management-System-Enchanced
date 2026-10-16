@@ -248,3 +248,50 @@ trabajos reales.
 - Vista previa de un zip en la administración (F6): `pkg.Load`,
   `importer.ValidateTask` y `Writer.DryRun` ya la cubren.
 - Juzgar las soluciones de `solutions/` contra su veredicto esperado (F6).
+
+---
+
+## F5 — Sitio del concursante (hecha)
+
+### Hecho
+
+- `internal/web` (núcleo compartido de las webs, D43): plantillas con
+  herencia al estilo Jinja, funciones de las plantillas de CMS, elección de
+  idioma de CMS, CSRF, cookies firmadas, estáticos, descargas, Markdown
+  como markdown-it, límites de frecuencia.
+- `internal/l10n`: formatos de fecha, hora, duración, tamaño y número de
+  los 26 idiomas con los datos CLDR de babel 2.12.1 (`make l10n`).
+- `internal/contestweb`: todas las páginas de CMS ContestWebServer
+  (lista de concursos, entrada, inscripción, inicio, resumen, enunciados y
+  adjuntos, envíos con sus límites, detalle con el HTML de los tipos de
+  puntaje, tokens, pruebas de usuario, comunicación, documentación,
+  errores), la API JSON de `docs/API.rst` con impersonación, las
+  notificaciones por sondeo de CMS y eventos en vivo por SSE con `live.js`
+  (indicador verde/amarillo/rojo, resincronización, vuelta al sondeo).
+- Plantillas, CSS y JS de CMS portados; los manejadores en línea pasaron a
+  `cws_handlers.js` (D10); enlace AGPL al código en el pie.
+- Seguridad: límites por dirección y por usuario, cola de bcrypt justa,
+  cuerpos de 1 MiB salvo envíos (D42).
+- Guías: [sitio del concursante](docs/es/sitio-concursante.md) y
+  [API](docs/es/api.md) (y en inglés).
+
+### Pruebas
+
+| Área | Pruebas |
+|---|---|
+| Núcleo web | CSRF, cookies (firma, vencimiento, flags), elección de idioma con 34 casos calculados por CMS, Markdown contra 860 entradas de markdown-it-py, estáticos, rangos, redirecciones seguras; `base.html` byte a byte contra la página de CMS |
+| l10n | salidas doradas de babel para todos los idiomas |
+| Sitio | autenticación y fases (casos de upstream), tokens (casos de upstream), cada handler con permisos, límites y CSRF, detalle de puntajes contra las plantillas de CMS, consultas acotadas con `CountingDB`, planes de consulta, SSE |
+| API | contrato contra respuestas grabadas del CMS original |
+| Comparación | 61 páginas/estados en en y es contra el CMS original con el mismo dump: mismo HTML normalizado, mismos códigos y redirecciones, sin errores de CSP ni de JS; capturas lado a lado; envíos juzgados por el dispatcher y un worker real que se actualizan sin recargar |
+| Carga (2 CPU, 500 concursantes, 1500 SSE) | páginas p95 21–31 ms durante una ola de entradas; anuncios repartidos en el tiempo (antes p95 516 ms al llegar uno) |
+
+### Pendiente
+
+- Volver a medir con carga después de las correcciones de la revisión
+  (cola de bcrypt con todos los núcleos, anuncios repartidos) y con k6 en
+  hardware real de 2 vCPU.
+- La cola de bcrypt no protege a quien comparte la dirección con el
+  atacante (un NAT para toda la sala).
+- `testdata/contests/demo/sum/sol/partial.cpp` saca 100: su caso de
+  desborde todavía cabe en `int`.

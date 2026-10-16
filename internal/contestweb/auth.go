@@ -144,18 +144,20 @@ func (s *Server) fingerprint(stored string) string {
 	return base64.RawURLEncoding.EncodeToString(m.Sum(nil)[:18])
 }
 
-// checkPassword validates a password, running at most a few bcrypt
-// verifications at a time.
-func (s *Server) checkPassword(ctx context.Context, stored, password string) (bool, error) {
-	if strings.HasPrefix(stored, "bcrypt:") {
-		select {
-		case s.bcryptSlots <- struct{}{}:
-			defer func() { <-s.bcryptSlots }()
-		case <-ctx.Done():
-			return false, ctx.Err()
-		}
+// checkPassword validates a password; bcrypt runs in a slot of the
+// client address addr (errBcryptBusy when its queue is full).
+func (s *Server) checkPassword(ctx context.Context, addr netip.Addr, stored, password string) (bool, error) {
+	if !strings.HasPrefix(stored, "bcrypt:") {
+		return ValidatePassword(stored, password)
 	}
-	return ValidatePassword(stored, password)
+	var (
+		ok  bool
+		err error
+	)
+	if gerr := s.withBcrypt(ctx, addr, func() { ok, err = ValidatePassword(stored, password) }); gerr != nil {
+		return false, gerr
+	}
+	return ok, err
 }
 
 // participationByUsername returns the participation of username in the
@@ -183,10 +185,11 @@ type LoginResult struct {
 // ValidateLogin authenticates a user logging in with a password, or an
 // administrator impersonating them with adminToken (CMS validate_login).
 // Failures are logged (without the password) and give an empty result;
-// the error is only for database failures.
+// the error is only for database failures, the end of ctx and
+// errBcryptBusy (too many password checks waiting: answer 429).
 func (s *Server) ValidateLogin(ctx context.Context, c *Contest, now time.Time, username, password string, addr netip.Addr, adminToken string) (LoginResult, error) {
 	fail := func(msg string) (LoginResult, error) {
-		s.log.Info("unsuccessful login attempt: "+msg, "ip", addr.String(), "username", username,
+		s.log.Info("unsuccessful login attempt: "+msg, "ip", addr.String(), "username", clip(username),
 			"contest", c.Name)
 		return LoginResult{}, nil
 	}
@@ -212,9 +215,9 @@ func (s *Server) ValidateLogin(ctx context.Context, c *Contest, now time.Time, u
 		return LoginResult{Participation: p, Data: s.signLogin(c, loginData{Username: username, Impersonated: true}, now)}, nil
 	}
 	stored := p.password()
-	ok, err := s.checkPassword(ctx, stored, password)
+	ok, err := s.checkPassword(ctx, addr, stored, password)
 	if err != nil {
-		if ctx.Err() != nil {
+		if ctx.Err() != nil || errors.Is(err, errBcryptBusy) {
 			return LoginResult{}, err
 		}
 		s.log.Warn("invalid password stored in the database", "username", username, "contest", c.Name, "err", err)

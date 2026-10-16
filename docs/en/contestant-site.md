@@ -89,9 +89,26 @@ it expires after `cookie_duration` **without activity** (background
 requests, such as the notifications, do not renew it). Changing the
 contestant's password ends their sessions. "Logout" deletes it.
 
-Login attempts are limited: 10 in a row per user and contest, then one
-every 6 seconds (answer 429), plus a generous limit per address, since a
-whole lab may share one address.
+Login attempts are limited (answer 429 with `Retry-After`): a generous
+limit per address (an IPv6 address counts by its `/64`), since a whole lab
+may share one address, and then 10 failed attempts in a row per user and
+contest, then one every 6 seconds. Logins with the right password do not
+count, and neither do attempts refused by the address limit. Registering as
+an existing user (which checks their password) counts as a login.
+
+Checking a bcrypt password costs about a quarter of a second of CPU at the
+cost CMS uses (12): the site runs one check per core at a time and serves
+the waiting ones address by address, so one address with many attempts
+only delays its own; when too many are waiting it answers 429 at once. On
+2 vCPU about 7 bcrypt logins per second fit: 500 contestants logging in
+within the same minute wait up to about a minute. For contests where
+everybody logs in at the start, stagger the logins or use `plaintext:`
+passwords set by the administration (as CMS contests usually do), which
+cost nothing to check.
+
+Form requests (login, registration, questions...) accept bodies of up to
+1 MiB; only submissions and user tests accept larger ones (64 MiB in
+total, and the limits of the configuration for each file).
 
 ## Contest times
 

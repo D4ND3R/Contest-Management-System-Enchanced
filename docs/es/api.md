@@ -72,8 +72,8 @@ curl -s -H "X-CMS-Authorization: $LOGIN" "$SITE/api/task_list"
 Lo que vale para el formulario de entrada vale para la API: el concurso
 debe permitir la autenticación con contraseña, se aplican la restricción
 por IP y el bloqueo de participaciones ocultas, y también los límites de
-entrada (10 intentos seguidos por usuario y después uno cada 6 segundos; un
-429 dice cuánto esperar). Los datos de entrada vencen `cookie_duration`
+entrada (10 intentos fallidos seguidos por usuario y después uno cada 6
+segundos, y un límite por dirección; un 429 dice cuánto esperar). Los datos de entrada vencen `cookie_duration`
 (3 horas por defecto) después de entrar: hay que volver a entrar cuando una
 llamada responde 403 `An authenticated user is required`. Cambiar la
 contraseña del concursante los invalida.

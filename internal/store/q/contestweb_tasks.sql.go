@@ -166,7 +166,8 @@ const cWSParticipationTokens = `-- name: CWSParticipationTokens :many
 SELECT tk.timestamp, s.task_id
 FROM tokens tk
 JOIN submissions s ON s.id = tk.submission_id
-WHERE s.participation_id = $1
+WHERE tk.submission_id = ANY (ARRAY(SELECT x.id FROM submissions x WHERE x.participation_id = $1::integer))
+  AND s.participation_id = $1::integer
 ORDER BY tk.timestamp, tk.id
 `
 
@@ -176,7 +177,9 @@ type CWSParticipationTokensRow struct {
 }
 
 // The tokens played by a participant with the task of each (CMS
-// tokens_available), oldest first.
+// tokens_available), oldest first. The tokens are looked up from the
+// participant's submissions (tokens_submission_id_key): joined the
+// usual way the planner hashes every token of the installation.
 func (q *Queries) CWSParticipationTokens(ctx context.Context, participationID int32) ([]CWSParticipationTokensRow, error) {
 	rows, err := q.db.Query(ctx, cWSParticipationTokens, participationID)
 	if err != nil {

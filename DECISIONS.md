@@ -553,3 +553,51 @@ y los que faltan se crean deshabilitados.
 
 **Por qué.** Migrar una instalación de CMS sin pasos manuales y sin dejar
 nada a medias; cambiar de SHA-1 a SHA-256 (D19) exige leer cada archivo.
+
+## D42 — Límites de entrada y cola de bcrypt del sitio del concursante
+
+**Decisión.** Las comprobaciones de contraseña pasan por tres capas, en
+este orden: límite por dirección (IPv6 por `/64`; amplio, un laboratorio
+puede compartir una dirección), límite por usuario y concurso (clave
+hasheada; 10 fallos seguidos y luego uno cada 6 s; un acierto devuelve su
+ficha) y una cola de bcrypt con una comprobación por núcleo
+(`GOMAXPROCS`) que atiende a las direcciones por turnos, con un tope de
+espera por dirección y total que responde 429 al instante. La inscripción
+de un usuario existente comparte las fichas por usuario. Los cuerpos de
+formularios se limitan a 1 MiB; solo envíos y pruebas aceptan 64 MiB. Las
+páginas reaccionan a un anuncio tras una espera aleatoria (el `spread` del
+ping, D37). El tiempo de entrada de un usuario inexistente sigue sin
+bcrypt, como en CMS: los nombres de usuario son públicos en el ranking, y
+un bcrypt ficticio delataría a los usuarios con contraseña `plaintext:`.
+
+**Por qué.** Antes una sola dirección podía llenar la memoria con nombres
+de usuario largos, bloquear cuentas ajenas con intentos que el límite por
+dirección rechazaba, usar la inscripción como oráculo de contraseñas sin
+límite por usuario y encolar sin tope intentos de bcrypt delante de los
+demás; con la mitad de los núcleos, una ola de 500 entradas con costo 12 dejaba
+26 % sin entrar en 60 s.
+
+## D43 — Núcleo web compartido y diferencias deliberadas con CMS
+
+**Decisión.** `internal/web` sirve a las tres webs: plantillas
+`html/template` con herencia y bloques al estilo Jinja (un conjunto de
+copias por página ligado a cada petición, porque `html/template` no deja
+cambiar funciones después de ejecutar), funciones de las plantillas de CMS
+y textos de los catálogos tratados como HTML de confianza (como `{% trans
+%}`; los valores insertados se escapan). CSRF compatible con Tornado
+(`_xsrf`, `X-XSRFToken`) más el rechazo de `Sec-Fetch-Site` ajeno; cookies
+firmadas con HMAC-SHA256 ligadas a su nombre, `HttpOnly` y
+`SameSite=Lax` (CMS no usa ninguna de las dos); estáticos con hash en la
+URL. Los formatos de fechas y números salen de las tablas CLDR de babel
+2.12.1 (la versión que fija CMS), comparadas con salidas de babel.
+
+Diferencias visibles deliberadas con CMS, además de las de D10 y R5.8–R5.9
+(nonce, manejadores en JS, indicador en vivo, enlace al código, tiempos de
+concurso): el tooltip de fecha de los envíos usa el idioma de la página (CMS
+lo deja en inglés por un error de su plantilla) y el detalle de una
+subtarea con casos públicos y privados muestra los públicos (CMS muestra
+"Score details temporarily unavailable").
+
+**Por qué.** Una sola implementación de seguridad y formato para las tres
+webs; las páginas portadas salen idénticas byte a byte a las de CMS salvo
+lo listado.

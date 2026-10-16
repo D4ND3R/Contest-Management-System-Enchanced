@@ -17,16 +17,16 @@ msgstr ""
 msgid "Execution killed because of a forbidden system call"
 msgstr ""
 
-#: ../internal/contestweb/templates/contest.html:88
+#: ../internal/contestweb/templates/contest.html:89
 msgid "Live updates: connected"
 msgstr ""
 
-#: ../internal/contestweb/templates/contest.html:88
-#: ../internal/contestweb/templates/contest.html:88
+#: ../internal/contestweb/templates/contest.html:89
+#: ../internal/contestweb/templates/contest.html:89
 msgid "Live updates: connecting"
 msgstr ""
 
-#: ../internal/contestweb/templates/contest.html:88
+#: ../internal/contestweb/templates/contest.html:89
 msgid "Live updates: disconnected, the page checks for news periodically"
 msgstr ""
 
@@ -34,7 +34,7 @@ msgstr ""
 msgid "Please wait a few seconds before asking another question."
 msgstr ""
 
-#: ../internal/contestweb/templates/contest.html:212
+#: ../internal/contestweb/templates/contest.html:213
 msgid "Source code"
 msgstr ""
 

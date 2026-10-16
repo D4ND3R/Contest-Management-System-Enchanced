@@ -194,3 +194,30 @@ func regexpFind(s, re string) string {
 	}
 	return m[1]
 }
+
+// TestAnnouncementSpread: every page of the contest gets an announcement
+// at once, so they fetch the notifications after a random delay below
+// the ping's spread (1500 tabs fetching at the same instant took the
+// p95 of the site over 500 ms); messages and answers go to one
+// participant and are fetched at once.
+func TestAnnouncementSpread(t *testing.T) {
+	t.Parallel()
+	ts := newTestSite(t, testOptions{})
+	c := ts.Client()
+	c.Login("alice", "demo")
+	body := c.Get("/demo").Body
+	for _, want := range []string{
+		`CMS.live.on("message answer resync", function() { utils.update_notifications(); });`,
+		`CMS.live.on("announcement", function() { CMS.live.later(function() { utils.update_notifications(); }); });`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the page lacks %s", want)
+		}
+	}
+	js := c.Get("/static/live.js").Body
+	for _, want := range []string{"later: function (fn) { setTimeout(fn, Math.random() * spread); }", "spread = d.spread;"} {
+		if !strings.Contains(js, want) {
+			t.Errorf("live.js lacks %s", want)
+		}
+	}
+}

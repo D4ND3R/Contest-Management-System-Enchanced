@@ -96,6 +96,20 @@ func (l *RateLimiter) Allow(key string) (bool, time.Duration) {
 	return false, wait
 }
 
+// Refund gives back a token Allow took from the bucket of key (up to the
+// burst), for events that should not count: a login whose password was
+// right only spends a token while it is checked. A key no longer tracked
+// is left alone (its bucket starts full anyway).
+func (l *RateLimiter) Refund(key string) {
+	s := &l.shards[maphash.String(l.seed, key)%rateShards]
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if el, ok := s.m[key]; ok {
+		b := el.Value.(*bucket)
+		b.tokens = math.Min(l.burst, b.tokens+1)
+	}
+}
+
 // Len returns the number of keys tracked.
 func (l *RateLimiter) Len() int {
 	n := 0

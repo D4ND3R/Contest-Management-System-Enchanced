@@ -32,6 +32,7 @@ package contestweb
 // spelling (10 rather than 10.0).
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -80,12 +81,20 @@ func (s *Server) apiLogin(c *Ctx) {
 	}
 
 	addr := clientAddr(c.R)
-	if ok, wait := s.allowAPILogin(c, username, addr.String()); !ok {
-		c.W.Header().Set("Retry-After", fmt.Sprint(max(1, int(wait.Seconds()+0.999))))
-		c.JSONError(http.StatusTooManyRequests, "Too many login attempts")
+	key, wait, ok := s.takeLoginTokens(c.Contest.Name, username, addr)
+	if !ok {
+		c.apiTooMany(wait)
 		return
 	}
 	res, err := s.ValidateLogin(c.Context(), c.Contest, c.Now, username, password, addr, adminToken)
+	if err != nil || res.Participation != nil {
+		// Only failed attempts count (loginlimit.go).
+		s.loginByUser.Refund(key)
+	}
+	if errors.Is(err, errBcryptBusy) {
+		c.apiTooMany(bcryptBusyRetry)
+		return
+	}
 	if err != nil {
 		c.apiFail(err)
 		return
@@ -97,17 +106,10 @@ func (s *Server) apiLogin(c *Ctx) {
 	c.JSON(http.StatusOK, map[string]string{"login_data": res.Data})
 }
 
-// allowAPILogin applies the limits of the login form (allowLogin) without
-// answering.
-func (s *Server) allowAPILogin(c *Ctx, username, addr string) (bool, time.Duration) {
-	ok, wait := s.loginByUser.Allow(c.Contest.Name + "\x00" + username)
-	if ok {
-		ok, wait = s.loginByIP.Allow(addr)
-	}
-	if !ok {
-		s.log.Warn("too many API login attempts", "contest", c.Contest.Name, "username", username, "ip", addr)
-	}
-	return ok, wait
+// apiTooMany answers 429 to the API login.
+func (c *Ctx) apiTooMany(wait time.Duration) {
+	c.W.Header().Set("Retry-After", fmt.Sprint(max(1, int(wait.Seconds()+0.999))))
+	c.JSONError(http.StatusTooManyRequests, "Too many login attempts")
 }
 
 // apiTask is a task of api/task_list.

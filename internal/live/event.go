@@ -401,6 +401,11 @@ type PingPayload struct {
 	Live bool `json:"live"`
 	// Time is the server clock in Unix milliseconds (contest timers).
 	Time int64 `json:"time"`
+	// Spread is in milliseconds: pages spread over a random delay below
+	// it the requests they all make on a broadcast event (contestweb's
+	// notifications on an announcement), so that they do not arrive at
+	// once. ResyncSpread for the server's open streams.
+	Spread int64 `json:"spread"`
 }
 
 // Resync reasons.

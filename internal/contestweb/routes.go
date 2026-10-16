@@ -107,6 +107,8 @@ func (s *Server) contestRoutes() []route {
 		{"GET", "/events", access{auth: authAPI, noRefresh: true}, s.eventsPage},
 		// Tasks.
 		{"GET", "/tasks/{task}/description", access{auth: authPage, phases: phasesAnyStarted}, s.taskDescriptionPage},
+		// CMS's statements/(.*) also matches an empty language.
+		{"GET", "/tasks/{task}/statements/{$}", access{auth: authPage, phases: phasesAnyStarted}, s.taskStatementPage},
 		{"GET", "/tasks/{task}/statements/{lang}", access{auth: authPage, phases: phasesAnyStarted}, s.taskStatementPage},
 		{"GET", "/tasks/{task}/statements/{lang}/{rest...}", access{auth: authPage, phases: phasesAnyStarted}, s.taskStatementPage},
 		{"GET", "/tasks/{task}/attachments/{filename...}", access{auth: authPage, phases: phasesAnyStarted}, s.taskAttachmentPage},
@@ -203,11 +205,8 @@ func (s *Server) routes() http.Handler {
 		}
 		methods := allowed[p]
 		target.HandleFunc(p, s.contestRoute(access{}, func(c *Ctx) {
-			allow := strings.Join(methods, ", ")
-			if strings.Contains(allow, "GET") {
-				allow += ", HEAD"
-			}
-			c.W.Header().Set("Allow", allow)
+			// HEAD is not allowed either (contestRoute).
+			c.W.Header().Set("Allow", strings.Join(methods, ", "))
 			c.Error(http.StatusMethodNotAllowed)
 		}))
 	}
