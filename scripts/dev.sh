@@ -80,7 +80,10 @@ is_running() {
 }
 
 start() {
-    [[ -x "$BIN" ]] || { log "build first: make build"; exit 1; }
+    # Always rebuild: a stale bin/cms rejects settings added since (go
+    # build is incremental and takes a second when nothing changed).
+    log "building bin/cms"
+    (cd "$ROOT" && make -s build) || { log "build failed"; exit 1; }
     "$ROOT/scripts/infra.sh" up
     write_config
     create_db
