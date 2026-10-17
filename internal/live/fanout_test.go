@@ -323,12 +323,14 @@ func (f *fanout) read(c net.Conn) {
 				f.hello.Add(1)
 			}
 		case EventResync:
-			f.resyncs.Add(1)
+			// resyncOK first: the test waits on resyncs and then reads
+			// resyncOK, which must already count this marker.
 			var p ResyncPayload
 			if json.Unmarshal([]byte(ev.Data), &p) == nil && p.Reason == ReasonReconnect &&
 				p.Spread == ResyncSpread(ReasonReconnect, f.n).Milliseconds() {
 				f.resyncOK.Add(1)
 			}
+			f.resyncs.Add(1)
 		case "bench":
 			var p benchPayload
 			if json.Unmarshal([]byte(ev.Data), &p) == nil && p.N < int64(len(f.got)) {

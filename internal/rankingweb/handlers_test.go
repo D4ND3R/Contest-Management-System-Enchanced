@@ -320,7 +320,11 @@ func TestVisibility(t *testing.T) {
 		// Neither a secret link nor a bad admin token opens it.
 		s.expect(req{path: "/?secret=" + s.cfg.RankingLinkToken("ioi-2026")}, 403, "")
 		tok := s.cfg.RankingAdminToken(time.Now().Add(time.Minute))
-		s.expect(req{path: "/?admin=" + tok[:len(tok)-1] + "0"}, 403, "")
+		badTok := tok[:len(tok)-1] + "0"
+		if tok[len(tok)-1] == '0' {
+			badTok = tok[:len(tok)-1] + "1"
+		}
+		s.expect(req{path: "/?admin=" + badTok}, 403, "")
 		s.expect(req{path: "/?admin=" + s.cfg.RankingAdminToken(time.Now().Add(-time.Second))}, 403, "")
 		// Basic auth works.
 		s.expect(req{path: "/scores", auth: true}, 200, `{"u1":{"a":90.0}}`)
