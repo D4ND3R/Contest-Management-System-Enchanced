@@ -120,7 +120,8 @@ type upgrader struct {
 	cfgPath string
 	out     io.Writer
 
-	current, staged, prev string   // binary paths
+	current, staged, prev string   // binary paths (current: os.Executable unless set)
+	installed             bool     // current was moved to prev
 	units                 []string // systemd units
 	useDB                 bool
 	backup                string // backup file of this run
@@ -135,12 +136,14 @@ func (u *upgrader) run(ctx context.Context) error {
 	if os.Geteuid() != 0 && !u.o.noServices {
 		return errors.New("cms ctl upgrade must run as root (it replaces the binary and restarts the systemd units)")
 	}
-	exe, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	if u.current, err = filepath.EvalSymlinks(exe); err != nil {
-		return err
+	if u.current == "" {
+		exe, err := os.Executable()
+		if err != nil {
+			return err
+		}
+		if u.current, err = filepath.EvalSymlinks(exe); err != nil {
+			return err
+		}
 	}
 	u.staged = filepath.Join(filepath.Dir(u.current), ".cms.upgrade-new")
 	u.prev = u.current + ".prev"
@@ -195,6 +198,7 @@ func (u *upgrader) step(ctx context.Context, step string) error {
 	case stepInstall:
 		u.logf("installing the new binary in %s", u.current)
 		if err = os.Rename(u.current, u.prev); err == nil {
+			u.installed = true
 			err = os.Rename(u.staged, u.current)
 		}
 	case stepMigrate:
@@ -223,7 +227,8 @@ func (u *upgrader) rollback(ctx context.Context, step string, cause error) error
 			errs = append(errs, err)
 		}
 	}
-	if reached(stepInstall) {
+	// Only a prev of this run goes back (an older one may be left over).
+	if u.installed {
 		if _, err := os.Stat(u.prev); err == nil {
 			if err := os.Rename(u.prev, u.current); err != nil {
 				errs = append(errs, fmt.Errorf("putting the previous binary back: %w", err))
@@ -252,8 +257,12 @@ func (u *upgrader) rollback(ctx context.Context, step string, cause error) error
 			"(cmsctl restore --clean %s), then systemctl start cms.target",
 			step, cause, errors.Join(errs...), u.prev, u.current, u.backup)
 	}
-	return fmt.Errorf("upgrade failed at %q: %v; everything was rolled back to cms %s and the services are healthy",
-		step, cause, buildinfo.String())
+	services := "the services are healthy"
+	if u.o.noServices {
+		services = "the services were not touched (--no-services)"
+	}
+	return fmt.Errorf("upgrade failed at %q: %v; everything was rolled back to cms %s and %s",
+		step, cause, buildinfo.String(), services)
 }
 
 // fetch puts the new binary in u.staged and checks that it runs.

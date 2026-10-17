@@ -67,6 +67,17 @@ func TestUsageAndAlias(t *testing.T) {
 	if code, out, _ := runCmd(t, "cms", "version"); code != 0 || !strings.Contains(out, "source: https://") {
 		t.Errorf("version: %d %q", code, out)
 	}
+	code, out, errs := runCmd(t, "cms", "ctl")
+	for _, sub := range []string{"backup", "restore", "upgrade", "add-admin", "public-urls"} {
+		if !strings.Contains(out+errs, "\n  "+sub+" ") {
+			t.Errorf("cms ctl does not list %s: code %d\n%s%s", sub, code, out, errs)
+		}
+	}
+	for _, args := range [][]string{{"restore"}, {"restore", "a", "b"}, {"backup", "extra"}, {"upgrade", "extra"}, {"add-admin"}, {"public-urls", "extra"}} {
+		if code, _, _ := runCmd(t, append([]string{"cmsctl"}, args...)...); code != 2 {
+			t.Errorf("cmsctl %q: code %d, want 2", args, code)
+		}
+	}
 	if code, _, _ := runCmd(t, "cms", "ctl", "config", "show", "extra"); code != 2 {
 		t.Errorf("extra argument accepted: %d", code)
 	}

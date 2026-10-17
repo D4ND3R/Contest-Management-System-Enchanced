@@ -239,7 +239,8 @@ func MigrateTx(ctx context.Context, tx pgx.Tx, upTo int) ([]Migration, error) {
 	if err != nil {
 		return nil, err
 	}
-	pending, err := compare(done, all[:max(upTo, len(done))])
+	// A database newer than this binary is reported by compare.
+	pending, err := compare(done, all[:min(max(upTo, len(done)), len(all))])
 	if err != nil {
 		return nil, err
 	}
