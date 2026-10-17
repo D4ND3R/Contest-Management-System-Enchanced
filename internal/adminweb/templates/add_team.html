@@ -1,0 +1,34 @@
+{{/*
+Ported from cms/server/admin/templates/add_team.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2026 the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<h1>{{T "New team"}}</h1>
+
+<h2 id="title_general_info" class="toggling_on">{{T "General information"}}</h2>
+<div id="general_info">
+  {{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+  <form enctype="multipart/form-data" action="{{url "teams" "add"}}" method="POST">
+    {{xsrf_form_html}}
+    <table>
+      <tr>
+        <td>{{T "Code"}}</td>
+        <td><input type="text" name="code"/></td>
+      </tr>
+      <tr>
+        <td>{{T "Name"}}</td>
+        <td><input type="text" name="name"/></td>
+      </tr>
+    </table>
+    <input type="submit"/>
+    <input type="reset" value="{{T "Reset"}}" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+{{end}}

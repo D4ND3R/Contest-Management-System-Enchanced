@@ -104,13 +104,25 @@ type SubmissionFilter struct {
 	// Status keeps the submissions whose result (on the dataset shown) is
 	// in this state.
 	Status SubmissionStatus
+	// Official, when set, keeps the official (true) or unofficial
+	// (false) submissions.
+	Official *bool
+	// Language keeps the submissions in this language.
+	Language string
 	// Before, when set, returns the page after the row it names: rows
 	// strictly older in the order of the list (timestamp, then id,
 	// newest first). Use SubmissionRow.Cursor of the last row of a page.
 	Before *SubmissionCursor
 	// Limit is the page size: DefaultPageSize when 0, at most MaxPageSize.
 	Limit int
+	// Offset skips that many rows (the numbered pages of the admin,
+	// ?page=N): each task then reads up to Offset+Limit submissions.
+	// At most MaxOffset.
+	Offset int
 }
+
+// MaxOffset bounds SubmissionFilter.Offset.
+const MaxOffset = 1 << 20
 
 // SubmissionCursor is a position in a list of submissions.
 type SubmissionCursor struct {
@@ -212,6 +224,12 @@ func submissionFilterSQL(f SubmissionFilter, args *sqlArgs) (submissionSQL, erro
 	if f.ParticipationID != 0 {
 		x.subConds = append(x.subConds, "s.participation_id = "+args.add(f.ParticipationID))
 	}
+	if f.Official != nil {
+		x.subConds = append(x.subConds, "s.official = "+args.add(*f.Official))
+	}
+	if f.Language != "" {
+		x.subConds = append(x.subConds, "s.language = "+args.add(f.Language))
+	}
 	if f.Status != "" {
 		x.resultJoin = " LEFT JOIN submission_results sr ON sr.submission_id = s.id AND sr.dataset_id = " + x.dataset
 		x.subConds = append(x.subConds, "("+statusSQL[f.Status]+")")
@@ -231,7 +249,8 @@ func submissionFilterSQL(f SubmissionFilter, args *sqlArgs) (submissionSQL, erro
 // stopping at the page size; then the newest of those. So a page reads
 // at most (tasks × page size) submissions whatever the size of the
 // contest. The participant, the result shown and the token are joined
-// afterwards to the rows of the page only (a deferred join).
+// afterwards to the rows of the page only (a deferred join). With an
+// Offset each task reads up to Offset+Limit rows.
 func ListSubmissions(ctx context.Context, db q.DBTX, f SubmissionFilter) ([]SubmissionRow, error) {
 	limit := f.Limit
 	switch {
@@ -240,12 +259,20 @@ func ListSubmissions(ctx context.Context, db q.DBTX, f SubmissionFilter) ([]Subm
 	case limit < 0 || limit > MaxPageSize:
 		return nil, fmt.Errorf("store: page size %d out of range 1..%d", limit, MaxPageSize)
 	}
+	if f.Offset < 0 || f.Offset > MaxOffset {
+		return nil, fmt.Errorf("store: offset %d out of range 0..%d", f.Offset, MaxOffset)
+	}
 	var args sqlArgs
 	x, err := submissionFilterSQL(f, &args)
 	if err != nil {
 		return nil, err
 	}
-	n := args.add(limit)
+	n, perTask, offset := args.add(limit), "", ""
+	if f.Offset > 0 {
+		perTask, offset = args.add(f.Offset+limit), " OFFSET "+args.add(f.Offset)
+	} else {
+		perTask = n
+	}
 	sql := `SELECT s.id, s.opaque_id, s.participation_id, s.task_id, s.timestamp, s.language, s.comment, s.official,
        s.contest_id, p.user_id, u.username, u.first_name, u.last_name, s.task_name, s.task_title, s.dataset_id,
        sr.submission_id IS NOT NULL, sr.compilation_outcome, coalesce(sr.compilation_tries, 0),
@@ -259,10 +286,10 @@ FROM (
         SELECT s.id, s.opaque_id, s.participation_id, s.task_id, s.timestamp, s.language, s.comment, s.official
         FROM submissions s` + x.resultJoin + where(append([]string{"s.task_id = t.id"}, x.subConds...)...) + `
         ORDER BY s.timestamp DESC, s.id DESC
-        LIMIT ` + n + `
+        LIMIT ` + perTask + `
     ) s` + where(x.taskConds...) + `
     ORDER BY s.timestamp DESC, s.id DESC
-    LIMIT ` + n + `
+    LIMIT ` + n + offset + `
 ) s
 JOIN participations p ON p.id = s.participation_id
 JOIN users u ON u.id = p.user_id

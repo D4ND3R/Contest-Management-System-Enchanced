@@ -1,0 +1,316 @@
+{{/*
+Ported from cms/server/admin/templates/contest.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2012-2018 Luca Wehrstedt and the
+CMS contributors.
+Changes in this fork: every text goes through T; the programming languages
+are those of this installation; the times of the main group are in the
+server time zone (D6), which the labels name; there is no overload warning
+(one contest site serves every contestant, CMS's fragment warned about
+users per ContestWebServer).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+{{$c := .C}}
+<div class="core_title">
+  <h1>{{T "Contest configuration"}}</h1>
+</div>
+
+
+
+
+{{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+<form enctype="multipart/form-data" action="{{url "contest" $c.ID}}" method="POST" name="edit_contest" style="display:inline;">
+  {{xsrf_form_html}}
+  <table class="sub_table">
+    <tr><td colspan=2><h2>{{T "Contest information"}}</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "A short name for the contest, preferably using only letters, numbers and underscores."}}"></span>
+        {{T "Name"}}
+      </td>
+      <td><input type="text" name="name" value="{{$c.Name}}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The name of the contest as seen by the contestants."}}"></span>
+        {{T "Description"}}
+      </td>
+      <td><textarea name="description">{{$c.Description}}</textarea></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The list of languages that contestants can use, or empty for allowing any language."}}
+                                  {{T "Example: 'en,ja' (without quotes)."}}"></span>
+        {{T "Allowed localizations"}}
+      </td>
+      <td><input type="text" name="allowed_localizations" value="{{join "," $c.AllowedLocalizations}}"/></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Programming languages that contestants can use to solve the tasks."}}
+                                  {{T "All the allowed languages must have task support, for example in managed tasks."}}"></span>
+        {{T "Allowed programming languages"}}
+      </td>
+      <td class="wrapping-options">
+{{range .Languages}}
+          <label><input type="checkbox" name="languages" value="{{.}}" {{if $c.HasLanguage .}}checked{{end}}>{{.}}</label>
+{{end}}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Whether contestants can download their own submissions."}}"></span>
+        <label for="submissions_download_allowed">{{T "Submissions download allowed"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="submissions_download_allowed" name="submissions_download_allowed" {{if $c.SubmissionsDownloadAllowed}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Whether contestants can submit questions."}}"></span>
+        <label for="allow_questions">{{T "Allow questions"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_questions" name="allow_questions" {{if $c.AllowQuestions}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Whether contestants can submit user tests."}}"></span>
+        <label for="allow_user_tests">{{T "Allow user tests"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_user_tests" name="allow_user_tests" {{if $c.AllowUserTests}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The number of decimal places the scores will be rounded to."}}
+                                  {{T "Example: '2' to allow 98.76."}}"></span>
+        {{T "Score decimal places"}}
+      </td>
+      <td><input type="text" name="score_precision" value="{{$c.ScorePrecision}}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Allow contestant to make unofficial submission before analysis mode"}}"></span>
+        {{T "Allow unofficial submission before analysis mode"}}
+      </td>
+      <td>
+        <input type="checkbox" id="allow_unofficial_submission_before_analysis_mode" name="allow_unofficial_submission_before_analysis_mode" {{if $c.AllowUnofficialSubmissionBeforeAnalysisMode}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Timezone of the server, used to display start, end times and the current server time to contestants."}}
+                                  {{T "Example: 'Europe/Rome', 'America/New_York', ..."}}"></span>
+        {{T "Timezone"}}
+      </td>
+      <td><input type="text" name="timezone" value="{{$c.TimezoneStr}}"></td>
+    </tr>
+
+    <tr><td colspan=2><h2>{{T "Logging in"}}</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "If checked, contestants that are marked as hidden in this contest will not be able to log in."}}"></span>
+        <label for="block_hidden_participations">{{T "Block hidden participations"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="block_hidden_participations" name="block_hidden_participations" {{if $c.BlockHiddenParticipations}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "If checked, contestants will be able to log in using username and password."}}"></span>
+        <label for="allow_password_authentication">{{T "Allow password authentication"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_password_authentication" name="allow_password_authentication" {{if $c.AllowPasswordAuthentication}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "If checked, contestants will be able to autonomously create a user account and a participation in the contest."}}"></span>
+        <label for="allow_registration">{{T "Allow registration"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_registration" name="allow_registration" {{if $c.AllowRegistration}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "If true, contestants with an IP address specified for this contest will only be able to log in from that address."}}"></span>
+        <label for="ip_restriction">{{T "IP based login restriction"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="ip_restriction" name="ip_restriction" {{if $c.IpRestriction}}checked{{end}}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "If true, contestants with an IP address specified for this contest will be automatically logged in when connecting from that address."}}"></span>
+        <label for="ip_autologin">{{T "IP based autologin"}}</label>
+      </td>
+      <td>
+        <input type="checkbox" id="ip_autologin" name="ip_autologin" {{if $c.IpAutologin}}checked{{end}}/>
+      </td>
+    </tr>
+
+    <tr><td colspan=2><h2>{{T "Tokens parameters"}} (<a href="http://cms.readthedocs.org/en/latest/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">{{T "documentation"}}</a>)</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Select 'disabled' to remove tokens completely, 'infinite' for allowing any number of tokens, or 'finite' to specify the amount with the following parameters."}}
+                                  {{T "If you prefer to control tokens at the task level, select 'infinite' here."}}"></span>
+        {{T "Token mode"}}
+      </td>
+      <td>
+        <select name="token_mode">
+          <option value="disabled" {{if eq $c.TokenMode "disabled"}}selected{{end}}>{{T "Disabled"}}</option>
+          <option value="finite" {{if eq $c.TokenMode "finite"}}selected{{end}}>{{T "Finite"}}</option>
+          <option value="infinite" {{if eq $c.TokenMode "infinite"}}selected{{end}}>{{T "Infinite"}}</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The maximum number of tokens a contestant can use in the whole contest."}}
+                                  {{T "It is used only if tokens are finite."}}"></span>
+        {{T "Maximum number of tokens"}}
+      </td>
+      <td><input type="text" name="token_max_number" value="{{$c.TokenMaxNumberStr}}" size="3"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The minimum amount of time (in seconds) that a contestant needs to wait after using a token before being able to use another."}}
+                                  {{T "It is used only if tokens are finite."}}"></span>
+        {{T "Minimum interval between tokens"}}
+      </td>
+      <td><input type="text" name="token_min_interval" value="{{$c.TokenMinIntervalSec}}" size="3"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The number of tokens that a contestant has available when their contest time starts."}}
+                                  {{T "It is used only if tokens are finite."}}"></span>
+        {{T "Initial number of tokens"}}
+      </td>
+      <td><input type="text" name="token_gen_initial" value="{{$c.TokenGenInitial}}" size="3"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The number of tokens that are generated periodically."}}
+                                  {{T "It is used only if tokens are finite."}}"></span>
+        {{T "Token generation number"}}
+      </td>
+      <td><input type="text" name="token_gen_number" value="{{$c.TokenGenNumber}}" size="3"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The amount of time (in minutes) between two token generation events."}}
+                                  {{T "It is used only if tokens are finite."}}"></span>
+        {{T "Token generation period"}}
+      </td>
+      <td><input type="text" name="token_gen_interval" value="{{$c.TokenGenIntervalMin}}" size="3"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Maximum number of tokens available to a contestant at any given time during the contest."}}
+                                  {{T "It is used only if tokens are finite."}}"></span>
+        {{T "Maximum accumulated tokens"}}
+      </td>
+      <td><input type="text" name="token_gen_max" value="{{$c.TokenGenMaxStr}}" size="3"></td>
+    </tr>
+
+    <tr><td colspan=2><h2>{{T "Main group settings"}}</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The group used for time calculations in the admin and ranking interface."}}"></span>
+        {{T "Main group"}}
+      </td>
+      <td>
+{{with .Group}}
+        <a href='{{url "contest" $c.ID "group" .ID "edit"}}'>{{.Name}}</a>
+{{end}}
+      </td>
+    </tr>
+  </table>
+  <table class="NestedSettings">
+{{if .Group}}
+{{template "fragments/group_settings.html" .}}
+{{end}}
+  </table>
+  <table>
+    <tr>
+      <td>
+        <span style="width: 8px; display: inline-block;"></span>
+        <span style="max-width: 300px; display: inline-block; word-wrap: break-word;">
+          {{Format (T "To change start and end times or analysis mode for other groups, or change the main group, please use the <a href='%(url)s'>groups</a> section.") "url" (url "contest" $c.ID "groups")}}
+        </span>
+      </td>
+    </tr>
+
+    <tr><td colspan=2><h2>{{T "Limits"}}</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Maximum number of submissions each contestant can submit, for the whole contest."}}
+                                  {{T "Leave empty for no limits."}}"></span>
+        {{T "Maximum number of submissions"}}
+      </td>
+      <td><input type="text" name="max_submission_number" value="{{$c.MaxSubmissionNumberStr}}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Maximum number of user tests each contestant can submit, for the whole contest."}}
+                                  {{T "Leave empty for no limits."}}"></span>
+        {{T "Maximum number of user tests"}}
+      </td>
+      <td><input type="text" name="max_user_test_number" value="{{$c.MaxUserTestNumberStr}}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The minimum amount of time (in seconds) that a contestant needs to wait after a submission before being able to submit another."}}
+                                  {{T "Leave empty for no limits."}}"></span>
+        {{T "Minimum interval between submissions"}}
+      </td>
+      <td><input type="text" name="min_submission_interval" value="{{$c.MinSubmissionIntervalSec}}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The amount of time (in seconds) until the end of participation in which the minimum interval between submissions is not enforced."}}"></span>
+        {{T "Minimum submission interval grace period"}}
+      </td>
+      <td><input type="text" name="min_submission_interval_grace_period" value="{{$c.MinSubmissionIntervalGracePeriodSec}}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The minimum amount of time (in seconds) that a contestant needs to wait after a user test before being able to send another."}}
+                                  {{T "Leave empty for no limits."}}"></span>
+        {{T "Minimum interval between user tests"}}
+      </td>
+      <td><input type="text" name="min_user_test_interval" value="{{$c.MinUserTestIntervalSec}}"></td>
+    </tr>
+  </table>
+  <input type="submit"
+         value="{{T "Update"}}"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         >
+  <input type="reset" value="{{T "Reset"}}">
+</form>
+<form action="{{url "contests"}}" method="POST" style="display:inline;">
+    {{xsrf_form_html}}
+    <input type="hidden" name="contest_id" value="{{$c.ID}}"/>
+    <input type="submit"
+         name="operation"
+         value="{{T "Remove"}}" style="float: right;"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         />
+</form>
+
+
+{{end}}

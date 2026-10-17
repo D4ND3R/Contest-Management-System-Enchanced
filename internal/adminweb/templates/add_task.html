@@ -1,0 +1,30 @@
+{{/*
+Ported from cms/server/admin/templates/add_task.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; a link to the import of a
+task package (R6.2).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "New task"}}</h1>
+</div>
+
+{{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+<form enctype="multipart/form-data" action="{{url "tasks" "add"}}" method="post" >
+  {{xsrf_form_html}}
+  <span class="info" title="{{T "A short name for the task, preferably using only letters, numbers and underscores."}}"></span>
+  {{T "Name:"}}
+  <input type="text" name="name">
+
+  <input type="submit">
+</form>
+
+<hr/>
+
+<a href="{{url "tasks" "import"}}">{{T "Import a task package (zip)"}}</a>
+
+{{end}}

@@ -1,0 +1,41 @@
+{{/*
+Ported from cms/server/admin/templates/team.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2026 the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<h1>{{.Team.Name}} ({{.Team.Code}})</h1>
+
+<h2 id="title_general_info" class="toggling_on">{{T "General Information"}}</h2>
+<div id="general_info">
+  {{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+  <form enctype="multipart/form-data" action="{{url "team" .Team.ID}}" method="POST" style="display:inline;">
+    {{xsrf_form_html}}
+    <table>
+      <tr>
+        <td>{{T "Code"}}</td>
+        <td><input type="text" name="code" value="{{.Team.Code}}" /></td>
+      </tr>
+      <tr>
+        <td>{{T "Name"}}</td>
+        <td><input type="text" name="name" value="{{.Team.Name}}" /></td>
+      </tr>
+    </table>
+    <input type="submit" value="{{T "Update"}}" />
+    <input type="reset" value="{{T "Reset"}}" />
+  </form>
+  <form action="{{url "teams"}}" method="POST" style="display:inline; float: right;">
+    {{xsrf_form_html}}
+    <input type="hidden" name="team_id" value="{{.Team.ID}}" />
+    <input type="submit" name="operation" value="{{T "Remove"}}" {{if not .Admin.CanAll}}
+      disabled {{end}} />
+  </form>
+  <div class="hr"></div>
+</div>
+
+
+{{end}}

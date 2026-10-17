@@ -1,0 +1,529 @@
+{{/*
+Ported from cms/server/admin/templates/task.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; inline <script> carries the
+CSP nonce and the inline onclick handlers are data- attributes
+(aws_handlers.js, D10); the problem preparer (permission_tasks, R6.5) can
+change the task; the "Problem preparation" section links to the new pages
+of R6.2.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "js_init"}}
+
+function showTaskTypeOption(dataset_id) {
+    var selector = $("select[name=task_type_" + dataset_id + "]")[0];
+    $(".TaskTypeOptions_" + dataset_id + ":visible").hide("fast");
+    $("#TaskType" + selector.options[selector.selectedIndex].value + "Options_" + dataset_id).show("fast")
+};
+
+{{range .Datasets}}
+showTaskTypeOption({{.ID}});
+$("select[name=task_type_{{.ID}}]").change(function() {
+    showTaskTypeOption({{.ID}});
+});
+{{end}}
+
+{{end}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{.Task.Title}} ({{.Task.Name}})</h1>
+</div>
+
+<h2 id="title_submissions" class="toggling_on">{{T "Submissions"}}</h2>
+<div id="submissions">
+
+  {{if eq .SubmissionCount 0}}
+  <p>{{T "No submissions for this task yet."}}</p>
+  {{else}}
+    <a href="{{url "dataset" .Form.ActiveDataset}}">
+      {{Format (Tn "%(n)s submission" "%(n)s submissions" (int .SubmissionCount)) "n" .SubmissionCount}}
+    </a>
+  {{end}}
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_preparation" class="toggling_on">{{T "Problem preparation"}}</h2>
+<div id="preparation">
+  <p>
+    <a href="{{url "task" .Task.ID "prepare"}}">[{{T "What is missing"}}]</a>
+    <a href="{{url "task" .Task.ID "test_submissions"}}">[{{T "Test submissions"}}]</a>
+    <a href="{{url "task" .Task.ID "files"}}">[{{T "Add files"}}]</a>
+    <a href="{{url "task" .Task.ID "problem.yaml"}}">[problem.yaml]</a>
+    <a href="{{url "task" .Task.ID "export"}}">[{{T "Download as a package"}}]</a>
+    <a href="{{url "task" .Task.ID "import"}}">[{{T "Update from a package"}}]</a>
+  </p>
+  <div class="hr"></div>
+</div>
+
+{{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+<form enctype="multipart/form-data" action="{{url "task" .Task.ID}}" method="POST" style="display:inline;">
+  {{xsrf_form_html}}
+  <h2 id="title_task_configuration" class="toggling_on">{{T "Task configuration"}}</h2>
+  <div id="task_configuration">
+    <table>
+      <tr><td colspan=2><h2>{{T "Task information"}}</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "A short name for the task, preferably using only letters, numbers and underscores."}}"></span>
+          {{T "Name"}}
+        </td>
+        <td><input type="text" name="name" value="{{.Task.Name}}"/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The title of the task as seen by the contestants."}}"></span>
+          {{T "Title"}}
+        </td>
+        <td><input type="text" name="title" value="{{.Task.Title}}"/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The index of the task within the contest, if the task is associated with a contest."}}"></span>
+          {{T "Position"}}
+        </td>
+        <td>{{.Form.Num}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The statements of this task, by language code. Primary statements are shown prominently to contestants."}}"></span>
+          {{T "Statements"}}
+{{if .Admin.CanTasks}}
+          [<a href="{{url "task" .Task.ID "statements" "add"}}">{{T "add"}}</a>]
+{{end}}
+        </td>
+        <td>
+          {{if not .Statements}}
+          {{T "No statements uploaded yet"}}
+          {{else}}
+          <table>
+            <tbody>
+            {{range .Statements}}
+              <tr>
+                <td><a href="{{url "file" .Digest "statement.pdf"}}">{{Format (T "Statement for language \"%(lang)s\"") "lang" .Language}}</a></td>
+                <td>
+                  <label>
+                    <input type="checkbox" name="primary_statement_{{.Language}}" {{if index $.Primary .Language}}checked{{end}} />
+                    {{T "Primary?"}}
+                  </label>
+                </td>
+                <td><a data-ajax-delete="{{url "task" $.Task.ID "statement" .ID}}">{{T "Delete"}}</a></td>
+              </tr>
+            {{end}}
+            </tbody>
+          </table>
+          {{end}}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Attachments for this task. Contestant can view and download attachments from the task page."}}"></span>
+          {{T "Attachments"}}
+{{if .Admin.CanTasks}}
+          [<a href="{{url "task" .Task.ID "attachments" "add"}}">{{T "add"}}</a>]
+{{end}}
+        </td>
+        <td>
+          {{if not .Attachments}}
+            {{T "No attachments."}}
+          {{else}}
+            {{range .Attachments}}
+              <div class="attachment">
+                <a href="{{url "file" .Digest .Filename}}">{{.Filename}}</a>
+                - <a data-ajax-delete="{{url "task" $.Task.ID "attachment" .ID}}">{{T "Delete"}}</a>
+              </div>
+            {{end}}
+          {{end}}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "A comma-separated list with the names of the files that need to be submitted (with the language extensions changed to %l).
+                                    The task type dictates the submission format. Consult the task type documentation to know the requirements."}}"></span>
+          {{T "Submission format"}}
+        </td>
+        <td>
+          <input type="text" name="submission_format" value="{{join ", " .Task.SubmissionFormat}}"/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Programming languages that contestants can use to solve this task.
+                                    If none are selected, all contest languages are allowed.
+                                    Otherwise, only the selected languages are allowed."}}"></span>
+          {{T "Allowed programming languages"}}
+        </td>
+        <td class="wrapping-options">
+          {{range .Languages}}
+            <label><input type="checkbox" name="allowed_languages" value="{{.}}" {{if index $.Form.Allowed .}}checked{{end}}>{{.}}</label>
+          {{end}}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "With 'restricted' contestants only see limited technical information about each testcase; with 'full' they see more details, but malicious contestants might use this data to get some information about the test data."}}"></span>
+          {{T "Feedback level"}}
+        </td>
+        <td>
+          <select name="feedback_level">
+            <option value=oi_restricted {{if eq .Task.FeedbackLevel "oi_restricted"}}selected{{end}}>{{T "OI Restricted"}}</option>
+            <option value=restricted {{if eq .Task.FeedbackLevel "restricted"}}selected{{end}}>{{T "Restricted"}}</option>
+            <option value=full {{if eq .Task.FeedbackLevel "full"}}selected{{end}}>{{T "Full"}}</option>
+          </select>
+        </td>
+      </tr>
+      <tr><td colspan=2><h2>{{T "Tokens parameters"}} (<a href="http://cms.readthedocs.org/en/latest/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">{{T "documentation"}}</a>)</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Select 'disabled' to remove tokens completely for this task, 'infinite' for allowing any number of tokens for this task, or 'finite' to specify the amount with the following parameters.
+                                    If you prefer to control tokens at the task level, select 'infinite' here."}}"></span>
+          {{T "Token mode"}}
+        </td>
+        <td>
+          <select name="token_mode">
+            <option value="disabled" {{if eq .Task.TokenMode "disabled"}}selected{{end}}>{{T "Disabled"}}</option>
+            <option value="finite" {{if eq .Task.TokenMode "finite"}}selected{{end}}>{{T "Finite"}}</option>
+            <option value="infinite" {{if eq .Task.TokenMode "infinite"}}selected{{end}}>{{T "Infinite"}}</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The maximum number of tokens a contestant can use in this task.
+                                    It is used only if tokens are finite."}}"></span>
+          {{T "Maximum number of tokens"}}
+        </td>
+        <td><input type="text" name="token_max_number" value="{{.Form.TokenMaxNumber}}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The minimum amount of time (in seconds) that a contestant needs to wait for this task after using a token before being able to use another.
+                                    It is used only if tokens are finite."}}"></span>
+          {{T "Minimum interval between tokens"}}
+        </td>
+        <td><input type="text" name="token_min_interval" value="{{.Form.TokenMinInterval}}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The number of tokens that a contestant has available for this task when their contest time starts.
+                                    It is used only if tokens are finite."}}"></span>
+          {{T "Initial number of tokens"}}
+        </td>
+        <td><input type="text" name="token_gen_initial" value="{{.Task.TokenGenInitial}}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The number of tokens that are generated periodically for this task.
+                                    It is used only if tokens are finite."}}"></span>
+          {{T "Token generation number"}}
+        </td>
+        <td><input type="text" name="token_gen_number" value="{{.Task.TokenGenNumber}}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The amount of time (in minutes) between two token generation events for this task.
+                                    It is used only if tokens are finite."}}"></span>
+          {{T "Token generation period"}}
+        </td>
+        <td><input type="text" name="token_gen_interval" value="{{.Form.TokenGenInterval}}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Maximum number of tokens for this task available to a contestant at any given time during the contest.
+                                    It is used only if tokens are finite."}}"></span>
+          {{T "Maximum accumulated tokens"}}
+        </td>
+        <td><input type="text" name="token_gen_max" value="{{.Form.TokenGenMax}}" /></td>
+      </tr>
+
+      <tr><td colspan=2><h2>{{T "Limits"}}</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Maximum number of submissions each contestant can submit for this task, for the whole contest.
+                                    Leave empty for no limits."}}"></span>
+          {{T "Maximum number of submissions"}}
+        </td>
+        <td><input type="text" name="max_submission_number" value="{{.Form.MaxSubmissionNumber}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Maximum number of user tests each contestant can submit for this task, for the whole contest.
+                                    Leave empty for no limits."}}"></span>
+          {{T "Maximum number of user tests"}}
+        </td>
+        <td><input type="text" name="max_user_test_number" value="{{.Form.MaxUserTestNumber}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The minimum amount of time (in seconds) for this task that a contestant needs to wait after a submission before being able to submit another.
+                                    Leave empty for no limits."}}"></span>
+          {{T "Minimum interval between submissions"}}
+        </td>
+        <td><input type="text" name="min_submission_interval" value="{{.Form.MinSubmissionInterval}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The minimum amount of time (in seconds) for this task that a contestant needs to wait after a user test before being able to send another.
+                                    Leave empty for no limits."}}"></span>
+          {{T "Minimum interval between user tests"}}
+        </td>
+        <td><input type="text" name="min_user_test_interval" value="{{.Form.MinUserTestInterval}}"></td>
+      </tr>
+
+      <tr><td colspan=2><h2>{{T "Score options"}}</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The number of decimal places the scores will be rounded to.
+                                    Example: '2' to allow 98.76."}}"></span>
+          {{T "Score decimal places"}}
+        </td>
+        <td><input type="text" name="score_precision" value="{{.Task.ScorePrecision}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "How the score for the task is computed from the score of each submission."}}"></span>
+          {{T "Score mode"}}
+        </td>
+        <td>
+          <select name="score_mode">
+            <option value="max_tokened_last" {{if eq .Task.ScoreMode "max_tokened_last"}}selected{{end}}>{{T "Use best among tokened and last submissions (IOI 2010-2012)"}}</option>
+            <option value="max" {{if eq .Task.ScoreMode "max"}}selected{{end}}>{{T "Use best among all submissions (IOI 2013-2016)"}}</option>
+            <option value="max_subtask" {{if eq .Task.ScoreMode "max_subtask"}}selected{{end}}>{{T "Use the sum over each subtask of the best result for that subtask across all submissions (IOI 2017-)"}}</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+
+{{comment " Datasets "}}
+
+  <h2 id="title_datasets" class="toggling_on">{{T "Datasets"}}</h2>
+  <div id="datasets">
+    <p>
+{{if not .Datasets}}
+    {{T "No datasets have been created for this task."}}<br/>
+{{end}}
+{{if .Admin.CanTasks}}
+    <a href="{{url "task" .Task.ID "add_dataset"}}">{{T "Create a new dataset"}}</a><br/>
+{{end}}
+    </p>
+
+{{range .Datasets}}
+
+  <h3 id="title_dataset_{{.ID}}" class="toggling_on">{{T "Dataset:"}} {{.Description}}{{dataset_attrs .Live .Autojudge}}</h3>
+  <div id="dataset_{{.ID}}" class="task_dataset">
+
+    <p>
+{{if $.Admin.CanTasks}}
+      {{if .Live}}
+      [{{T "Make Live ..."}}]
+      {{else}}
+      <a href="{{url "dataset" .ID "activate"}}">[{{T "Make Live ..."}}]</a>
+      {{end}}
+      <a href="{{url "dataset" .ID "clone"}}">[{{T "Clone"}}]</a>
+      <a href="{{url "dataset" .ID "rename"}}">[{{T "Rename"}}]</a>
+      {{if .Live}}
+      [{{T "Delete"}}]
+      {{else}}
+      <a href="{{url "dataset" .ID "delete"}}">[{{T "Delete"}}]</a>
+      {{end}}
+      {{if not .Live}}
+        <a data-ajax-post="{{url "dataset" .ID "autojudge"}}">[{{if .Autojudge}}{{T "Disable background judging"}}{{else}}{{T "Enable background judging"}}{{end}}]</a>
+      {{end}}
+{{end}}
+      <a href="{{url "dataset" .ID}}">[{{T "View results"}}]</a>
+    </p>
+
+  {{comment " Task type and score type settings "}}
+
+    <h4 id="title_task_type_{{.ID}}" class="toggling_on">{{T "Dataset configuration"}}</h4>
+
+    {{if not .TaskTypeKnown}}
+    <script type="text/javascript" nonce="{{nonce}}">
+      $(document).ready(function() {
+      utils.display_notification("notification",
+          0,
+          {{Format (T "Task type `%(name)s' not found.") "name" .TaskType}},
+          {{T "Please select another task type, or make the original one available and refresh the page without updating the task to avoid losing the parameters."}});
+      });
+    </script>
+    {{end}}
+
+    {{if not .ScoreTypeKnown}}
+    <script type="text/javascript" nonce="{{nonce}}">
+      $(document).ready(function() {
+      utils.display_notification("notification",
+          0,
+          {{Format (T "Score type `%(name)s' not found.") "name" .ScoreType}},
+          {{T "Please select another score type, or make the original one available and refresh the page without updating the task to avoid losing the parameters."}});
+      });
+    </script>
+    {{end}}
+
+    <div id="task_type_{{.ID}}" class="task_dataset_params">
+      <table>
+
+        <tr><td colspan=2><h3>{{T "Limits"}}</h3></td></tr>
+        <tr>
+          <td>
+            <span class="info" title="{{T "Total maximum time for each evaluation, in seconds."}}"></span>
+            {{T "Time limit"}}
+          </td>
+          <td><input type="text" name="time_limit_{{.ID}}" value="{{.TimeLimit}}"/> {{T "second(s)"}}</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="info" title="{{T "Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."}}"></span>
+            {{T "Memory limit"}}
+          </td>
+          <td><input type="text" name="memory_limit_{{.ID}}" value="{{.MemoryLimit}}"/> MiB</td>
+        </tr>
+
+        <tr><td colspan=2><h3>{{T "Task type settings"}} (<a href="http://cms.readthedocs.org/en/latest/Task%20types.html" target="_blank">{{T "documentation"}}</a>)</h3></td></tr>
+        <tr>
+          <td>
+            <span class="info" title="{{T "Please see the task type documentation."}}"></span>
+            {{T "Task type"}}
+          </td>
+          <td>
+
+          {{$ds := .}}
+            <select name="task_type_{{.ID}}">
+              {{range $.TaskTypeNames}}
+              <option value="{{.}}" {{if eq $ds.TaskType .}}selected{{end}}>{{.}}</option>
+              {{end}}
+            </select>
+
+          {{range .TaskTypes}}
+          <table class="TaskTypeOptions TaskTypeOptions_{{$ds.ID}} bordered" id="TaskType{{.Name}}Options_{{$ds.ID}}" style="display: none;">
+            {{range .Rows}}
+              <tr>
+                <td>{{.Name}}</td>
+                <td>
+                  {{.HTML}}
+                </td>
+              </tr>
+            {{end}}
+          </table>
+          {{end}}
+
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="info" title="{{T "Managers for this task. Managers are sources, headers, libraries or binaries used during the evaluation."}}"></span>
+            {{T "Managers"}}
+{{if $.Admin.CanTasks}}
+            [<a href="{{url "dataset" .ID "managers" "add"}}">{{T "add"}}</a>]
+{{end}}
+          </td>
+          <td>
+            {{if not .Managers}}
+              {{T "No managers."}}
+            {{else}}
+              {{range .Managers}}
+                <div class="manager">
+                  <a href="{{url "file" .Digest .Filename}}">{{.Filename}}</a>
+                  - <a data-ajax-delete="{{url "dataset" $ds.ID "manager" .ID "delete"}}">{{T "Delete"}}</a>
+                </div>
+              {{end}}
+            {{end}}
+          </td>
+        </tr>
+
+        <tr><td colspan=2><h3>{{T "Score type settings"}} (<a href="http://cms.readthedocs.org/en/latest/Score%20types.html" target="_blank">{{T "documentation"}}</a>)</h3></td></tr>
+        <tr>
+          <td>
+            <span class="info" title="{{T "Please see the score type documentation."}}"></span>
+            {{T "Score Type"}}
+          </td>
+          <td>
+            <select name="score_type_{{.ID}}">
+              {{range $.ScoreTypes}}
+              <option value="{{.}}" {{if eq $ds.ScoreType .}}selected{{end}}>{{.}}</option>
+              {{end}}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="info" title="{{T "Please see the score type documentation."}}"></span>
+            {{T "Score Parameters"}}
+          </td>
+          <td><textarea name="score_type_parameters_{{.ID}}">{{.ScoreParams}}</textarea></td>
+        </tr>
+      </table>
+      <div class="hr"></div>
+    </div>
+
+  {{comment " Test cases for this dataset "}}
+
+  <h4 id="title_testcases_{{.ID}}" class="toggling_on">{{T "Test cases"}}</h4>
+    <div id="testcases_{{.ID}}" class="task_dataset_testcases">
+{{if $.Admin.CanTasks}}
+      <a href="{{url "dataset" .ID "testcases" "add"}}">{{T "Add a testcase"}}</a>
+      <a href="{{url "dataset" .ID "testcases" "add_multiple"}}">{{T "Add multiple testcases"}}</a>
+      <a href="{{url "dataset" .ID "testcases" "new"}}">{{T "Write or generate a testcase"}}</a>
+      <a href="{{url "dataset" .ID "generator"}}">{{T "Generate inputs"}}</a>
+{{end}}
+      <a href="{{url "dataset" .ID "testcases" "download"}}">{{T "Download all testcases"}}</a>
+      <table class="bordered" style="text-align:center">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{T "Codename"}}</th>
+            <th>{{T "Public"}}</th>
+            <th>{{T "Input"}}</th>
+            <th>{{T "Output"}}</th>
+            <th>{{T "Ops"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range $i, $tc := .Testcases}}
+          <tr>
+            <td style="font-weight:bold;">{{add $i 1}}</td>
+            <td><a href="{{url "dataset" $ds.ID "testcase" .ID}}">{{.Codename}}</a></td>
+            <td style="font-weight:bold;">
+              <input type="checkbox" name="testcase_{{.ID}}_public" {{if .Public}}checked{{end}} />
+            </td>
+            <td>
+              <a href="javascript:void(0);" data-show-file="input_{{.Codename}}" data-url="{{url "file" .Input (print "input_" .Codename)}}">{{T "Show input"}}</a>
+            </td>
+            <td>
+              <a href="javascript:void(0);" data-show-file="output_{{.Codename}}" data-url="{{url "file" .Output (print "output_" .Codename)}}">{{T "Show output"}}</a>
+            </td>
+            <td>
+              <a data-ajax-delete="{{url "dataset" $ds.ID "testcase" .ID "delete"}}">{{T "Delete"}}</a>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      <div class="hr"></div>
+    </div>
+  </div>
+  {{end}}
+  </div>
+  <input type="submit"
+{{if not .Admin.CanTasks}}
+         disabled
+{{end}}
+         value="{{T "Update"}}" />
+  <input type="reset" value="{{T "Reset"}}" />
+</form>
+<form action="{{url "tasks"}}" method="POST" style="display:inline;">
+    {{xsrf_form_html}}
+    <input type="hidden" name="task_id" value="{{.Task.ID}}"/>
+    <input type="submit"
+         name="operation"
+         value="{{T "Remove"}}" style="float: right;"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         />
+</form>
+{{end}}

@@ -1,0 +1,39 @@
+{{/*
+Ported from cms/server/admin/templates/download_testcases.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "Download all testcases"}}</h1>
+</div>
+<form action="{{url "dataset" .Dataset.ID "testcases" "download"}}" method="POST">
+  {{xsrf_form_html}}
+  <table>
+    <tr>
+      <td>{{T "Zip file name"}}</td>
+      <td>
+        <input type="text" name="zip_filename" value="testcases.zip">
+      </td>
+    </tr>
+    <tr>
+      <td>{{T "Input file names template (use * as a testcase codename, for example: input.* or *.in)"}}</td>
+      <td>
+        <input type="text" name="input_template" value="input.*">
+      </td>
+    </tr>
+    <tr>
+      <td>{{T "Output file names template (use * as a testcase codename, for example: output.* or *.out)"}}</td>
+      <td>
+        <input type="text" name="output_template" value="output.*">
+      </td>
+    </tr>
+  </table>
+  <input type="submit" value="{{T "Download"}}">
+  <input type="Reset" >
+</form>
+{{end}}

@@ -1,0 +1,83 @@
+{{/*
+Ported from cms/server/admin/templates/groups.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2026 the CMS contributors.
+Changes in this fork: every text goes through T; times are in the server
+time zone (D6), which the headers name.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+{{$tz := .TZ}}
+<div class="core_title">
+  <h1>{{T "Groups list"}}</h1>
+</div>
+
+<form action="{{url "contest" .Contest.ID "groups" "add"}}" method="POST">
+    {{xsrf_form_html}}
+  {{T "Add a new group named"}}
+  <input type="text" name="name"/>
+  <input type="submit"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         value="{{T "Add group"}}" />
+</form>
+
+<form action="{{url "contest" .Contest.ID "groups"}}" method="POST">
+    {{xsrf_form_html}}
+  {{T "Edit selected group:"}}
+  <input type="submit"
+         name="operation"
+         value="{{T "Make main group"}}"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         />
+  <input type="submit"
+         name="operation"
+         value="{{T "Delete selected group"}}"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         />
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>{{T "Name"}}</th>
+        <th>{{Format (T "Start (in %(tz)s)") "tz" $tz}}</th>
+        <th>{{Format (T "End (in %(tz)s)") "tz" $tz}}</th>
+        <th>{{T "Max. contest length (in seconds)"}}</th>
+        <th>{{T "Analysis"}}</th>
+        <th>{{T "Analysis start"}}</th>
+        <th>{{T "Analysis end"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Groups}}
+{{$main := .Main}}
+{{with .Group}}
+      <tr>
+        <td>
+          <input type="radio" name="group_id" value="{{.ID}}"/>
+        </td>
+        <td><a href="{{url "contest" $.Contest.ID "group" .ID "edit"}}">{{.Name}} {{if $main}}{{T "(main group)"}}{{end}}</a></td>
+        <td>{{form_datetime .Start}}</td>
+        <td>{{form_datetime .Stop}}</td>
+        <td>
+{{if .PerUserTime}}
+        {{form_seconds .PerUserTime}}
+{{end}}
+        </td>
+        <td><input type="checkbox" disabled{{if .AnalysisEnabled}} checked{{end}}></td>
+        <td>{{form_datetime .AnalysisStart}}</td>
+        <td>{{form_datetime .AnalysisStop}}</td>
+      </tr>
+{{end}}
+{{end}}
+    </tbody>
+  </table>
+</form>
+
+{{end}}

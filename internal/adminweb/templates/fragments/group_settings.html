@@ -1,0 +1,67 @@
+{{/*
+Ported from cms/server/admin/templates/fragments/group_settings.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2026 the CMS contributors.
+The times of a group (.Group) in the rows of a table; .TZ names the server
+time zone. Changes in this fork: every text goes through T; times are shown
+and read in the server time zone (D6; CMS uses UTC), which the labels name.
+*/}}
+{{$tz := .TZ}}
+{{with .Group}}
+      <tr><td colspan=2><h2>{{T "Contest time"}}</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="{{Format (T "Start time of the contest for users in this group in the %(tz)s timezone.") "tz" $tz}}
+                                    {{T "Example: '2015-12-31 15:00:00'."}}"></span>
+          {{Format (T "Start time (in %(tz)s)") "tz" $tz}}
+        </td>
+        <td>
+          <input type="text" name="start" value="{{form_datetime .Start}}"/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{Format (T "End time of the contest for users in this group in the %(tz)s timezone.") "tz" $tz}}
+                                    {{T "Example: '2015-12-31 18:00:00'."}}"></span>
+          {{Format (T "End time (in %(tz)s)") "tz" $tz}}
+        </td>
+        <td>
+          <input type="text" name="stop" value="{{form_datetime .Stop}}"/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Length of the contest (in seconds) for each contestant."}}
+                                    {{T "If not specified, each contestant can submit solutions for the whole duration of the contest."}}
+                                    {{T "If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."}}"></span>
+          {{T "Length of the contest"}}
+        </td>
+        <td><input type="text" name="per_user_time" value="{{form_seconds .PerUserTime}}"></td>
+      </tr>
+      <tr><td colspan=2><h2>{{T "Analysis mode"}}</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "If true, analysis mode for this contest will be enabled."}}"></span>
+          {{T "Enabled"}}
+        </td>
+        <td>
+          <input type="checkbox" id="analysis_enabled" name="analysis_enabled" {{if .AnalysisEnabled}}checked{{end}}/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{Format (T "Start time of the analysis mode in the %(tz)s timezone.") "tz" $tz}}
+                                    {{T "Example: '2015-12-31 15:00:00'."}}"></span>
+          {{Format (T "Analysis mode start time (in %(tz)s)") "tz" $tz}}
+        </td>
+        <td><input type="text" name="analysis_start" value="{{form_datetime .AnalysisStart}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{Format (T "End time of the analysis mode in the %(tz)s timezone.") "tz" $tz}}
+                                    {{T "Example: '2015-12-31 18:00:00'."}}"></span>
+          {{Format (T "Analysis mode end time (in %(tz)s)") "tz" $tz}}
+        </td>
+        <td><input type="text" name="analysis_stop" value="{{form_datetime .AnalysisStop}}"></td>
+      </tr>
+{{end}}

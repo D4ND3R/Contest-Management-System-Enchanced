@@ -164,6 +164,7 @@ type Worker struct {
 	mu           sync.Mutex
 	running      map[int]registry.Job
 	draining     bool
+	disabled     bool
 	readyErr     error
 	done, failed int64
 }
@@ -227,6 +228,7 @@ func (w *Worker) Run(ctx context.Context) error {
 	// killed) go back to the queue now rather than after the visibility
 	// timeout.
 	w.releaseHeld(ctx, true)
+	w.checkDisabled(ctx)
 	w.log.Info("worker started", "name", w.opts.Name, "concurrency", w.opts.Concurrency, "boxes", w.opts.Boxes)
 
 	// hard ends the running jobs: ShutdownTimeout after ctx ends.
@@ -331,6 +333,16 @@ func (w *Worker) slot(consume, hard context.Context, slot int) {
 	consumer := w.consumer(slot)
 	delay := 100 * time.Millisecond
 	for consume.Err() == nil {
+		if w.isDisabled() {
+			// Disabled by an administrator: no new jobs until enabled
+			// (the heartbeat reads the flag).
+			select {
+			case <-consume.Done():
+				return
+			case <-time.After(min(w.opts.Heartbeat, time.Second)):
+			}
+			continue
+		}
 		msg, err := w.jobs.Consume(consume, consumer, w.opts.PollTimeout)
 		if err != nil {
 			if consume.Err() != nil {
@@ -581,6 +593,38 @@ func (w *Worker) setIdle(slot int) {
 	w.refresh()
 }
 
+// isDisabled reports whether an administrator disabled the worker.
+func (w *Worker) isDisabled() bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.disabled
+}
+
+// checkDisabled reads whether an administrator disabled the worker
+// (registry.SetDisabled); on errors the state stays as it was.
+func (w *Worker) checkDisabled(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, opTimeout)
+	defer cancel()
+	d, err := registry.IsDisabled(ctx, w.kv, w.opts.Name)
+	if err != nil {
+		if ctx.Err() == nil {
+			w.log.Warn("cannot read whether the worker is disabled", "err", err)
+		}
+		return
+	}
+	w.mu.Lock()
+	changed := d != w.disabled
+	w.disabled = d
+	w.mu.Unlock()
+	if changed {
+		if d {
+			w.log.Info("worker disabled by an administrator: it takes no new jobs")
+		} else {
+			w.log.Info("worker enabled by an administrator")
+		}
+	}
+}
+
 func (w *Worker) setDraining() {
 	w.mu.Lock()
 	w.draining = true
@@ -654,7 +698,7 @@ func (w *Worker) info() registry.Info {
 	return registry.Info{
 		Name: w.opts.Name, Host: w.opts.Host, PID: os.Getpid(), Version: w.opts.Version,
 		Concurrency: w.opts.Concurrency, Boxes: w.opts.Boxes, Languages: w.opts.Languages,
-		StartedAt: w.started, Draining: w.draining, Jobs: jobs, Done: w.done, Failed: w.failed,
+		StartedAt: w.started, Draining: w.draining, Disabled: w.disabled, Jobs: jobs, Done: w.done, Failed: w.failed,
 		Error: errorText(w.readyErr),
 	}
 }
@@ -672,6 +716,7 @@ func (w *Worker) heartbeat(ctx context.Context, reg *registry.Registration) erro
 		case <-t.C:
 		case <-w.kick:
 		}
+		w.checkDisabled(ctx)
 		uctx, cancel := context.WithTimeout(ctx, opTimeout)
 		err := reg.Update(uctx, w.info())
 		cancel()

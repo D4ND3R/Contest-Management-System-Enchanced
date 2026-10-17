@@ -71,6 +71,9 @@ type Info struct {
 	Heartbeat time.Time `json:"heartbeat"`
 	// Draining: the worker is stopping and takes no new jobs.
 	Draining bool `json:"draining,omitempty"`
+	// Disabled: an administrator disabled the worker (SetDisabled): it
+	// finishes its jobs and takes no new ones.
+	Disabled bool `json:"disabled,omitempty"`
 	// Error says why the worker takes no jobs (its sandbox does not
 	// work).
 	Error string `json:"error,omitempty"`

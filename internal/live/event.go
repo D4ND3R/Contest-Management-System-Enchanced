@@ -373,6 +373,9 @@ const (
 	// WorkerBroken: the worker runs but takes no jobs (its sandbox does
 	// not work).
 	WorkerBroken = "broken"
+	// WorkerDisabled: an administrator disabled the worker: it finishes
+	// its jobs and takes no new ones.
+	WorkerDisabled = "disabled"
 )
 
 // Worker: a worker appeared, stopped or changed state.

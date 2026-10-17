@@ -1,0 +1,23 @@
+{{/*
+Ported from cms/server/admin/templates/delete_dataset.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the inline onclick of
+Cancel is data-history-back (aws_handlers.js, D10).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "Delete dataset"}}</h1>
+</div>
+
+<form action="{{url "dataset" .Dataset.ID "delete"}}" method="POST">
+    {{xsrf_form_html}}
+
+    {{Format (T "Are you sure you want to delete the dataset \"%(description)s\" and all associated managers, test cases, and submission results?") "description" .Dataset.Description}}<br/>
+
+    <input type="submit" value="{{T "Delete"}}">
+    <input type="button" value="{{T "Cancel"}}" data-history-back>
+</form>
+{{end}}

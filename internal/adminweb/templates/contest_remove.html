@@ -1,0 +1,31 @@
+{{/*
+Ported from cms/server/admin/templates/contest_remove.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the inline onclick of the
+confirmation link is data-ajax-delete (aws_handlers.js, D10).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{T "Remove Contest"}}</h1>
+</div>
+
+{{if .Admin.CanAll}}
+<p>
+  {{Format (T "Are you sure you want to remove contest %(name)s from CMS, including all related data?") "name" .Contest.Name}}
+  <br>
+  {{Format (T "This will remove %(participations)s participation(s) and %(submissions)s submission(s).") "participations" .Participations "submissions" .Submissions}}
+  <br>
+  {{T "This operation cannot be undone."}}
+</p>
+<br>
+<a data-ajax-delete="{{url "contests" .Contest.ID "remove"}}" class="button-link">{{T "Yes, remove"}}</a>
+<a href="{{url "contests"}}" class="button-link">{{T "No"}}</a>
+
+{{else}}
+{{T "You do not have permission to remove a contest."}}
+{{end}}
+
+{{end}}

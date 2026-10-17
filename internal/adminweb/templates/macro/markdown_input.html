@@ -1,0 +1,19 @@
+{{/*
+Ported from cms/server/admin/templates/macro/markdown_input.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 the CMS contributors.
+A Markdown text area with its preview:
+  {{template "markdown_input.input" "message_text"}} (the field name)
+  {{template "markdown_input.preview"}} (the preview button)
+Changes in this fork: every text goes through T; the inline onclick of the
+preview button is data-markdown-preview (aws_handlers.js, D10).
+*/}}
+{{define "markdown_input.input"}}
+<textarea name="{{.}}" class="markdown_input"></textarea><br/>
+{{T "You can use Markdown here. URLs are not automatically linked, surround them with &lt;&gt; like &lt;http://example.org&gt;."}}
+<div class="markdown_preview"></div>
+{{end}}
+
+{{define "markdown_input.preview"}}
+<input type="button" value="{{T "Preview Markdown"}}" data-markdown-preview />
+{{end}}

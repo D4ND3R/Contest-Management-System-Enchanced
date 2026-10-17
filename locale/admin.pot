@@ -184,12 +184,28 @@ msgstr ""
 msgid "Cannot compile (please check)"
 msgstr ""
 
+#: ../internal/adminweb/contests_groups.go:112
+msgid "Cannot delete a contest's main group."
+msgstr ""
+
+#: ../internal/adminweb/contests_groups.go:107
+msgid "Cannot delete group containing users"
+msgstr ""
+
 #: ../internal/adminweb/templates/overview.html:41
 msgid "Cannot evaluate (please check)"
 msgstr ""
 
 #: ../internal/adminweb/templates/server.html:51
 msgid "Changes to the time zone reach every site within 30 seconds."
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:350
+msgid "Comma-separated list of output only testcases"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:338
+msgid "Compilation"
 msgstr ""
 
 #: ../internal/grading/steps/messages.go:111
@@ -202,6 +218,10 @@ msgstr ""
 
 #: ../internal/adminweb/funcs.go:190
 msgid "Compiling"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:356
+msgid "Concurrent solutions"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:258
@@ -219,6 +239,18 @@ msgstr ""
 
 #: ../internal/adminweb/templates/base.html:129
 msgid "Contests"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:357
+msgid "Controller memory limit (MB)"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:358
+msgid "Controller time limit (s)"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:359
+msgid "Controller wall time limit (s)"
 msgstr ""
 
 #: ../internal/adminweb/templates/add_admin.html:22
@@ -321,9 +353,17 @@ msgstr ""
 msgid "Host statistics (CPU, memory, disk) are measured by the monitor service and are not shown here: see its metrics. Services are supervised by systemd or Docker."
 msgstr ""
 
+#: ../internal/adminweb/tasks_params.go:341
+msgid "I/O (blank for stdin/stdout)"
+msgstr ""
+
 #: ../internal/adminweb/templates/audit.html:39
 #: ../internal/adminweb/templates/overview.html:239
 msgid "Id"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:342
+msgid "Input file"
 msgstr ""
 
 #: ../internal/adminweb/ctx.go:318
@@ -336,9 +376,29 @@ msgstr ""
 
 #: ../internal/adminweb/admins.go:129
 #: ../internal/adminweb/admins.go:134
+#: ../internal/adminweb/contests.go:181
+#: ../internal/adminweb/contests_groups.go:64
+#: ../internal/adminweb/contests_groups.go:154
+#: ../internal/adminweb/contests_groups.go:273
+#: ../internal/adminweb/contests_tasks.go:86
+#: ../internal/adminweb/contests_tasks.go:169
 #: ../internal/adminweb/serverpage.go:234
 #: ../internal/adminweb/serverpage.go:241
+#: ../internal/adminweb/users.go:179
+#: ../internal/adminweb/users.go:274
+#: ../internal/adminweb/users.go:290
+#: ../internal/adminweb/users.go:363
 msgid "Invalid field(s)"
+msgstr ""
+
+#: ../internal/adminweb/contests.go:397
+msgid "Invalid field(s)."
+msgstr ""
+
+#: ../internal/adminweb/contests.go:111
+#: ../internal/adminweb/contests_groups.go:74
+#: ../internal/adminweb/users.go:77
+msgid "Invalid operation"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:240
@@ -423,6 +483,10 @@ msgstr ""
 msgid "Number"
 msgstr ""
 
+#: ../internal/adminweb/tasks_params.go:351
+msgid "Number of Processes"
+msgstr ""
+
 #: ../internal/adminweb/templates/audit.html:77
 msgid "Older entries"
 msgstr ""
@@ -439,6 +503,34 @@ msgstr ""
 
 #: ../internal/adminweb/ctx.go:305
 msgid "Operation successful."
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:344
+msgid "Output evaluation"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:343
+msgid "Output file"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:349
+msgid "Outputs are checked by a testlib checker"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:346
+msgid "Outputs are compared by a comparator"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:347
+msgid "Outputs compared byte by byte"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:348
+msgid "Outputs compared token by token, numbers with a tolerance of 1e-6"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:345
+msgid "Outputs compared with white diff"
 msgstr ""
 
 #: ../internal/adminweb/templates/macro/pages.html:12
@@ -468,6 +560,10 @@ msgstr ""
 #: ../internal/adminweb/templates/admins.html:25
 #: ../internal/adminweb/templates/fragments/admin_form.html:54
 msgid "Problem preparer permissions"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:355
+msgid "Process limit"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:59
@@ -547,6 +643,14 @@ msgstr ""
 #: ../internal/adminweb/templates/base.html:275
 #: ../internal/contestweb/templates/contest.html:213
 msgid "Source code"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:340
+msgid "Submissions are compiled with a grader"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:339
+msgid "Submissions are self-sufficient"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:217
@@ -641,6 +745,18 @@ msgstr ""
 #: ../internal/adminweb/templates/admin.html:23
 #: ../internal/adminweb/templates/server.html:41
 msgid "Update"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:352
+msgid "User I/O"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:354
+msgid "User processes read from and write to fifos, whose paths are given as arguments"
+msgstr ""
+
+#: ../internal/adminweb/tasks_params.go:353
+msgid "User processes read from stdin and write to stdout"
 msgstr ""
 
 #: ../internal/adminweb/templates/base.html:254

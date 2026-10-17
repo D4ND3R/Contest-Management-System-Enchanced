@@ -1,0 +1,151 @@
+{{/*
+Ported from cms/server/admin/templates/user.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+{{$u := .User}}
+<h1>{{$u.FirstName}} {{$u.LastName}} ({{$u.Username}})</h1>
+
+<h2 id="title_participations" class="toggling_on">{{T "Participations"}}</h2>
+<div id="participations">
+
+  <form action="{{url "user" $u.ID "add_participation"}}" method="POST">
+    {{xsrf_form_html}}
+    {{T "Add a new participation (in main group):"}}
+    <select name="contest_id">
+      <option value="null" selected>{{T "Select a contest"}}</option>
+{{range .Contests}}
+      <option value="{{.ID}}">
+        {{.Name}}
+      </option>
+{{end}}
+    </select>
+    <input type="checkbox" name="hidden" id="hidden" /><label for="hidden">{{T "Hidden"}}</label>
+    <input type="checkbox" name="unrestricted" id="unrestricted" /><label for="unrestricted">{{T "Unrestricted"}}</label>
+    <input type="submit" value="{{T "Add participation"}}" />
+  </form>
+
+{{if not .Participations}}
+  <p>{{T "No participations found."}}</p>
+{{else}}
+  <form action="{{url "user" $u.ID "edit_participation"}}" method="POST">
+    {{xsrf_form_html}}
+    {{T "Edit selected participation:"}}
+    <input type="submit" name="operation" value="{{T "Remove"}}" />
+    <table class="bordered">
+      <thead>
+        <tr>
+          <th></th>
+          <th>{{T "Participation"}}</th>
+          <th>{{T "Hidden?"}}</th>
+          <th>{{T "Unrestricted?"}}</th>
+          <th>{{T "Contest"}}</th>
+          <th>{{T "Contest description"}}</th>
+          <th>{{T "Group"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+{{range .Participations}}
+        <tr>
+          <td>
+            <input type="radio" name="contest_id" value="{{.ContestID}}"/>
+          </td>
+          <td><a href="{{url "contest" .ContestID "user" $u.ID "edit"}}">{{$u.Username}}</a></td>
+          <td>{{if .Hidden}}{{T "True"}}{{else}}{{T "False"}}{{end}}</td>
+          <td>{{if .Unrestricted}}{{T "True"}}{{else}}{{T "False"}}{{end}}</td>
+          <td><a href="{{url "contest" .ContestID}}">{{.ContestName}}</a></td>
+          <td>{{.ContestDescription}}</td>
+          <td>{{.GroupName}}</td>
+        </tr>
+{{end}}
+      </tbody>
+    </table>
+  </form>
+{{end}}
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_general_info" class="toggling_on">{{T "General Information"}}</h2>
+<div id="general_info">
+  {{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+  <form enctype="multipart/form-data" action="{{url "user" $u.ID}}" method="POST" style="display:inline;">
+    {{xsrf_form_html}}
+    <table>
+      <tr>
+        <td>
+          <span class="info" title="{{T "First name of the contestant."}}"></span>
+          {{T "First name"}}
+        </td>
+        <td><input type="text" name="first_name" value="{{$u.FirstName}}"/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Last name of the contestant."}}"></span>
+          {{T "Last name"}}
+        </td>
+        <td><input type="text" name="last_name" value="{{$u.LastName}}"/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Username of the contestant (used to log in)."}}"></span>
+          {{T "Username"}}
+        </td>
+        <td><input type="text" name="username" value="{{$u.Username}}"/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Contestant password. Caution: stored in plain text."}}"></span>
+          {{T "Password"}}
+        </td>
+        <td>
+{{template "fragments/hashed_password_form.html" (dict "HashedPassword" $u.Password)}}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Contestant e-mail address."}}"></span>
+          {{T "E-mail"}}
+        </td>
+        <td><input type="text" name="email" value="{{with $u.Email}}{{.}}{{end}}"/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Timezone of the contestant, used to display start, end times and the current server time in local time."}}
+                                    {{T "Example: 'Europe/Rome', 'America/New_York', ..."}}"></span>
+          {{T "Timezone"}}
+        </td>
+        <td><input type="text" name="timezone" value="{{with $u.Timezone}}{{.}}{{end}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Comma-separated list of language codes, from the most to the least preferred."}}
+                                    {{T "Example: 'en, ja'."}}"></span>
+          {{T "Preferred languages"}}
+        </td>
+        <td><input type="text" name="preferred_languages" value="{{join ", " $u.PreferredLanguages}}"></td>
+      </tr>
+    </table>
+    <input type="submit" value="{{T "Update"}}" />
+    <input type="reset" value="{{T "Reset"}}" />
+  </form>
+  <form action="{{url "users"}}" method="POST" style="display:inline;">
+      {{xsrf_form_html}}
+      <input type="hidden" name="user_id" value="{{$u.ID}}"/>
+      <input type="submit"
+           name="operation"
+           value="{{T "Remove"}}" style="float: right;"
+{{if not .Admin.CanAll}}
+           disabled
+{{end}}
+           />
+  </form>
+  <div class="hr"></div>
+</div>
+
+
+{{end}}

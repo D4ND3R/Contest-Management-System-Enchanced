@@ -1,0 +1,119 @@
+{{/*
+Ported from cms/server/admin/templates/macro/question.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2018 Stefano Maggiolo and the CMS contributors.
+One question by a participant:
+  {{template "question.question" (dict "Q" $q "UserID" $uid "Page" $)}}
+Q is an *adminweb.questionView; UserID is the user's id on a participation
+page and 0 on the contest questions page (which links to the user); Page is
+the page data (.Admin, .Contest, .QuickAnswers).
+Changes in this fork: every text goes through T; times are in the server
+time zone (D6); the inline handlers are data- attributes (aws_handlers.js,
+D10): data-submit-form, data-question-reply-toggle, data-additional-answer.
+*/}}
+{{define "question.question"}}
+{{$p := .Page}}
+{{$uid := .UserID}}
+{{with .Q}}
+{{$q := .Question}}
+<div class="notification communication {{.Class}}">
+  <div class="notification_msg">
+    <div class="notification_timestamp">
+{{if not $uid}}
+        <a href="{{url "contest" $p.Contest.ID "user" .UserID "edit"}}" title="{{.FirstName}} {{.LastName}}">{{.Username}}</a> &mdash;
+{{end}}
+      {{form_datetime $q.QuestionTimestamp}}
+    </div>
+    <div class="notification_subject">{{$q.Subject}}</div>
+    <div class="notification_text preserve_line_breaks">{{$q.Text}}</div>
+{{if $q.ReplyTimestamp}}
+      <hr>
+      <div class="notification_subject">{{T "Reply:"}} {{with $q.ReplySubject}}{{.}}{{end}}</div>
+      <div class="notification_text">{{with $q.ReplyText}}{{markdown .}}{{end}}</div>
+      <hr>
+      <div class="notification_admin_owner">
+        {{T "Reply from:"}} {{with .AdminName}}{{.}}{{else}}&lt;{{T "unknown"}}&gt;{{end}}</div>
+{{else}}
+      <hr>
+      <div class="notification_subject">{{T "Not yet replied."}}</div>
+      <hr>
+{{with .AdminName}}
+        <div class="notification_admin_owner">
+          {{if $q.Ignored}}{{T "Ignored by:"}}{{else}}{{T "Claimed by:"}}{{end}} {{.}}
+        </div>
+{{end}}
+{{end}}
+{{if $p.Admin.CanMessaging}}
+{{if not $q.ReplyTimestamp}}
+{{if not $q.Ignored}}
+          <div class="claim_reply">
+            <form class="claim_question_form" action="{{url "contest" $p.Contest.ID "question" $q.ID "claim"}}" name="claim{{$q.ID}}" method="POST">
+              {{xsrf_form_html}}
+{{if $uid}}
+                <input type="hidden" name="user_id" value="{{$uid}}" />
+{{end}}
+{{if not $q.AdminID}}
+                <input type="hidden" name="claim" value="yes"/>
+                <a href="#" data-submit-form="claim{{$q.ID}}">{{T "Claim"}}</a>
+{{else}}
+                <input type="hidden" name="claim" value="no"/>
+                <a href="#" data-submit-form="claim{{$q.ID}}">{{T "Unclaim"}}</a>
+{{end}}
+            </form>
+          </div>
+{{end}}
+{{end}}
+    <div class="ignore_reply">
+      <form class="ignore_question_form" action="{{url "contest" $p.Contest.ID "question" $q.ID "ignore"}}" name="ignore{{$q.ID}}" method="POST">
+        {{xsrf_form_html}}
+{{if $uid}}
+          <input type="hidden" name="user_id" value="{{$uid}}" />
+{{end}}
+{{if not $q.Ignored}}
+          <input type="hidden" name="ignore" value="yes"/>
+          <a href="#" data-submit-form="ignore{{$q.ID}}">{{T "Ignore"}}</a>
+{{else}}
+          <input type="hidden" name="ignore" value="no"/>
+          <a href="#" data-submit-form="ignore{{$q.ID}}">{{T "Unignore"}}</a>
+{{end}}
+      </form>
+    </div>
+    <div class="reply_question_toggle">
+      <a href="#" data-question-reply-toggle>
+{{if not $q.ReplyTimestamp}}
+        {{T "Reply"}}
+{{else}}
+        {{T "Edit reply"}}
+{{end}}
+      </a>
+    </div>
+    <div class="reply_question">
+      <hr/>
+      <form class="reply_question_form" action="{{url "contest" $p.Contest.ID "question" $q.ID "reply"}}" method="POST">
+        {{xsrf_form_html}}
+{{if $uid}}
+          <input type="hidden" name="user_id" value="{{$uid}}" />
+{{end}}
+        {{T "Precompiled answer:"}}
+        <select name="reply_question_quick_answer" data-additional-answer>
+{{range $p.QuickAnswers}}
+            <option value="{{.Key}}">{{.Text}}</option>
+{{end}}
+          <option value="other" selected>{{T "Other"}}</option>
+        </select>
+        <br/>
+        <div class="alternative_answer">
+          {{T "Alternative answer:"}}<br/>
+          {{template "markdown_input.input" "reply_question_text"}}
+        </div>
+        <input type="submit" value="{{T "Send"}}"/>
+        <span class="alternative_answer">
+          {{template "markdown_input.preview"}}
+        </span>
+      </form>
+    </div>
+{{end}}
+  </div>
+</div>
+{{end}}
+{{end}}

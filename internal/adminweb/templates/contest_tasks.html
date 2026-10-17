@@ -1,0 +1,85 @@
+{{/*
+Ported from cms/server/admin/templates/contest_tasks.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{Format (T "Tasks list of <a href=\"%(url)s\">%(contest)s</a>") "url" (url "contest" .Contest.ID) "contest" .Contest.Name}}</h1>
+</div>
+
+<form action="{{url "contest" .Contest.ID "tasks" "add"}}" method="POST">
+  {{xsrf_form_html}}
+  {{T "Add a new task:"}}
+  <select name="task_id">
+    <option value="null" selected>{{T "Select a new task"}}</option>
+{{range .Unassigned}}
+    <option value="{{.ID}}">
+      {{.Name}}
+    </option>
+{{end}}
+  </select>
+  <input type="submit"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         value="{{T "Add task"}}" />
+</form>
+
+<form action="{{url "contest" .Contest.ID "tasks"}}" method="POST">
+  {{xsrf_form_html}}
+  {{T "Remove selected task from the contest:"}}
+  <input type="submit" name="operation"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         value="{{T "Remove from contest"}}" />
+
+  <br>
+
+  {{T "Move selected task:"}}
+  <input type="submit" name="operation"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         value="{{T "to the top"}}" />
+  <input type="submit" name="operation"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         value="{{T "up by 1"}}" />
+  <input type="submit" name="operation"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         value="{{T "down by 1"}}" />
+  <input type="submit" name="operation"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         value="{{T "to the bottom"}}" />
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>{{T "Name"}}</th>
+        <th>{{T "Title"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Tasks}}
+      <tr>
+        <td>
+          <input type="radio" name="task_id" value="{{.ID}}"/>
+        </td>
+        <td><a href="{{url "task" .ID}}">{{.Name}}</a></td>
+        <td>{{.Title}}</td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+</form>
+{{end}}

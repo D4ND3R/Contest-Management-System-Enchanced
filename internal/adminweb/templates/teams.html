@@ -1,0 +1,63 @@
+{{/*
+Ported from cms/server/admin/templates/teams.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2026 the CMS contributors.
+Changes in this fork: every text goes through T; the list is paginated
+(D24); the form to import teams from a CSV file (R6.1, new; built like the
+upload forms of CMS).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "Teams list"}}</h1>
+</div>
+
+<form action="{{url "teams"}}" method="POST">
+  {{xsrf_form_html}}
+  {{T "Edit selected team:"}}
+  <input type="submit" name="operation" value="{{T "Remove"}}" {{if not .Admin.CanAll}} disabled {{end}} />
+{{template "pages.selector" .Pager}}
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>{{T "Code"}}</th>
+        <th>{{T "Name"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Teams}}
+      <tr>
+        <td>
+          <input type="radio" name="team_id" value="{{.ID}}" />
+        </td>
+        <td><a href="{{url "team" .ID}}">{{.Code}}</a></td>
+        <td>{{.Name}}</td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+</form>
+
+{{if .Admin.CanAll}}
+<div class="hr"></div>
+
+<h2>{{T "Import teams"}}</h2>
+<form enctype="multipart/form-data" action="{{url "teams" "import"}}" method="POST">
+  {{xsrf_form_html}}
+  <table>
+    <tr>
+      <td>
+        <span class="info" title="{{T "A CSV file with one team per row: code,name (a first row code,name is skipped). Existing codes get the new name. If any row is wrong nothing is imported."}}"></span>
+        {{T "CSV file"}}
+      </td>
+      <td><input type="file" name="teams_file" accept=".csv,text/csv"/></td>
+    </tr>
+  </table>
+  <input type="submit" value="{{T "Import"}}"/>
+</form>
+{{end}}
+
+{{end}}

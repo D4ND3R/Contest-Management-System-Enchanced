@@ -1,0 +1,47 @@
+{{/*
+Ported from cms/server/admin/templates/contests.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "Contests list"}}</h1>
+</div>
+
+<form action="{{url "contests"}}" method="POST">
+  {{xsrf_form_html}}
+  {{T "Edit selected contest:"}}
+   <input type="submit"
+         name="operation"
+         value="{{T "Remove"}}"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         />
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>{{T "Name"}}</th>
+        <th>{{T "Description"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Contests}}
+      <tr>
+        <td>
+          <input type="radio" name="contest_id" value="{{.ID}}"/>
+        </td>
+        <td><a href="{{url "contest" .ID}}">{{.Name}}</a></td>
+        <td>{{.Description}}</td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+</form>
+
+{{end}}

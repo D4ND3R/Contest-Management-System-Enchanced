@@ -1,0 +1,166 @@
+{{/*
+Ported from cms/server/admin/templates/activate_dataset.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the reevaluation buttons
+(macro/reevaluation_buttons.html) and the inline handlers are data-
+attributes (aws_handlers.js, D10); the list of changes is bounded (a note
+says when it is cut).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "js_init"}}
+setAllNotifyCheckboxes = function(state) {
+    var boxes = $(".notify_user_box");
+    for (i = 0; i < boxes.length; i++) {
+        boxes[i].checked = state;
+    }
+};
+setDefaultNotifyCheckboxes = function() {
+    var boxes = $(".default_notify_on");
+    for (i = 0; i < boxes.length; i++) {
+        boxes[i].checked = true;
+    }
+    var boxes = $(".default_notify_off");
+    for (i = 0; i < boxes.length; i++) {
+        boxes[i].checked = false;
+    }
+};
+setDefaultNotifyCheckboxes();
+$("[data-notify-all]").click(function() { setAllNotifyCheckboxes(true); });
+$("[data-notify-none]").click(function() { setAllNotifyCheckboxes(false); });
+$("[data-notify-default]").click(function() { setDefaultNotifyCheckboxes(); });
+{{end}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{Format (T "Preview dataset change for %(title)s") "title" .Task.Title}} (<a href="{{url "task" .Task.ID}}">{{.Task.Name}}</a>)</h1>
+</div>
+
+<table style="width: auto;">
+<tr>
+  <td>{{T "Current dataset:"}}</td>
+  <td><strong>{{if .Active}}{{.Active.Description}}{{end}}</strong></td>
+  <td><a href="{{if .Active}}{{url "dataset" .Active.ID}}{{end}}">[{{T "View results"}}]</td>
+</tr>
+<tr>
+  <td>{{T "New dataset:"}}</td>
+  <td><strong>{{.Dataset.Description}}</strong></td>
+  <td><a href="{{url "dataset" .Dataset.ID}}">[{{T "View results"}}]</td>
+</tr>
+</table>
+
+<p>
+{{T "<b>NOTE</b>: The preview on this page uses the existing scoring information for both datasets. If you have made modifications to a dataset, you need to ensure that the scores are up to date. This may require re-compiling, re-evaluating or just re-scoring the entire dataset. To do so, use the buttons below, and wait for it to complete."}}
+</p>
+
+<p>
+    {{Format (T "Reevaluate all submissions for the dataset \"%(description)s\":") "description" .Dataset.Description}}
+    <button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{"dataset_id": {{.Dataset.ID}}, "level": "compilation"}' data-rpc-next="{{url "dataset" .Dataset.ID}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .Admin.CanAll}}
+        disabled
+{{end}}
+        title="{{T "Compilation"}}" >C</button>
+    <button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{"dataset_id": {{.Dataset.ID}}, "level": "evaluation"}' data-rpc-next="{{url "dataset" .Dataset.ID}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .Admin.CanAll}}
+        disabled
+{{end}}
+        title="{{T "Evaluation"}}" >E</button>
+    <button data-rpc-service="ScoringService" data-rpc-method="invalidate_submission" data-rpc-args='{"dataset_id": {{.Dataset.ID}}}' data-rpc-next="{{url "dataset" .Dataset.ID}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .Admin.CanAll}}
+        disabled
+{{end}}
+        title="{{T "Score"}}" >S</button>
+</p>
+
+<form action="{{url "dataset" .Dataset.ID "activate"}}" method="POST">
+{{xsrf_form_html}}
+{{if .NoChanges}}
+<p>{{T "Good news! At present, switching to this dataset will have no effect on the scores. No notifications will be sent."}}</p>
+{{else}}
+<p>{{T "Switching to this dataset will cause the following changes:"}}</p>
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>{{T "Notify"}}</th>
+      <th>{{T "User"}}</th>
+      <th>{{T "Submission id"}}</th>
+      <th>{{T "Change"}}</th>
+    </tr>
+  </thead>
+  <tbody>
+{{range .Changes}}
+    {{$p := .}}
+    {{range $i, $c := .Rows}}
+    <tr>
+      <td style="text-align: right;">
+        {{if eq $i 0}}
+        <input type="checkbox" class="notify_user_box default_notify_{{if $p.DefaultNotify}}on{{else}}off{{end}}" name="notify_{{$p.ParticipationID}}"/>
+        {{end}}
+      </td>
+      <td>
+        {{if eq $i 0}}
+        <a href="{{url "user" $p.UserID}}">{{$p.Username}}</a>
+        {{end}}
+      </td>
+      <td><a href="{{url "submission" .SubmissionID}}">{{.SubmissionID}}</a>{{if .Tokened}}{{T " (Tokened)"}}{{end}}</td>
+      <td>
+        {{if .Score}}
+        {{T "Score:"}} {{.OldScore}} -&gt; {{.NewScore}}<br/>
+        {{end}}
+        {{if .PublicScore}}
+        {{T "Public score:"}} {{.OldPublicScore}} -&gt; {{.NewPublic}}<br/>
+        {{end}}
+        {{if .Ranking}}
+        {{T "Ranking score:"}} {{.OldRanking}} -&gt; {{.NewRanking}}<br/>
+        {{end}}
+      </td>
+    </tr>
+    {{end}}
+{{end}}
+  </tbody>
+</table>
+{{if .Truncated}}
+<p>{{T "The list is cut: only the first changes are shown, and only their participants can be notified."}}</p>
+{{end}}
+
+<p>
+{{T "Notify:"}}
+<a data-notify-all>[{{T "All users"}}]</a>
+<a data-notify-none>[{{T "No users"}}]</a>
+<a data-notify-default>[{{T "Users with visible changes only"}}]</a>
+</p>
+<p>
+{{T "By default, users with changes to their public score, or changes to the score of a tokened submission, will be notified."}}
+</p>
+
+<p>
+{{T "The following message will be sent to the selected users:"}}
+</p>
+
+<div class="notifications">
+  <div class="notification communication">
+    <div class="notification_msg">
+      <div class="notification_subject">
+        {{T "Subject:"}}
+        <input id="send_message_subject" type="text" name="message_subject" style="width: 100%" value="{{Format (T "Task %(name)s has been rejudged") "name" .Task.Name}}"/>
+      </div>
+      <div class="notification_text">
+        {{T "Text:"}}
+        <textarea name="message_text" style="width: 100%" >{{Format (T "The task \"%(name)s\" has been rejudged and the score on your submissions has been updated.") "name" .Task.Name}}</textarea>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+<p>
+
+<p>
+<input type="submit" value="{{T "Activate!"}}"/>
+<input type="button" value="{{T "Abort!"}}" data-history-back/>
+</p>
+</form>
+
+{{end}}

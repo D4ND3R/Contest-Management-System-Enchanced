@@ -1,0 +1,140 @@
+{{/*
+Ported from cms/server/admin/templates/add_dataset.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "js_init"}}
+
+function showTaskTypeOption() {
+    var selector = $("select[name=task_type]")[0];
+    $(".TaskTypeOptions:visible").hide("fast");
+    $("#TaskType" + selector.options[selector.selectedIndex].value + "Options").show("fast")
+};
+
+showTaskTypeOption();
+$("select[name=task_type]").change(showTaskTypeOption);
+
+{{end}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "Create dataset"}}</h1>
+</div>
+
+{{if not .Original}}
+<form enctype="multipart/form-data" action="{{url "task" .Task.ID "add_dataset"}}" method="POST">
+{{else}}
+{{Format (T "You are cloning the dataset \"%(description)s\".") "description" .Original.Description}}
+<form enctype="multipart/form-data" action="{{url "dataset" .CloneID "clone"}}" method="POST">
+{{end}}
+  {{xsrf_form_html}}
+  <table>
+    <tr><td colspan=2><h2>{{T "Dataset information"}}</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "A (unique) description for this dataset."}}"></span>
+        {{T "Description"}}
+      </td>
+      <td>
+        <input type="text" name="description" value="{{.DefaultDescription}}"/>
+      </td>
+    </tr>
+    {{if .Original}}
+    <tr>
+      <td>
+        <span class="info" title="{{T "Whether to copy over the evaluations from the original dataset."}}"></span>
+        {{T "Clone evaluation results"}}
+      </td>
+      <td>
+        <input type="checkbox" name="clone_results"/>
+      </td>
+    </tr>
+    {{end}}
+
+    <tr><td colspan=2><h2>{{T "Limits"}}</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Total maximum time for each evaluation, in seconds."}}"></span>
+        {{T "Time limit"}}
+      </td>
+      <td><input type="text" name="time_limit" value="{{.TimeLimit}}"/> {{T "second(s)"}}</td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."}}"></span>
+        {{T "Memory limit"}}
+      </td>
+      <td><input type="text" name="memory_limit" value="{{.MemoryLimit}}"/> MiB</td>
+    </tr>
+
+    <tr><td colspan=2><h2>{{T "Task type settings"}} (<a href="http://cms.readthedocs.org/en/latest/Task%20types.html" target="_blank">{{T "documentation"}}</a>)</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Please see the task type documentation."}}"></span>
+        {{T "Task type"}}
+      </td>
+      <td>
+
+        <select name="task_type">
+          {{range .TaskTypeNames}}
+          <option value="{{.}}"{{if and $.Original (eq . $.Original.TaskType)}} selected{{end}}>{{.}}</option>
+          {{end}}
+        </select>
+
+        {{range .TaskTypes}}
+        <table class="TaskTypeOptions bordered" id="TaskType{{.Name}}Options" style="display: none;">
+          {{range .Rows}}
+          <tr>
+            <td>{{.Name}}</td>
+            <td>
+              {{.HTML}}
+            </td>
+          </tr>
+          {{end}}
+        </table>
+        {{end}}
+
+
+      </td>
+    </tr>
+
+    {{if .OriginalHasManagers}}
+    <tr>
+      <td>
+        <span class="info" title="{{T "Whether to copy the managers from the original dataset."}}"></span>
+        {{T "Clone managers"}}
+      </td>
+      <td><input type="checkbox" name="clone_managers" checked/></td>
+    </tr>
+    {{end}}
+
+    <tr><td colspan=2><h2>{{T "Score type settings"}} (<a href="http://cms.readthedocs.org/en/latest/Score%20types.html" target="_blank">{{T "documentation"}}</a>)</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Please see the score type documentation."}}"></span>
+        {{T "Score Type"}}
+      </td>
+      <td>
+        <select name="score_type">
+          {{range .ScoreTypes}}
+          <option value="{{.}}"{{if and $.Original (eq . $.Original.ScoreType)}} selected{{end}}>{{.}}</option>
+          {{end}}
+        </select>
+
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "Please see the score type documentation."}}"></span>
+        {{T "Score Parameters"}}
+      </td>
+      <td><textarea name="score_type_parameters">{{.ScoreParams}}</textarea></td>
+    </tr>
+  </table>
+<input type="submit" value="{{T "Create"}}"/>
+</form>
+{{end}}

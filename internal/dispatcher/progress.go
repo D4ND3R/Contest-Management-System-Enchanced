@@ -24,6 +24,8 @@ func workerState(w registry.Info) string {
 	switch {
 	case w.Draining:
 		return live.WorkerDraining
+	case w.Disabled:
+		return live.WorkerDisabled
 	case w.Error != "":
 		return live.WorkerBroken
 	}

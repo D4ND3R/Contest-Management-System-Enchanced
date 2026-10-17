@@ -1,0 +1,51 @@
+{{/*
+Ported from cms/server/admin/templates/users.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the list is paginated
+(D24: the page selector of CMS appears with more than one page).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "Users list"}}</h1>
+</div>
+
+<form action="{{url "users"}}" method="POST">
+  {{xsrf_form_html}}
+  {{T "Edit selected user:"}}
+   <input type="submit"
+         name="operation"
+         value="{{T "Remove"}}"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+         />
+{{template "pages.selector" .Pager}}
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>{{T "Username"}}</th>
+        <th>{{T "First name"}}</th>
+        <th>{{T "Last name"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Users}}
+      <tr>
+        <td>
+          <input type="radio" name="user_id" value="{{.ID}}"/>
+        </td>
+        <td><a href="{{url "user" .ID}}">{{.Username}}</a></td>
+        <td>{{.FirstName}}</td>
+        <td>{{.LastName}}</td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+</form>
+
+{{end}}

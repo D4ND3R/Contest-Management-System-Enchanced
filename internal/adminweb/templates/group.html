@@ -1,0 +1,75 @@
+{{/*
+Ported from cms/server/admin/templates/group.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2026 the CMS contributors.
+Changes in this fork: every text goes through T; the list of users is
+bounded (1000).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<h1>
+  {{Format (T "Group %(group)s in <a href=\"%(url)s\">%(contest)s</a>") "group" .Group.Name "url" (url "contest" .Contest.ID) "contest" .Contest.Name}}
+</h1>
+
+<h2 id="title_users" class="toggling_on">{{T "Users"}}</h2>
+<div id="users">
+{{if not .Users}}
+  <p>{{T "No users found."}}</p>
+
+{{else}}
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>{{T "Username"}}</th>
+        <th>{{T "First name"}}</th>
+        <th>{{T "Last name"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Users}}
+      <tr>
+        <td><a href="{{url "contest" $.Contest.ID "user" .ID "edit"}}">{{.Username}}</a></td>
+        <td>{{.FirstName}}</td>
+        <td>{{.LastName}}</td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+{{end}}
+
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_group_info" class="toggling_on">{{T "Group information"}}</h2>
+<div id="group_info">
+  {{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+  <form enctype="multipart/form-data" action="{{url "contest" .Contest.ID "group" .Group.ID "edit"}}" method="POST">
+      {{xsrf_form_html}}
+    <table>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The name of this user group."}}"></span>
+          {{T "Name"}}
+        </td>
+        <td>
+          <input type="text" name="name" value="{{.Group.Name}}"/>
+        </td>
+      </tr>
+{{template "fragments/group_settings.html" .}}
+    </table>
+    <input type="submit"
+        value="{{T "Update"}}"
+{{if not .Admin.CanAll}}
+         disabled
+{{end}}
+        />
+    <input type="reset" value="{{T "Reset"}}" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+{{end}}

@@ -210,3 +210,32 @@ func TestListForgetsExpired(t *testing.T) {
 		t.Errorf("index has %d names", n)
 	}
 }
+
+func TestDisabled(t *testing.T) {
+	c := testutil.Redis(t)
+	ctx := context.Background()
+	if d, err := IsDisabled(ctx, c, "judge-a"); err != nil || d {
+		t.Fatalf("IsDisabled before = %v, %v", d, err)
+	}
+	if ch, err := SetDisabled(ctx, c, "judge-a", true); err != nil || !ch {
+		t.Fatalf("disable = %v, %v", ch, err)
+	}
+	if ch, err := SetDisabled(ctx, c, "judge-a", true); err != nil || ch {
+		t.Fatalf("disable twice = %v, %v", ch, err)
+	}
+	if d, err := IsDisabled(ctx, c, "judge-a"); err != nil || !d {
+		t.Fatalf("IsDisabled = %v, %v", d, err)
+	}
+	if m, err := DisabledNames(ctx, c); err != nil || len(m) != 1 || !m["judge-a"] {
+		t.Fatalf("DisabledNames = %v, %v", m, err)
+	}
+	if ch, err := SetDisabled(ctx, c, "judge-a", false); err != nil || !ch {
+		t.Fatalf("enable = %v, %v", ch, err)
+	}
+	if ch, err := SetDisabled(ctx, c, "judge-a", false); err != nil || ch {
+		t.Fatalf("enable twice = %v, %v", ch, err)
+	}
+	if m, err := DisabledNames(ctx, c); err != nil || len(m) != 0 {
+		t.Fatalf("DisabledNames after enabling = %v, %v", m, err)
+	}
+}

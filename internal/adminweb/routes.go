@@ -258,6 +258,7 @@ func (s *Server) routes() []Route {
 		{Method: "POST", Path: "/users/add", Perm: PermAll, Handler: s.addUserPost},
 		{Method: "GET", Path: "/teams/add", Perm: PermAll, Handler: s.addTeamPage},
 		{Method: "POST", Path: "/teams/add", Perm: PermAll, Handler: s.addTeamPost},
+		{Method: "POST", Path: "/teams/import", Perm: PermAll, Handler: s.importTeamsPost, Upload: true},
 		{Method: "GET", Path: "/user/{user_id}", Perm: PermRead, Handler: s.userPage},
 		{Method: "POST", Path: "/user/{user_id}", Perm: PermAll, Handler: s.userPost},
 		{Method: "GET", Path: "/team/{team_id}", Perm: PermRead, Handler: s.teamPage},
