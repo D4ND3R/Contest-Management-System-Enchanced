@@ -47,8 +47,8 @@ Actualizada al cerrar F5.
 | R4.5 Datasets en segundo plano y cambio en vivo | hecho — autojudge y `ActivateDataset`; prueba de carrera con resultados |
 | R4.6 Caos | hecho — `TestChaos` (binario real, `kill -9`) |
 | R5.1–R5.9 Sitio del concursante | hecho — `internal/contestweb`, `internal/web`, `internal/l10n`; comparado con el CMS original en 61 páginas/estados; API contra respuestas del original; `live.js` probado en navegador |
-| R6.1–R6.9 Administración | falta (esqueleto) |
-| R7.1–R7.4 Scoreboard público | falta (esqueleto) |
+| R6.1–R6.9 Administración | código — `internal/adminweb` (núcleo con roles, auditoría y página Servidor probado; páginas de concursos, tareas, preparación de problemas, envíos y jueces sin pruebas propias); revisión de campo: todas las páginas cargan sin errores de JS/CSP y un envío real aparece juzgado |
+| R7.1–R7.4 Scoreboard público | código — `internal/rankingweb`, `internal/dispatcher/ranking.go`; sin pruebas propias; revisión de campo: el puntaje de un envío real llega al scoreboard |
 | R8.1 Loaders italy_yaml, Polygon, TPS | hecho — `internal/importer/{italy,polygon,tps}`, comparados con los loaders del original en pruebas |
 | R8.2 Formato propio con validación y exportación | hecho — `internal/importer/pkg`, `cms ctl validate-task`/`export-task`; pruebas de ida y vuelta |
 | R8.3 Dumps de CMS | hecho — `internal/importer/dump`, `cms ctl import-dump`; comparado con `cmsDumpImporter`, versiones 14–49 |

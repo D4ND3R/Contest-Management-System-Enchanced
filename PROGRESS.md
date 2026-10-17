@@ -335,3 +335,48 @@ Por pedido del dueño esta fase se implementó sin pruebas: compila
   `CMS_UPGRADE_FAIL_AT` en cada paso.
 - Correr GoReleaser (`--snapshot`) y el workflow de imágenes; comprobar la
   imagen arm64 del worker.
+
+---
+
+## F6 + F7 — Administración y scoreboard público (código; pruebas pendientes)
+
+Por pedido del dueño, F6, F7 y F9 se construyeron sin pruebas por fase; las
+pruebas se hacen al final.
+
+### Hecho
+
+- `internal/adminweb`: núcleo (login con límites, roles todo / mensajería /
+  preparador / solo lectura declarados en cada ruta, auditoría obligatoria
+  en la misma transacción, página Servidor, eventos en vivo) y las páginas
+  de CMS: concursos, grupos, usuarios, equipos (importar CSV),
+  participaciones, admins, comunicación por concurso, ranking (txt, CSV y
+  enlace secreto), tareas, datasets, casos, envíos con filtros, pruebas de
+  usuario, diff, reevaluación y la página de jueces.
+- Preparación de problemas (R6.2): importar zip con vista previa,
+  `problem.yaml` editable, archivos reconocidos por nombre, una página por
+  caso con salida generada por la solución de referencia, generador,
+  envíos de prueba con veredicto esperado (participación oculta
+  `_preparer`) y la lista de lo que falta.
+- `internal/rankingweb`: RankingWebServer portado (REST, SSE, historial,
+  congelamiento, visibilidad pública / enlace secreto / solo admins) y el
+  ProxyService portado como sink del dispatcher.
+
+### Verificado
+
+- `make lint` y la suite completa con `-race` en verde (las pruebas
+  existentes; las páginas nuevas aún no tienen pruebas propias).
+- Revisión de campo con `make dev-native` y el juez real: las 27 páginas
+  de la administración cargan sin errores de JS ni de CSP; un concursante
+  envía correcta, incorrecta y lenta por la API; las tres se juzgan, se ven
+  en la lista de envíos del admin y el scoreboard público muestra 100.
+- `cms ctl backup` → `restore --clean`: mismas filas y secuencias sanas.
+- `cms ctl upgrade` con `CMS_UPGRADE_FAIL_AT=migrate`: respalda, falla,
+  restaura y vuelve al binario anterior.
+
+### Pendiente (fase final de pruebas)
+
+- Pruebas de las páginas nuevas (roles, auditoría, consultas acotadas,
+  comparación con las capturas de CMS), del scoreboard y del sink.
+- Instalador en VMs limpias (Ubuntu 22.04/24.04, Debian 12), imágenes y
+  GoReleaser.
+- `scripts/dev.sh start` usa un `bin/cms` viejo si no se corrió `make build`.
