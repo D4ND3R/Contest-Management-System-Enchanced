@@ -56,7 +56,7 @@ type contestUsersData struct {
 	*Page
 	Users      []q.AdminContestParticipationsPageRow
 	Unassigned []q.AdminUsersNotInContestRow
-	Groups     []q.AdminContestGroupsRow
+	Groups     []groupRow
 	Pager      *Pager
 }
 
@@ -93,7 +93,7 @@ func (s *Server) contestUsersPage(c *Ctx) {
 		c.Fail(err)
 		return
 	}
-	c.Render("contest_users.html", contestUsersData{Page: p, Users: users, Unassigned: free, Groups: groups, Pager: pg})
+	c.Render("contest_users.html", contestUsersData{Page: p, Users: users, Unassigned: free, Groups: c.groupRows(groups), Pager: pg})
 }
 
 // contestUsersPost is POST /contest/<id>/users: "Remove from contest"

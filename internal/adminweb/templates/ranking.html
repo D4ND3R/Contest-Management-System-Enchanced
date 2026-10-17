@@ -1,0 +1,62 @@
+{{/*
+Ported from cms/server/admin/templates/ranking.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the scores come from the
+task_scores cache (D34); the secret link to the public scoreboard (R6.4,
+ranking.go) under the download links; the script carries the CSP nonce.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{T "Ranking"}}</h1>
+</div>
+{{Format (T "Download as <a href=\"%(csv)s\">csv</a>, <a href=\"%(txt)s\">text</a>.") "csv" (url "contest" .Contest.ID "ranking" "csv") "txt" (url "contest" .Contest.ID "ranking" "txt")}}
+{{if .SecretLink}}
+<p>{{T "Secret link to the public scoreboard (whoever has it can see the scoreboard):"}} <a href="{{.SecretLink}}" target="_blank" rel="noreferrer">{{.SecretLink}}</a></p>
+{{else}}
+<p>{{Format (T "Set the public address of the scoreboard on the <a href=\"%(url)s\">Server</a> page to get the secret link to the public scoreboard.") "url" (url "server")}}</p>
+{{end}}
+<table id="ranking-table" class="bordered">
+  <thead>
+    <tr>
+      <th>{{T "Username"}}</th>
+      <th>{{T "User"}}</th>
+{{if .ShowTeams}}
+      <th>{{T "Team"}}</th>
+{{end}}
+{{range .Tasks}}
+      <th data-sort-settings="numeric reversed"><a href="{{url "task" .ID}}">{{.Name}}</a></th>
+{{end}}
+      <th data-sort-settings="numeric reversed">{{T "Global"}}</th>
+    </tr>
+  </thead>
+  <tbody>
+{{range .Rows}}
+{{if not .Hidden}}
+    <tr>
+      <td><a href="{{url "contest" $.Contest.ID "user" .UserID "edit"}}">{{.Username}}</a></td>
+      <td>{{.User}}</td>
+{{if $.ShowTeams}}
+{{if .TeamID}}
+        <td><a href="{{url "team" .TeamID}}">{{.Team}}</a></td>
+{{else}}
+        <td></td>
+{{end}}
+{{end}}
+{{range .Scores}}
+      <td{{if .Partial}} class="partial"{{end}}>{{.Text}}</td>
+{{end}}
+      <td{{if .Total.Partial}} class="partial"{{end}}>{{.Total.Text}}</td>
+    </tr>
+{{end}}
+{{end}}
+  </tbody>
+</table>
+<script nonce="{{nonce}}">
+  $(document).ready(function() {
+    CMS.AWSUtils.init_table_sort($("#ranking-table"), true, -1);
+  })
+</script>
+{{end}}

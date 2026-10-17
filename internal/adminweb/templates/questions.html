@@ -1,0 +1,39 @@
+{{/*
+Ported from cms/server/admin/templates/questions.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the list is bounded (1000:
+the unanswered questions first, then the newest); a new question or a
+change made by another admin reloads the page (R6.9; CMS.live.reload_page
+waits while a reply is being written).
+*/}}
+{{/* extends "base.html" */}}
+{{define "js_init"}}
+
+utils.show_page("questions", 1);
+CMS.live.on("question", function () { CMS.live.reload_page(); });
+
+{{end}}
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "Questions"}}</h1>
+</div>
+
+{{if .Questions}}
+<div id="questions" class="notifications">
+  <div id="page_selector_questions"></div>
+  <div id="paged_content_questions">
+{{range .Questions}}
+    {{template "question.question" (dict "Q" . "UserID" 0 "Page" $)}}
+{{end}}
+  </div>
+</div>
+
+{{else}}
+{{T "No questions."}}
+
+{{end}}
+
+
+{{end}}

@@ -1,0 +1,75 @@
+{{/*
+Ported from cms/server/admin/templates/announcements.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; times are in the server
+time zone (D6); the inline onclick of the Remove links is data-ajax-delete
+(aws_handlers.js, D10) and they are shown only to admins who can remove;
+the list is bounded (1000 newest) and a live region (R6.9).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{T "Announcements"}}</h1>
+</div>
+
+<h2 id="title_announcements" class="toggling_on">{{T "Announcements"}}</h2>
+<div id="announcements" data-live="announcement">
+  <div class="notifications">
+{{if .Admin.CanMessaging}}
+    <div class="notification communication">
+      <div class="notification_msg">
+        <form method="post" action="{{url "contest" .Contest.ID "announcements" "add"}}">
+          {{xsrf_form_html}}
+          <div class="notification_subject">
+            <label for="new_subject">{{T "Subject"}}</label>
+            <input type="text" name="subject" id="new_subject" style="width: 100%" list="task_names_list" autocomplete="off">
+            <datalist id="task_names_list">
+{{range .Tasks}}
+              <option value="{{.Name}}">
+{{end}}
+            </datalist>
+          </div>
+          <div class="notification_text">
+            <label for="text">{{T "Text"}}</label>
+            {{template "markdown_input.input" "text"}}
+          </div>
+          <input type="submit"
+                 value="{{T "Add announcement"}}" />
+          {{template "markdown_input.preview"}}
+        </form>
+      </div>
+    </div>
+{{end}}
+{{if .Announcements}}
+{{range .Announcements}}
+      <div class="notification communication">
+        <div class="notification_msg">
+
+{{if $.Admin.CanMessaging}}
+          <div class="announcement_remove">
+            <a data-ajax-delete="{{url "contest" $.Contest.ID "announcement" .Announcement.ID}}">{{T "Remove"}}</a>
+          </div>
+{{end}}
+          <div class="notification_timestamp">{{form_datetime .Announcement.Timestamp}}</div>
+          <div class="notification_subject">{{.Announcement.Subject}}</div>
+          <div class="notification_text">{{markdown .Announcement.Text}}</div>
+          <hr>
+          <div class="notification_admin_owner">
+            {{T "By:"}} {{with .AdminName}}{{.}}{{else}}&lt;{{T "unknown"}}&gt;{{end}}
+          </div>
+
+        </div>
+      </div>
+{{end}}
+{{else}}
+      {{T "No announcements."}}
+{{end}}
+  </div>
+
+  <div class="hr"></div>
+</div>
+
+
+{{end}}

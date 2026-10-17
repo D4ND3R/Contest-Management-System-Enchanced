@@ -144,3 +144,55 @@ problemas) se documentan a medida que se completan.
   (CMS se las da al primero que consulta).
 - Las fechas de los formularios están en la zona horaria del servidor
   (CMS usa UTC).
+
+## Concursos, usuarios, equipos y comunicación
+
+- **Concursos**: la lista, crear (solo el nombre; se crea el grupo
+  `default` como grupo principal), eliminar (con todo su contenido, también
+  sus tareas) y la página de configuración con todas las opciones del
+  original: idiomas, lenguajes, descargas, preguntas, pruebas de usuario,
+  envíos no oficiales antes del análisis, ingreso (ocultos, contraseña,
+  inscripción, restricción e ingreso automático por IP), tokens, límites,
+  decimales del puntaje y los horarios del grupo principal. Los horarios se
+  muestran y se leen en la zona horaria del servidor (la página Servidor),
+  que las etiquetas indican.
+- **Grupos**: cada grupo tiene su inicio, fin, duración por concursante y
+  modo análisis. Un grupo nuevo copia los horarios del principal. No se
+  puede eliminar un grupo con usuarios ni el grupo principal.
+- **Tareas del concurso**: agregar una tarea sin concurso, quitarla y
+  moverla (arriba, abajo, al principio, al final). Requiere el permiso
+  "todo".
+- **Usuarios**: lista paginada (100 por página), alta, edición (la
+  contraseña en texto plano o cifrada con bcrypt; con una contraseña
+  cifrada, dejar el campo vacío la conserva), baja (con sus
+  participaciones y envíos) y sus participaciones.
+- **Equipos**: lista, alta, edición, baja (las participaciones quedan sin
+  equipo) e **importación desde CSV** en la página de equipos: una fila
+  por equipo `código,nombre` (una primera fila `code,name` se ignora; un
+  nombre vacío toma el código). Un código existente cambia de nombre. Si
+  alguna fila está mal (código inválido o repetido, columnas de más o de
+  menos) no se importa nada y el aviso dice qué líneas fallaron.
+- **Participaciones**: agregar usuarios a un concurso en un grupo; la
+  página de cada participación cambia grupo, equipo, contraseña propia
+  (vacía = la del usuario), oculta, sin restricciones, IP o subredes,
+  hora del primer ingreso, retraso y tiempo extra; muestra sus envíos,
+  preguntas y mensajes privados.
+- **Comunicación por concurso**: anuncios (Markdown, con vista previa),
+  preguntas (respuestas rápidas o texto, tomar/soltar, ignorar/dejar de
+  ignorar) y mensajes privados. Requiere el permiso "todo" o
+  "mensajería". El contador de preguntas sin responder del menú, la página
+  de preguntas y la de cada participación se actualizan en vivo; los
+  concursantes reciben al instante anuncios, mensajes y respuestas.
+- **Ranking**: la tabla (de la caché de puntajes `task_scores`, sin
+  recalcular), las descargas en texto y CSV con el formato del original, y
+  el **enlace secreto al scoreboard público**:
+  `<dirección del scoreboard>?secret=<token>`. El token es
+  `config.RankingLinkToken(nombre del concurso)`: los 16 primeros bytes
+  (en hexadecimal) de `DeriveKey(secret_key, "ranking-web/secret-link",
+  nombre del concurso)`. Es el mismo en todos los servicios, cambia si
+  cambia `secret_key` o el nombre del concurso, y no se guarda en ningún
+  lado. La dirección del scoreboard se configura en la página Servidor.
+
+Cada cambio queda en el registro de auditoría y publica los eventos en
+vivo correspondientes (cambios del concurso, de una participación, del
+scoreboard).

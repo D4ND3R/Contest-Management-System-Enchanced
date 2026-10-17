@@ -138,3 +138,52 @@ documented as they are completed.
 - "Operation successful." notifications belong to each admin (CMS gives
   them to whoever polls first).
 - Form dates are in the server time zone (CMS uses UTC).
+
+## Contests, users, teams and communication
+
+- **Contests**: the list, creation (just the name; a `default` group is
+  created as the main group), removal (with everything in it, its tasks
+  too) and the settings page with every option of the original:
+  localizations, languages, downloads, questions, user tests, unofficial
+  submissions before analysis, login (hidden participations, password,
+  registration, IP restriction and autologin), tokens, limits, score
+  decimal places and the times of the main group. Times are shown and read
+  in the server time zone (the Server page), which the labels name.
+- **Groups**: each group has its start, stop, per-contestant length and
+  analysis mode. A new group copies the times of the main group. A group
+  with users and the main group cannot be deleted.
+- **Contest tasks**: add a task without a contest, remove it and move it
+  (up, down, to the top, to the bottom). Needs the "all" permission.
+- **Users**: paginated list (100 per page), creation, edition (the
+  password in plain text or hashed with bcrypt; with a hashed password,
+  leaving the field empty keeps it), removal (with their participations
+  and submissions) and their participations.
+- **Teams**: list, creation, edition, removal (participations stay
+  without a team) and **CSV import** on the teams page: one row per team
+  `code,name` (a first row `code,name` is skipped; an empty name takes the
+  code). An existing code gets the new name. If any row is wrong (bad or
+  repeated code, too many or too few columns) nothing is imported and the
+  notification lists the failing lines.
+- **Participations**: add users to a contest in a group; the page of a
+  participation changes the group, team, own password (empty = the
+  user's), hidden, unrestricted, IP addresses or subnets, first login
+  time, delay and extra time; it shows its submissions, questions and
+  private messages.
+- **Communication per contest**: announcements (Markdown, with preview),
+  questions (quick answers or text, claim/unclaim, ignore/unignore) and
+  private messages. Needs the "all" or "messaging" permission. The
+  unanswered questions badge of the menu, the questions page and each
+  participation page update live; contestants get announcements, messages
+  and answers at once.
+- **Ranking**: the table (from the `task_scores` cache, nothing
+  recomputed), the text and CSV downloads in the original's format, and
+  the **secret link to the public scoreboard**:
+  `<scoreboard address>?secret=<token>`. The token is
+  `config.RankingLinkToken(contest name)`: the first 16 bytes (in hex) of
+  `DeriveKey(secret_key, "ranking-web/secret-link", contest name)`. It is
+  the same in every service, changes when `secret_key` or the contest name
+  changes, and is never stored. The scoreboard address is set on the
+  Server page.
+
+Every change goes to the audit log and publishes the matching live events
+(contest, participation and scoreboard changes).

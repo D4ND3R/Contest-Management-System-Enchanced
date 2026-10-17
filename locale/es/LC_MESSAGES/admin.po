@@ -495,3 +495,738 @@ msgstr "resumen"
 
 msgid "task, user..."
 msgstr "task, user..."
+
+msgid "%(created)s team(s) created, %(updated)s updated."
+msgstr "%(created)s equipo(s) creado(s), %(updated)s actualizado(s)."
+
+msgid "(main group)"
+msgstr "(grupo principal)"
+
+msgid "A CSV file with one team per row: code,name (a first row code,name is skipped). Existing codes get the new name. If any row is wrong nothing is imported."
+msgstr "Un archivo CSV con un equipo por fila: código,nombre (una primera fila code,name se ignora). Los códigos existentes reciben el nombre nuevo. Si alguna fila es incorrecta no se importa nada."
+
+msgid "A comma-separated list of IP addresses (or subnets) of the contestant for this contest."
+msgstr "Lista separada por comas de direcciones IP (o subredes) del concursante en este concurso."
+
+msgid "A short name for the contest, preferably using only letters, numbers and underscores."
+msgstr "Un nombre corto para el concurso, preferentemente solo con letras, números y guiones bajos."
+
+msgid "Add a new group named"
+msgstr "Agregar un grupo nuevo llamado"
+
+msgid "Add a new participation (in main group):"
+msgstr "Agregar una participación (en el grupo principal):"
+
+msgid "Add a new task:"
+msgstr "Agregar una tarea:"
+
+msgid "Add a new user:"
+msgstr "Agregar un usuario:"
+
+msgid "Add announcement"
+msgstr "Agregar anuncio"
+
+msgid "Add group"
+msgstr "Agregar grupo"
+
+msgid "Add participation"
+msgstr "Agregar participación"
+
+msgid "Add task"
+msgstr "Agregar tarea"
+
+msgid "Add user"
+msgstr "Agregar usuario"
+
+msgid "All the allowed languages must have task support, for example in managed tasks."
+msgstr "Todos los lenguajes permitidos deben estar soportados por las tareas, por ejemplo en las tareas con manager."
+
+msgid "Allow contestant to make unofficial submission before analysis mode"
+msgstr "Permitir al concursante hacer envíos no oficiales antes del modo análisis"
+
+msgid "Allow password authentication"
+msgstr "Permitir el ingreso con contraseña"
+
+msgid "Allow questions"
+msgstr "Permitir preguntas"
+
+msgid "Allow registration"
+msgstr "Permitir la inscripción"
+
+msgid "Allow unofficial submission before analysis mode"
+msgstr "Permitir envíos no oficiales antes del modo análisis"
+
+msgid "Allow user tests"
+msgstr "Permitir pruebas de usuario"
+
+msgid "Allowed localizations"
+msgstr "Idiomas permitidos"
+
+msgid "Allowed programming languages"
+msgstr "Lenguajes de programación permitidos"
+
+msgid "Alternative answer:"
+msgstr "Respuesta alternativa:"
+
+msgid "Analysis"
+msgstr "Análisis"
+
+msgid "Analysis end"
+msgstr "Fin del análisis"
+
+msgid "Analysis mode"
+msgstr "Modo análisis"
+
+msgid "Analysis mode end time (in %(tz)s)"
+msgstr "Fin del modo análisis (en %(tz)s)"
+
+msgid "Analysis mode start time (in %(tz)s)"
+msgstr "Inicio del modo análisis (en %(tz)s)"
+
+msgid "Analysis start"
+msgstr "Inicio del análisis"
+
+msgid "Are you sure you want to remove contest %(name)s from CMS, including all related data?"
+msgstr "¿Seguro que quiere eliminar el concurso %(name)s de CMS, con todos sus datos?"
+
+msgid "Are you sure you want to remove team %(code)s (%(name)s)?"
+msgstr "¿Seguro que quiere eliminar el equipo %(code)s (%(name)s)?"
+
+msgid "Are you sure you want to remove user %(username)s from contest %(contest)s, including all related data?"
+msgstr "¿Seguro que quiere quitar al usuario %(username)s del concurso %(contest)s, con todos sus datos?"
+
+msgid "Are you sure you want to remove user %(username)s, including all related data?"
+msgstr "¿Seguro que quiere eliminar al usuario %(username)s, con todos sus datos?"
+
+msgid "Block hidden participations"
+msgstr "Bloquear participaciones ocultas"
+
+msgid "By:"
+msgstr "Por:"
+
+msgid "CSV file"
+msgstr "Archivo CSV"
+
+msgid "Cannot delete a contest's main group."
+msgstr "No se puede eliminar el grupo principal de un concurso."
+
+msgid "Cannot delete group containing users"
+msgstr "No se puede eliminar un grupo con usuarios"
+
+msgid "Caution: stored in plain text."
+msgstr "Atención: se guarda en texto plano."
+
+msgid "Claim"
+msgstr "Tomar"
+
+msgid "Claimed by:"
+msgstr "Tomada por:"
+
+msgid "Code"
+msgstr "Código"
+
+msgid "Code of the team of the contestant in this contest. Only used in the external ranking."
+msgstr "Código del equipo del concursante en este concurso. Solo se usa en el ranking externo."
+
+msgid "Comma-separated list of language codes, from the most to the least preferred."
+msgstr "Lista separada por comas de códigos de idioma, del más al menos preferido."
+
+msgid "Compilation"
+msgstr "Compilación"
+
+msgid "Contest configuration"
+msgstr "Configuración del concurso"
+
+msgid "Contest description"
+msgstr "Descripción del concurso"
+
+msgid "Contest information"
+msgstr "Información del concurso"
+
+msgid "Contest time"
+msgstr "Horario del concurso"
+
+msgid "Contestant e-mail address."
+msgstr "Correo electrónico del concursante."
+
+msgid "Contestant password for this contest. If empty, the contestant's main password is used."
+msgstr "Contraseña del concursante para este concurso. Si está vacía se usa la contraseña principal del concursante."
+
+msgid "Contestant password. Caution: stored in plain text."
+msgstr "Contraseña del concursante. Atención: se guarda en texto plano."
+
+msgid "Contests list"
+msgstr "Lista de concursos"
+
+msgid "Delay"
+msgstr "Retraso"
+
+msgid "Delete selected group"
+msgstr "Eliminar el grupo seleccionado"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Disabled"
+msgstr "Desactivados"
+
+msgid "Download as <a href=\"%(csv)s\">csv</a>, <a href=\"%(txt)s\">text</a>."
+msgstr "Descargar como <a href=\"%(csv)s\">csv</a>, <a href=\"%(txt)s\">texto</a>."
+
+msgid "Edit reply"
+msgstr "Editar respuesta"
+
+msgid "Edit selected contest:"
+msgstr "Editar el concurso seleccionado:"
+
+msgid "Edit selected group:"
+msgstr "Editar el grupo seleccionado:"
+
+msgid "Edit selected participation:"
+msgstr "Editar la participación seleccionada:"
+
+msgid "Edit selected team:"
+msgstr "Editar el equipo seleccionado:"
+
+msgid "Edit selected user:"
+msgstr "Editar el usuario seleccionado:"
+
+msgid "End (in %(tz)s)"
+msgstr "Fin (en %(tz)s)"
+
+msgid "End time (in %(tz)s)"
+msgstr "Hora de fin (en %(tz)s)"
+
+msgid "End time of the analysis mode in the %(tz)s timezone."
+msgstr "Hora de fin del modo análisis en la zona horaria %(tz)s."
+
+msgid "End time of the contest for users in this group in the %(tz)s timezone."
+msgstr "Hora de fin del concurso para los usuarios de este grupo en la zona horaria %(tz)s."
+
+msgid "Evaluation"
+msgstr "Evaluación"
+
+msgid "Example: '2' to allow 98.76."
+msgstr "Ejemplo: '2' para permitir 98.76."
+
+msgid "Example: '2015-12-31 15:00:00'."
+msgstr "Ejemplo: '2015-12-31 15:00:00'."
+
+msgid "Example: '2015-12-31 18:00:00'."
+msgstr "Ejemplo: '2015-12-31 18:00:00'."
+
+msgid "Example: 'Europe/Rome', 'America/New_York', ..."
+msgstr "Ejemplo: 'Europe/Rome', 'America/New_York', ..."
+
+msgid "Example: 'en, ja'."
+msgstr "Ejemplo: 'en, ja'."
+
+msgid "Example: 'en,ja' (without quotes)."
+msgstr "Ejemplo: 'en,ja' (sin comillas)."
+
+msgid "Extra time"
+msgstr "Tiempo extra"
+
+msgid "Finite"
+msgstr "Finitos"
+
+msgid "First name of the contestant."
+msgstr "Nombre del concursante."
+
+msgid "General Information"
+msgstr "Información general"
+
+msgid "Global"
+msgstr "Global"
+
+msgid "Group"
+msgstr "Grupo"
+
+msgid "Group %(group)s in <a href=\"%(url)s\">%(contest)s</a>"
+msgstr "Grupo %(group)s en <a href=\"%(url)s\">%(contest)s</a>"
+
+msgid "Group information"
+msgstr "Información del grupo"
+
+msgid "Groups list"
+msgstr "Lista de grupos"
+
+msgid "Hashed (bcrypt)"
+msgstr "Cifrada (bcrypt)"
+
+msgid "Hidden"
+msgstr "Oculta"
+
+msgid "Hidden participation"
+msgstr "Participación oculta"
+
+msgid "Hidden?"
+msgstr "¿Oculta?"
+
+msgid "IP address or subnet"
+msgstr "Dirección IP o subred"
+
+msgid "IP based autologin"
+msgstr "Ingreso automático por IP"
+
+msgid "IP based login restriction"
+msgstr "Restricción de ingreso por IP"
+
+msgid "If checked, contestants that are marked as hidden in this contest will not be able to log in."
+msgstr "Si está marcado, los concursantes ocultos en este concurso no podrán ingresar."
+
+msgid "If checked, contestants will be able to autonomously create a user account and a participation in the contest."
+msgstr "Si está marcado, los concursantes podrán crear por su cuenta un usuario y una participación en el concurso."
+
+msgid "If checked, contestants will be able to log in using username and password."
+msgstr "Si está marcado, los concursantes podrán ingresar con usuario y contraseña."
+
+msgid "If not specified, each contestant can submit solutions for the whole duration of the contest."
+msgstr "Si no se indica, cada concursante puede enviar soluciones durante todo el concurso."
+
+msgid "If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."
+msgstr "Si se indica, solo hasta esa duración después del primer ingreso (o hasta el fin del concurso, lo que ocurra primero)."
+
+msgid "If this is non-zero, all the events (token generation, end of contest) for this contestant will be shifted of the appropriate amount."
+msgstr "Si no es cero, todos los eventos (generación de tokens, fin del concurso) de este concursante se corren esa cantidad."
+
+msgid "If this is non-zero, the end of the contest will be shifted of the appropriate amount for this contestant."
+msgstr "Si no es cero, el fin del concurso se corre esa cantidad para este concursante."
+
+msgid "If true, analysis mode for this contest will be enabled."
+msgstr "Si está marcado, se activa el modo análisis del concurso."
+
+msgid "If true, contestants with an IP address specified for this contest will be automatically logged in when connecting from that address."
+msgstr "Si está marcado, los concursantes con una dirección IP en este concurso ingresan automáticamente al conectarse desde esa dirección."
+
+msgid "If true, contestants with an IP address specified for this contest will only be able to log in from that address."
+msgstr "Si está marcado, los concursantes con una dirección IP en este concurso solo pueden ingresar desde esa dirección."
+
+msgid "If you prefer to control tokens at the task level, select 'infinite' here."
+msgstr "Si prefiere controlar los tokens por tarea, elija 'infinite' aquí."
+
+msgid "Ignore"
+msgstr "Ignorar"
+
+msgid "Ignored by:"
+msgstr "Ignorada por:"
+
+msgid "Import"
+msgstr "Importar"
+
+msgid "Import teams"
+msgstr "Importar equipos"
+
+msgid "Infinite"
+msgstr "Infinitos"
+
+msgid "Initial number of tokens"
+msgstr "Cantidad inicial de tokens"
+
+msgid "Invalid Question (not a Yes/No Question)"
+msgstr "Pregunta inválida (no es de sí o no)"
+
+msgid "Invalid field(s)."
+msgstr "Campo(s) inválido(s)."
+
+msgid "Invalid operation"
+msgstr "Operación inválida"
+
+msgid "It is used only if tokens are finite."
+msgstr "Solo se usa si los tokens son finitos."
+
+msgid "Last name of the contestant."
+msgstr "Apellido del concursante."
+
+msgid "Leave empty for no limits."
+msgstr "Dejar vacío para no limitar."
+
+msgid "Length of the contest"
+msgstr "Duración del concurso"
+
+msgid "Length of the contest (in seconds) for each contestant."
+msgstr "Duración del concurso (en segundos) para cada concursante."
+
+msgid "Limits"
+msgstr "Límites"
+
+msgid "Logging in"
+msgstr "Ingreso"
+
+msgid "Main group"
+msgstr "Grupo principal"
+
+msgid "Main group settings"
+msgstr "Configuración del grupo principal"
+
+msgid "Make main group"
+msgstr "Hacer grupo principal"
+
+msgid "Max. contest length (in seconds)"
+msgstr "Duración máx. del concurso (en segundos)"
+
+msgid "Maximum accumulated tokens"
+msgstr "Máximo de tokens acumulados"
+
+msgid "Maximum number of submissions"
+msgstr "Cantidad máxima de envíos"
+
+msgid "Maximum number of submissions each contestant can submit, for the whole contest."
+msgstr "Cantidad máxima de envíos de cada concursante en todo el concurso."
+
+msgid "Maximum number of tokens"
+msgstr "Cantidad máxima de tokens"
+
+msgid "Maximum number of tokens available to a contestant at any given time during the contest."
+msgstr "Cantidad máxima de tokens disponibles para un concursante en cualquier momento del concurso."
+
+msgid "Maximum number of user tests"
+msgstr "Cantidad máxima de pruebas de usuario"
+
+msgid "Maximum number of user tests each contestant can submit, for the whole contest."
+msgstr "Cantidad máxima de pruebas de usuario de cada concursante en todo el concurso."
+
+msgid "Minimum interval between submissions"
+msgstr "Intervalo mínimo entre envíos"
+
+msgid "Minimum interval between tokens"
+msgstr "Intervalo mínimo entre tokens"
+
+msgid "Minimum interval between user tests"
+msgstr "Intervalo mínimo entre pruebas de usuario"
+
+msgid "Minimum submission interval grace period"
+msgstr "Período de gracia del intervalo mínimo entre envíos"
+
+msgid "Move selected task:"
+msgstr "Mover la tarea seleccionada:"
+
+msgid "Name:"
+msgstr "Nombre:"
+
+msgid "New contest"
+msgstr "Concurso nuevo"
+
+msgid "New team"
+msgstr "Equipo nuevo"
+
+msgid "No Comment/Please refer to task statement"
+msgstr "Sin comentarios/Vea el enunciado de la tarea"
+
+msgid "No announcements."
+msgstr "No hay anuncios."
+
+msgid "No messages."
+msgstr "No hay mensajes."
+
+msgid "No participations found."
+msgstr "No hay participaciones."
+
+msgid "No questions."
+msgstr "No hay preguntas."
+
+msgid "No submissions found."
+msgstr "No hay envíos."
+
+msgid "No users found."
+msgstr "No hay usuarios."
+
+msgid "Not yet replied."
+msgstr "Todavía sin respuesta."
+
+msgid "Other"
+msgstr "Otra"
+
+msgid "Participation"
+msgstr "Participación"
+
+msgid "Participation information"
+msgstr "Información de la participación"
+
+msgid "Participation of <a href=\"%(user_url)s\">%(username)s</a> in <a href=\"%(contest_url)s\">%(contest)s</a>"
+msgstr "Participación de <a href=\"%(user_url)s\">%(username)s</a> en <a href=\"%(contest_url)s\">%(contest)s</a>"
+
+msgid "Participations"
+msgstr "Participaciones"
+
+msgid "Plain text"
+msgstr "Texto plano"
+
+msgid "Precompiled answer:"
+msgstr "Respuesta predefinida:"
+
+msgid "Preferred languages"
+msgstr "Idiomas preferidos"
+
+msgid "Preview Markdown"
+msgstr "Vista previa del Markdown"
+
+msgid "Programming languages that contestants can use to solve the tasks."
+msgstr "Lenguajes de programación que los concursantes pueden usar para resolver las tareas."
+
+msgid "Reevaluate all %(count)s submissions for this user in this contest (for all datasets)"
+msgstr "Reevaluar los %(count)s envíos de este usuario en este concurso (en todos los datasets)"
+
+msgid "Remove"
+msgstr "Eliminar"
+
+msgid "Remove Contest"
+msgstr "Eliminar concurso"
+
+msgid "Remove Participation"
+msgstr "Eliminar participación"
+
+msgid "Remove Team"
+msgstr "Eliminar equipo"
+
+msgid "Remove User"
+msgstr "Eliminar usuario"
+
+msgid "Remove from contest"
+msgstr "Quitar del concurso"
+
+msgid "Remove selected task from the contest:"
+msgstr "Quitar la tarea seleccionada del concurso:"
+
+msgid "Reply from:"
+msgstr "Respuesta de:"
+
+msgid "Reply:"
+msgstr "Respuesta:"
+
+msgid "Score decimal places"
+msgstr "Decimales del puntaje"
+
+msgid "Secret link to the public scoreboard (whoever has it can see the scoreboard):"
+msgstr "Enlace secreto al scoreboard público (quien lo tenga puede ver el scoreboard):"
+
+msgid "Select 'disabled' to remove tokens completely, 'infinite' for allowing any number of tokens, or 'finite' to specify the amount with the following parameters."
+msgstr "Elija 'disabled' para quitar los tokens, 'infinite' para permitir cualquier cantidad o 'finite' para indicar la cantidad con los parámetros siguientes."
+
+msgid "Select a contest"
+msgstr "Elija un concurso"
+
+msgid "Select a new task"
+msgstr "Elija una tarea"
+
+msgid "Select a new user"
+msgstr "Elija un usuario"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Set the public address of the scoreboard on the <a href=\"%(url)s\">Server</a> page to get the secret link to the public scoreboard."
+msgstr "Configure la dirección pública del scoreboard en la página <a href=\"%(url)s\">Servidor</a> para obtener el enlace secreto al scoreboard público."
+
+msgid "Start (in %(tz)s)"
+msgstr "Inicio (en %(tz)s)"
+
+msgid "Start time (in %(tz)s)"
+msgstr "Hora de inicio (en %(tz)s)"
+
+msgid "Start time of the analysis mode in the %(tz)s timezone."
+msgstr "Hora de inicio del modo análisis en la zona horaria %(tz)s."
+
+msgid "Start time of the contest for users in this group in the %(tz)s timezone."
+msgstr "Hora de inicio del concurso para los usuarios de este grupo en la zona horaria %(tz)s."
+
+msgid "Subject is mandatory."
+msgstr "El asunto es obligatorio."
+
+msgid "Subject:"
+msgstr "Asunto:"
+
+msgid "Submissions download allowed"
+msgstr "Permitir descargar los envíos"
+
+msgid "Tasks list of <a href=\"%(url)s\">%(contest)s</a>"
+msgstr "Lista de tareas de <a href=\"%(url)s\">%(contest)s</a>"
+
+msgid "Team"
+msgstr "Equipo"
+
+msgid "Teams imported"
+msgstr "Equipos importados"
+
+msgid "Teams list"
+msgstr "Lista de equipos"
+
+msgid "Text:"
+msgstr "Texto:"
+
+msgid "The amount of time (in minutes) between two token generation events."
+msgstr "Tiempo (en minutos) entre dos generaciones de tokens."
+
+msgid "The amount of time (in seconds) until the end of participation in which the minimum interval between submissions is not enforced."
+msgstr "Tiempo (en segundos) antes del fin de la participación en el que no se exige el intervalo mínimo entre envíos."
+
+msgid "The group this contestant is part of. This determines the time window for participation."
+msgstr "El grupo del concursante. Determina el horario de su participación."
+
+msgid "The group used for time calculations in the admin and ranking interface."
+msgstr "El grupo cuyos horarios usan la administración y el ranking."
+
+msgid "The list of languages that contestants can use, or empty for allowing any language."
+msgstr "Los idiomas que pueden usar los concursantes, o vacío para permitir cualquiera."
+
+msgid "The maximum number of tokens a contestant can use in the whole contest."
+msgstr "La cantidad máxima de tokens que un concursante puede usar en todo el concurso."
+
+msgid "The minimum amount of time (in seconds) that a contestant needs to wait after a submission before being able to submit another."
+msgstr "El tiempo mínimo (en segundos) que un concursante debe esperar después de un envío para hacer otro."
+
+msgid "The minimum amount of time (in seconds) that a contestant needs to wait after a user test before being able to send another."
+msgstr "El tiempo mínimo (en segundos) que un concursante debe esperar después de una prueba de usuario para hacer otra."
+
+msgid "The minimum amount of time (in seconds) that a contestant needs to wait after using a token before being able to use another."
+msgstr "El tiempo mínimo (en segundos) que un concursante debe esperar después de usar un token para usar otro."
+
+msgid "The name of the contest as seen by the contestants."
+msgstr "El nombre del concurso que ven los concursantes."
+
+msgid "The name of this user group."
+msgstr "El nombre de este grupo de usuarios."
+
+msgid "The number of decimal places the scores will be rounded to."
+msgstr "La cantidad de decimales a la que se redondean los puntajes."
+
+msgid "The number of tokens that a contestant has available when their contest time starts."
+msgstr "La cantidad de tokens que tiene un concursante al empezar su tiempo de concurso."
+
+msgid "The number of tokens that are generated periodically."
+msgstr "La cantidad de tokens que se generan periódicamente."
+
+msgid "The password is hashed, type a new one in here to change it"
+msgstr "La contraseña está cifrada; escriba una nueva aquí para cambiarla"
+
+msgid "This operation cannot be undone."
+msgstr "Esta operación no se puede deshacer."
+
+msgid "This team has no associated participations."
+msgstr "Este equipo no tiene participaciones."
+
+msgid "This will remove %(participations)s participation(s) and %(submissions)s submission(s)."
+msgstr "Se eliminarán %(participations)s participación(es) y %(submissions)s envío(s)."
+
+msgid "This will remove %(submissions)s submission(s)."
+msgstr "Se eliminarán %(submissions)s envío(s)."
+
+msgid "This will remove the team association from %(count)s participation(s). The participations will remain but will no longer be associated with this team."
+msgstr "Se quitará el equipo de %(count)s participación(es). Las participaciones se conservan, pero sin este equipo."
+
+msgid "Time of first login (in %(tz)s)"
+msgstr "Hora del primer ingreso (en %(tz)s)"
+
+msgid "Time of first login during this contest, used for USACO-style contests."
+msgstr "Hora del primer ingreso en este concurso, para concursos estilo USACO."
+
+msgid "Timezone"
+msgstr "Zona horaria"
+
+msgid "Timezone of the contestant, used to display start, end times and the current server time in local time."
+msgstr "Zona horaria del concursante, para mostrar en hora local el inicio, el fin y la hora del servidor."
+
+msgid "Timezone of the server, used to display start, end times and the current server time to contestants."
+msgstr "Zona horaria del servidor, para mostrar a los concursantes el inicio, el fin y la hora del servidor."
+
+msgid "Title"
+msgstr "Título"
+
+msgid "To be set (in seconds) to acknowledge that the contestant lost that amount of time at the beginning of the contest."
+msgstr "Se indica (en segundos) para reconocer que el concursante perdió ese tiempo al comienzo del concurso."
+
+msgid "To be set (in seconds) to acknowledge that the contestant lost that amount of time during the contest."
+msgstr "Se indica (en segundos) para reconocer que el concursante perdió ese tiempo durante el concurso."
+
+msgid "To change start and end times or analysis mode for other groups, or change the main group, please use the <a href='%(url)s'>groups</a> section."
+msgstr "Para cambiar los horarios o el modo análisis de otros grupos, o cambiar el grupo principal, use la sección <a href='%(url)s'>grupos</a>."
+
+msgid "Token generation number"
+msgstr "Tokens por generación"
+
+msgid "Token generation period"
+msgstr "Período de generación de tokens"
+
+msgid "Token mode"
+msgstr "Modo de tokens"
+
+msgid "Tokens parameters"
+msgstr "Parámetros de los tokens"
+
+msgid "Unclaim"
+msgstr "Soltar"
+
+msgid "Unignore"
+msgstr "Dejar de ignorar"
+
+msgid "Unrestricted"
+msgstr "Sin restricciones"
+
+msgid "Unrestricted participation"
+msgstr "Participación sin restricciones"
+
+msgid "Unrestricted?"
+msgstr "¿Sin restricciones?"
+
+msgid "Used for IP-based login restrictions and/or for autologin (in this case, it must be a single address)."
+msgstr "Se usa para restringir el ingreso por IP y/o para el ingreso automático (en ese caso debe ser una sola dirección)."
+
+msgid "User"
+msgstr "Usuario"
+
+msgid "Username of the contestant (used to log in)."
+msgstr "Nombre de usuario del concursante (para ingresar)."
+
+msgid "Users list"
+msgstr "Lista de usuarios"
+
+msgid "Whether contestants can download their own submissions."
+msgstr "Si los concursantes pueden descargar sus propios envíos."
+
+msgid "Whether contestants can submit questions."
+msgstr "Si los concursantes pueden hacer preguntas."
+
+msgid "Whether contestants can submit user tests."
+msgstr "Si los concursantes pueden hacer pruebas de usuario."
+
+msgid "Whether the contestant is unrestricted by maximum number of submissions, user tests,"
+msgstr "Si el concursante no tiene límites de cantidad de envíos, pruebas de usuario,"
+
+msgid "Whether the contestant's results will be visible in the external ranking."
+msgstr "Si los resultados del concursante se ven en el ranking externo."
+
+msgid "Yes, remove"
+msgstr "Sí, eliminar"
+
+msgid "You can use Markdown here. URLs are not automatically linked, surround them with &lt;&gt; like &lt;http://example.org&gt;."
+msgstr "Puede usar Markdown aquí. Las URL no se enlazan solas: enciérrelas entre &lt;&gt;, como &lt;http://example.org&gt;."
+
+msgid "You do not have permission to remove a contest."
+msgstr "No tiene permiso para eliminar un concurso."
+
+msgid "You do not have permission to remove a participation."
+msgstr "No tiene permiso para eliminar una participación."
+
+msgid "You do not have permission to remove a team."
+msgstr "No tiene permiso para eliminar un equipo."
+
+msgid "You do not have permission to remove a user."
+msgstr "No tiene permiso para eliminar un usuario."
+
+msgid "and minimum interval between submissions, user tests, and contest time."
+msgstr "ni de intervalo mínimo entre envíos, pruebas de usuario ni de horario del concurso."
+
+msgid "documentation"
+msgstr "documentación"
+
+msgid "down by 1"
+msgstr "una abajo"
+
+msgid "to the bottom"
+msgstr "al final"
+
+msgid "to the top"
+msgstr "al principio"
+
+msgid "up by 1"
+msgstr "una arriba"

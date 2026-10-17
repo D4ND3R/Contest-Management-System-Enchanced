@@ -57,11 +57,16 @@ func (s *Server) groupsPage(c *Ctx) {
 		c.Fail(err)
 		return
 	}
-	groups := make([]groupRow, len(rows))
+	c.Render("groups.html", groupsData{Page: p, Groups: c.groupRows(rows), TZ: c.RC.TZ.String()})
+}
+
+// groupRows marks the main group of the contest of the page.
+func (c *Ctx) groupRows(rows []q.AdminContestGroupsRow) []groupRow {
+	out := make([]groupRow, len(rows))
 	for i, r := range rows {
-		groups[i] = groupRow{AdminContestGroupsRow: r, Main: ptrEq(c.Contest.MainGroupID, &r.Group.ID)}
+		out[i] = groupRow{AdminContestGroupsRow: r, Main: ptrEq(c.Contest.MainGroupID, &r.Group.ID)}
 	}
-	c.Render("groups.html", groupsData{Page: p, Groups: groups, TZ: c.RC.TZ.String()})
+	return out
 }
 
 // groupsPost is POST /contest/<id>/groups: "Make main group" or "Delete

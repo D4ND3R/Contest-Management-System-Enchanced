@@ -1,0 +1,219 @@
+{{/*
+Ported from cms/server/admin/templates/participation.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2012-2018 Luca Wehrstedt and the
+CMS contributors.
+Changes in this fork:
+- every text goes through T; times are in the server time zone (D6);
+- the reevaluation buttons are data-rpc-* attributes (aws_handlers.js,
+  D10); the submissions table comes from the submissions pages
+  (participationSubmissionsHook);
+- the questions and messages are live regions (R6.9) of this participation;
+- the questions and messages shown are bounded (500 each).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+{{$p := .P}}
+{{$u := .User}}
+<h1>
+  {{Format (T "Participation of <a href=\"%(user_url)s\">%(username)s</a> in <a href=\"%(contest_url)s\">%(contest)s</a>") "user_url" (url "user" $u.ID) "username" $u.Username "contest_url" (url "contest" .Contest.ID) "contest" .Contest.Name}}
+</h1>
+
+<h2 id="title_submissions" class="toggling_on">{{T "Submissions"}}</h2>
+<div id="submissions">
+  <p>
+    {{Format (T "Reevaluate all %(count)s submissions for this user in this contest (for all datasets)") "count" .SubmissionCount}}
+{{$next := url "contest" .Contest.ID "user" $u.ID "edit"}}
+    <button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{"participation_id": {{$p.ID}}, "level": "compilation"}' data-rpc-next="{{$next}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .Admin.CanAll}}
+        disabled
+{{end}}
+        title="{{T "Compilation"}}" >C</button>
+<button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{"participation_id": {{$p.ID}}, "level": "evaluation"}' data-rpc-next="{{$next}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .Admin.CanAll}}
+        disabled
+{{end}}
+        title="{{T "Evaluation"}}" >E</button>
+<button data-rpc-service="ScoringService" data-rpc-method="invalidate_submission" data-rpc-args='{"participation_id": {{$p.ID}}}' data-rpc-next="{{$next}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .Admin.CanAll}}
+        disabled
+{{end}}
+        title="{{T "Score"}}" >S</button>
+
+  </p>
+
+{{if eq .SubmissionCount 0}}
+<p>{{T "No submissions found."}}</p>
+{{else}}
+{{.SubmissionsHTML}}
+{{end}}
+
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_participation_info" class="toggling_on">{{T "Participation information"}}</h2>
+<div id="participation_info">
+  {{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+  <form enctype="multipart/form-data" action="{{url "contest" .Contest.ID "user" $u.ID "edit"}}" method="POST">
+    {{xsrf_form_html}}
+    <table>
+      <tr>
+        <td>
+          <span class="info" title="{{T "The group this contestant is part of. This determines the time window for participation."}}"></span>
+          {{T "Group"}}
+        </td>
+        <td>
+          <select name="group_id">
+{{range .Groups}}
+            <option value="{{.Group.ID}}" {{if eq .Group.ID $p.GroupID}}selected{{end}}>
+              {{.Group.Name}}
+            </option>
+{{end}}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Code of the team of the contestant in this contest. Only used in the external ranking."}}"></span>
+          {{T "Team"}}
+        </td>
+        <td>
+          <input list="teams" name="team" value="{{.TeamCode}}"/>
+          <datalist id="teams">
+{{range .TeamCodes}}
+            <option value="{{.}}">
+{{end}}
+          </datalist>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Contestant password for this contest. If empty, the contestant's main password is used."}}
+                                     {{T "Caution: stored in plain text."}}"></span>
+          {{T "Password"}}
+        </td>
+        <td>
+{{template "fragments/hashed_password_form.html" (dict "HashedPassword" $p.Password)}}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Whether the contestant's results will be visible in the external ranking."}}"></span>
+          {{T "Hidden participation"}}
+        </td>
+        <td><input type="checkbox" name="hidden" {{if $p.Hidden}}checked{{end}}/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Whether the contestant is unrestricted by maximum number of submissions, user tests,"}}
+                                    {{T "and minimum interval between submissions, user tests, and contest time."}}"></span>
+          {{T "Unrestricted participation"}}
+        </td>
+        <td><input type="checkbox" name="unrestricted" {{if $p.Unrestricted}}checked{{end}}/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "A comma-separated list of IP addresses (or subnets) of the contestant for this contest."}}
+                                    {{T "Used for IP-based login restrictions and/or for autologin (in this case, it must be a single address)."}}"></span>
+          {{T "IP address or subnet"}}
+        </td>
+        <td><input type="text" name="ip" value="{{$p.IPs}}"/></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "Time of first login during this contest, used for USACO-style contests."}}
+                                    {{T "Example: '2015-12-31 15:00:00'."}}"></span>
+          {{Format (T "Time of first login (in %(tz)s)") "tz" .TZ}}
+        </td>
+        <td><input type="text" name="starting_time" value="{{form_datetime $p.StartingTime}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "To be set (in seconds) to acknowledge that the contestant lost that amount of time at the beginning of the contest."}}
+                                    {{T "If this is non-zero, all the events (token generation, end of contest) for this contestant will be shifted of the appropriate amount."}}"></span>
+          {{T "Delay"}}
+        </td>
+        <td><input type="text" name="delay_time" value="{{$p.DelaySec}}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="{{T "To be set (in seconds) to acknowledge that the contestant lost that amount of time during the contest."}}
+                                    {{T "If this is non-zero, the end of the contest will be shifted of the appropriate amount for this contestant."}}"></span>
+          {{T "Extra time"}}
+        </td>
+        <td><input type="text" name="extra_time" value="{{$p.ExtraSec}}"></td>
+      </tr>
+    </table>
+    <input type="submit" value="{{T "Update"}}" />
+    <input type="reset" value="{{T "Reset"}}" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_questions" class="toggling_on">{{T "Questions"}}</h2>
+<div id="questions" data-live="question" data-live-match-participation="{{$p.ID}}">
+{{if .Questions}}
+  <div class="notifications">
+{{range .Questions}}
+      {{template "question.question" (dict "Q" . "UserID" $u.ID "Page" $)}}
+{{end}}
+  </div>
+
+{{else}}
+  {{T "No questions."}}
+
+{{end}}
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_messages" class="toggling_on">{{T "Messages"}}</h2>
+<div id="messages" data-live="message" data-live-match-participation="{{$p.ID}}">
+
+  <div class="notifications">
+      <div class="notification communication">
+        <form id="send_message_form" action="{{url "contest" .Contest.ID "user" $u.ID "message"}}" method="POST">
+          {{xsrf_form_html}}
+          <div class="notification_msg">
+            <div class="notification_subject">
+              {{T "Subject:"}}
+              <input id="send_message_subject" type="text" name="message_subject" style="width: 100%" />
+            </div>
+            <div class="notification_text">
+              {{T "Text:"}}
+              {{template "markdown_input.input" "message_text"}}
+            </div>
+          <input type="submit" value="{{T "Send"}}"/>
+          {{template "markdown_input.preview"}}
+          </div>
+        </form>
+      </div>
+
+{{if .Messages}}
+
+{{range .Messages}}
+      <div class="notification communication">
+        <div class="notification_msg">
+          <div class="notification_timestamp">{{form_datetime .Message.Timestamp}}</div>
+          <div class="notification_subject">{{.Message.Subject}}</div>
+          <div class="notification_text">{{markdown .Message.Text}}</div>
+          <hr>
+          <div class="notification_admin_owner">
+            {{T "By:"}} {{with .AdminName}}{{.}}{{else}}&lt;{{T "unknown"}}&gt;{{end}}
+          </div>
+        </div>
+      </div>
+{{end}}
+
+{{else}}
+      {{T "No messages."}}
+{{end}}
+  </div>
+  <div class="hr"></div>
+</div>
+
+
+{{end}}
