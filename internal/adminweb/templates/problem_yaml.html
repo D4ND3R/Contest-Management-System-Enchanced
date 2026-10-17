@@ -1,0 +1,37 @@
+{{/*
+New page of this fork (problem preparation, R6.2), built with the components
+of the original task page (core_title, tables, forms, notifications).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - problem.yaml</h1>
+</div>
+
+{{template "prepare.datasets" .}}
+
+{{if .Error}}
+<p>{{T "The task cannot be written as a package:"}} {{.Error}}</p>
+{{else}}
+<p>
+  <a href="{{url "task" .Task.ID "problem.yaml" "raw"}}{{if .Dataset}}?dataset_id={{.Dataset.ID}}{{end}}">[{{T "Download problem.yaml"}}]</a>
+  <a href="{{url "task" .Task.ID "export"}}{{if .Dataset}}?dataset_id={{.Dataset.ID}}{{end}}">[{{T "Download as a package"}}]</a>
+</p>
+{{if .Warnings}}
+<ul>{{range .Warnings}}<li>{{.}}</li>{{end}}</ul>
+{{end}}
+<form enctype="multipart/form-data" action="{{url "task" .Task.ID "problem.yaml"}}" method="POST">
+  {{xsrf_form_html}}
+  {{if .Dataset}}<input type="hidden" name="dataset_id" value="{{.Dataset.ID}}"/>{{end}}
+  <textarea name="problem" rows="30" cols="90">{{.Problem}}</textarea><br/>
+  {{T "or upload a problem.yaml:"}} <input type="file" name="problem_file"/><br/>
+  <input type="submit" value="{{T "Preview"}}"
+{{if not .Admin.CanTasks}}
+         disabled
+{{end}}
+  />
+</form>
+<p>{{T "The format of problem.yaml is in the guide \"Task package format\"; the changes are shown before they are written."}}</p>
+{{end}}
+{{end}}

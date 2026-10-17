@@ -1,0 +1,51 @@
+{{/*
+New page of this fork (problem preparation, R6.2), built with the components
+of the original task page (core_title, tables, forms, notifications).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{if .Task}}<a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "Update from a package"}}{{else}}{{T "Import a task package"}}{{end}}</h1>
+</div>
+
+<form enctype="multipart/form-data" action="{{if .Task}}{{url "task" .Task.ID "import"}}{{else}}{{url "tasks" "import"}}{{end}}" method="POST">
+  {{xsrf_form_html}}
+  <table>
+    <tr>
+      <td>
+        <span class="info" title="{{T "A zip with the package: the format of this installation (problem.yaml), or italy_yaml, Polygon or TPS. Nothing is written before the preview is confirmed."}}"></span>
+        {{T "Package (zip):"}}
+      </td>
+      <td><input type="file" name="package"/></td>
+    </tr>
+    <tr>
+      <td>{{T "Format:"}}</td>
+      <td>
+        <select name="loader">
+          <option value="">{{T "detect"}}</option>
+          {{range .Loaders}}<option value="{{.}}">{{.}}</option>{{end}}
+        </select>
+      </td>
+    </tr>
+{{if not .Task}}
+    <tr>
+      <td>{{T "Update the task if it exists"}}</td>
+      <td><input type="checkbox" name="update"/></td>
+    </tr>
+{{if .Contests}}
+    <tr>
+      <td>{{T "Add it to the contest:"}}</td>
+      <td>
+        <select name="contest_id">
+          <option value="">-</option>
+          {{range .Contests}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+        </select>
+      </td>
+    </tr>
+{{end}}
+{{end}}
+  </table>
+  <input type="submit" value="{{T "Preview"}}"/>
+</form>
+{{end}}

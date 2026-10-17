@@ -187,3 +187,22 @@ documented as they are completed.
 
 Every change goes to the audit log and publishes the matching live events
 (contest, participation and scoreboard changes).
+
+## Tasks and datasets
+
+The task and dataset pages are the original CMS ones: task list, add and
+remove (removing needs **all**), the task page with all its options,
+statements and attachments, datasets (add, clone with or without results,
+rename, delete, make live with the preview of the score changes and the
+message to the contestants, background judging), task and score types
+with their parameter forms, managers and testcases (add one, add from a
+zip with name templates, delete, download all as a zip). The problem
+preparer (`permission_tasks`) can do all of it except removing tasks and
+moving them between contests. Differences with CMS: the activation preview
+shows at most 5000 changed submissions; the testcases of a zip are written
+in one transaction.
+
+Preparing problems in the browser (importing packages with a preview,
+`problem.yaml`, files one by one, testcases one by one with generated
+outputs, a generator, test submissions and the list of what is missing) is
+in [Creating a problem](creating-a-problem.md).

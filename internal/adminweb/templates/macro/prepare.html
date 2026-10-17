@@ -1,0 +1,36 @@
+{{/*
+Fragments of the problem preparation pages (R6.2; new): the dataset
+selector and the list of generation runs.
+*/}}
+{{define "prepare.datasets"}}
+{{if gt (len .Datasets) 1}}
+<p>
+  {{T "Dataset:"}}
+  {{range .Datasets}}
+  {{if eq .ID $.Dataset.ID}}<strong>{{.Description}}</strong>{{else}}<a href="?dataset_id={{.ID}}">{{.Description}}</a>{{end}}
+  {{end}}
+</p>
+{{end}}
+{{end}}
+
+{{define "prepare.pending"}}
+{{if .}}
+<h2 id="title_pending" class="toggling_on">{{T "Generation runs"}}</h2>
+<div id="pending">
+  <table class="bordered">
+    <thead><tr><th>{{T "Testcase"}}</th><th>{{T "Generates"}}</th><th>{{T "Status"}}</th><th>{{T "Details"}}</th></tr></thead>
+    <tbody>
+    {{range .}}
+      <tr><td>{{.Codename}}</td><td>{{if eq .Kind "input"}}{{T "input"}}{{else}}{{T "output"}}{{end}}</td><td>{{.State}}</td><td><pre>{{.Error}}</pre></td></tr>
+    {{end}}
+    </tbody>
+  </table>
+  <p>{{T "Reload the page to see the runs that finished: their results are stored then."}}</p>
+  <div class="hr"></div>
+</div>
+{{end}}
+{{end}}
+
+{{define "prepare.preview"}}
+{{if .Empty}}<em>{{T "(empty)"}}</em>{{else if .Binary}}<em>{{T "(binary file)"}}</em>{{else}}<pre>{{.Text}}</pre>{{if .Truncated}}<em>{{T "(only the beginning is shown)"}}</em>{{end}}{{end}}
+{{end}}

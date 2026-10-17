@@ -1230,3 +1230,893 @@ msgstr "al principio"
 
 msgid "up by 1"
 msgstr "una arriba"
+
+msgid " (Tokened)"
+msgstr " (con ficha)"
+
+msgid "(binary file)"
+msgstr "(archivo binario)"
+
+msgid "(empty)"
+msgstr "(vacío)"
+
+msgid "(no test submissions yet: submit the reference solution first)"
+msgstr "(todavía no hay envíos de prueba: envíe primero la solución de referencia)"
+
+msgid "(only the beginning is shown)"
+msgstr "(solo se muestra el comienzo)"
+
+msgid "<b>NOTE</b>: The preview on this page uses the existing scoring information for both datasets. If you have made modifications to a dataset, you need to ensure that the scores are up to date. This may require re-compiling, re-evaluating or just re-scoring the entire dataset. To do so, use the buttons below, and wait for it to complete."
+msgstr "<b>NOTA</b>: la vista previa de esta página usa los puntajes que ya existen para ambos datasets. Si modificó un dataset, asegúrese de que los puntajes estén al día. Puede requerir recompilar, reevaluar o solo repuntuar el dataset entero. Para eso use los botones de abajo y espere a que termine."
+
+msgid "A (unique) description for this dataset."
+msgstr "Una descripción (única) para este dataset."
+
+msgid "A comma-separated list with the names of the files that need to be submitted (with the language extensions changed to %l).\n                                    The task type dictates the submission format. Consult the task type documentation to know the requirements."
+msgstr "Lista separada por comas con los nombres de los archivos que hay que enviar (con la extensión del lenguaje cambiada por %l). El tipo de problema determina el formato de envío; consulte su documentación para conocer los requisitos."
+
+msgid "A file with the name of an existing one replaces it. Testcases and managers go to the dataset chosen."
+msgstr "Un archivo con el nombre de uno existente lo reemplaza. Los casos y los managers van al dataset elegido."
+
+msgid "A short name for the task, preferably using only letters, numbers and underscores."
+msgstr "Un nombre corto para el problema, preferentemente solo con letras, números y guiones bajos."
+
+msgid "A statement"
+msgstr "Un enunciado"
+
+msgid "A test submission expected to be accepted that is"
+msgstr "Un envío de prueba que debe ser aceptado y lo es"
+
+msgid "A zip with the package: the format of this installation (problem.yaml), or italy_yaml, Polygon or TPS. Nothing is written before the preview is confirmed."
+msgstr "Un zip con el paquete: el formato de esta instalación (problem.yaml), o italy_yaml, Polygon o TPS. No se escribe nada antes de confirmar la vista previa."
+
+msgid "Abort!"
+msgstr "¡Cancelar!"
+
+msgid "Activate!"
+msgstr "¡Activar!"
+
+msgid "Add a testcase"
+msgstr "Agregar un caso"
+
+msgid "Add files"
+msgstr "Agregar archivos"
+
+msgid "Add it to the contest:"
+msgstr "Agregarlo al concurso:"
+
+msgid "Add multiple testcases"
+msgstr "Agregar varios casos"
+
+msgid "Added: %s; overwritten: %s; skipped: %s"
+msgstr "Agregados: %s; reemplazados: %s; omitidos: %s"
+
+msgid "All users"
+msgstr "Todos los usuarios"
+
+msgid "Archive (a zip file containing files only):"
+msgstr "Archivo (un zip que contenga solo archivos):"
+
+msgid "Are you sure you want to delete the dataset \"%(description)s\" and all associated managers, test cases, and submission results?"
+msgstr "¿Seguro que desea borrar el dataset \"%(description)s\" con todos sus managers, casos y resultados de envíos?"
+
+msgid "Are you sure you want to remove task %(name)s from CMS, including all related data?"
+msgstr "¿Seguro que desea eliminar el problema %(name)s de CMS, con todos sus datos?"
+
+msgid "Attachment storage failed"
+msgstr "Falló el almacenamiento del adjunto"
+
+msgid "Attachments for this task. Contestant can view and download attachments from the task page."
+msgstr "Adjuntos del problema. Los concursantes pueden verlos y descargarlos desde la página del problema."
+
+msgid "Back"
+msgstr "Volver"
+
+msgid "By default, users with changes to their public score, or changes to the score of a tokened submission, will be notified."
+msgstr "Por defecto se notifica a los usuarios cuyo puntaje público cambia o cuyo envío con ficha cambia de puntaje."
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Change"
+msgstr "Cambio"
+
+msgid "Changes"
+msgstr "Cambios"
+
+msgid "Check"
+msgstr "Revisar"
+
+msgid "Checklist"
+msgstr "Lista de control"
+
+msgid "Choose the reference solution (a test submission) that generates the output."
+msgstr "Elija la solución de referencia (un envío de prueba) que genera la salida."
+
+msgid "Clone"
+msgstr "Clonar"
+
+msgid "Clone evaluation results"
+msgstr "Clonar los resultados de evaluación"
+
+msgid "Clone managers"
+msgstr "Clonar los managers"
+
+msgid "Codename"
+msgstr "Nombre"
+
+msgid "Codename:"
+msgstr "Nombre:"
+
+msgid "Comma-separated list of output only testcases"
+msgstr "Lista separada por comas de los casos de solo salida"
+
+msgid "Concurrent solutions"
+msgstr "Soluciones concurrentes"
+
+msgid "Confirm"
+msgstr "Confirmar"
+
+msgid "Controller memory limit (MB)"
+msgstr "Límite de memoria del controlador (MB)"
+
+msgid "Controller time limit (s)"
+msgstr "Límite de tiempo del controlador (s)"
+
+msgid "Controller wall time limit (s)"
+msgstr "Límite de tiempo real del controlador (s)"
+
+msgid "Create a new dataset"
+msgstr "Crear un dataset nuevo"
+
+msgid "Create dataset"
+msgstr "Crear dataset"
+
+msgid "Current dataset:"
+msgstr "Dataset actual:"
+
+msgid "Dataset configuration"
+msgstr "Configuración del dataset"
+
+msgid "Dataset information"
+msgstr "Datos del dataset"
+
+msgid "Dataset name \"%s\" is already taken."
+msgstr "El nombre de dataset \"%s\" ya está en uso."
+
+msgid "Dataset name %s is already taken."
+msgstr "El nombre de dataset %s ya está en uso."
+
+msgid "Dataset:"
+msgstr "Dataset:"
+
+msgid "Datasets"
+msgstr "Datasets"
+
+msgid "Delete"
+msgstr "Borrar"
+
+msgid "Delete dataset"
+msgstr "Borrar dataset"
+
+msgid "Disable background judging"
+msgstr "Desactivar el juzgamiento en segundo plano"
+
+msgid "Done"
+msgstr "Listo"
+
+msgid "Download all testcases"
+msgstr "Descargar todos los casos"
+
+msgid "Download as a package"
+msgstr "Descargar como paquete"
+
+msgid "Download problem.yaml"
+msgstr "Descargar problem.yaml"
+
+msgid "Edit description (each dataset must have a unique description):"
+msgstr "Editar la descripción (cada dataset debe tener una descripción única):"
+
+msgid "Edit selected task:"
+msgstr "Editar el problema seleccionado:"
+
+msgid "Enable background judging"
+msgstr "Activar el juzgamiento en segundo plano"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Errors"
+msgstr "Errores"
+
+msgid "Every test submission gets its expected verdict"
+msgstr "Cada envío de prueba obtiene el veredicto esperado"
+
+msgid "Every testcase has an expected output"
+msgstr "Cada caso tiene una salida esperada"
+
+msgid "Expected"
+msgstr "Esperado"
+
+msgid "Expected verdict (for names without one)"
+msgstr "Veredicto esperado (para nombres sin uno)"
+
+msgid "Failed"
+msgstr "Falló"
+
+msgid "Feedback level"
+msgstr "Nivel de retroalimentación"
+
+msgid "File"
+msgstr "Archivo"
+
+msgid "Files received"
+msgstr "Archivos recibidos"
+
+msgid "Files:"
+msgstr "Archivos:"
+
+msgid "Format:"
+msgstr "Formato:"
+
+msgid "Full"
+msgstr "Completo"
+
+msgid "Generate"
+msgstr "Generar"
+
+msgid "Generate inputs"
+msgstr "Generar entradas"
+
+msgid "Generates"
+msgstr "Genera"
+
+msgid "Generation runs"
+msgstr "Ejecuciones de generación"
+
+msgid "Generator (a source file):"
+msgstr "Generador (un archivo fuente):"
+
+msgid "Good news! At present, switching to this dataset will have no effect on the scores. No notifications will be sent."
+msgstr "¡Buenas noticias! Por ahora, cambiar a este dataset no afecta los puntajes. No se enviarán notificaciones."
+
+msgid "How the score for the task is computed from the score of each submission."
+msgstr "Cómo se calcula el puntaje del problema a partir del puntaje de cada envío."
+
+msgid "I/O (blank for stdin/stdout)"
+msgstr "E/S (en blanco para stdin/stdout)"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Import a task package"
+msgstr "Importar un paquete de problema"
+
+msgid "Import a task package (zip)"
+msgstr "Importar un paquete de problema (zip)"
+
+msgid "Input file"
+msgstr "Archivo de entrada"
+
+msgid "Input file names template (use * as a testcase codename, for example: input.* or *.in)"
+msgstr "Plantilla de nombres de entrada (use * para el nombre del caso, por ejemplo: input.* o *.in)"
+
+msgid "Input:"
+msgstr "Entrada:"
+
+msgid "Invalid data"
+msgstr "Datos inválidos"
+
+msgid "Invalid operation %s"
+msgstr "Operación inválida %s"
+
+msgid "Invalid score type parameters"
+msgstr "Parámetros del tipo de puntaje inválidos"
+
+msgid "Invalid task statement"
+msgstr "Enunciado inválido"
+
+msgid "Invalid template format"
+msgstr "Formato de plantilla inválido"
+
+msgid "Kind"
+msgstr "Tipo"
+
+msgid "Language"
+msgstr "Lenguaje"
+
+msgid "Language code:"
+msgstr "Código de idioma:"
+
+msgid "Language of a statement without one in its name:"
+msgstr "Idioma de un enunciado sin idioma en el nombre:"
+
+msgid "Make Live ..."
+msgstr "Activar ..."
+
+msgid "Manager storage failed"
+msgstr "Falló el almacenamiento del manager"
+
+msgid "Managers"
+msgstr "Managers"
+
+msgid "Managers for this task. Managers are sources, headers, libraries or binaries used during the evaluation."
+msgstr "Managers del problema: fuentes, cabeceras, bibliotecas o binarios que se usan durante la evaluación."
+
+msgid "Managers, checker and parameters needed by the task type"
+msgstr "Managers, checker y parámetros que necesita el tipo de problema"
+
+msgid "Maximum number of submissions each contestant can submit for this task, for the whole contest.\n                                    Leave empty for no limits."
+msgstr "Máximo de envíos de cada concursante en este problema durante todo el concurso. Vacío: sin límite."
+
+msgid "Maximum number of tokens for this task available to a contestant at any given time during the contest.\n                                    It is used only if tokens are finite."
+msgstr "Máximo de fichas de este problema que un concursante puede tener en cualquier momento del concurso. Solo se usa si las fichas son finitas."
+
+msgid "Maximum number of user tests each contestant can submit for this task, for the whole contest.\n                                    Leave empty for no limits."
+msgstr "Máximo de pruebas de usuario de cada concursante en este problema durante todo el concurso. Vacío: sin límite."
+
+msgid "Maximum score"
+msgstr "Puntaje máximo"
+
+msgid "Messages sent to %d users."
+msgstr "Mensajes enviados a %d usuarios."
+
+msgid "Names recognized"
+msgstr "Nombres reconocidos"
+
+msgid "New dataset:"
+msgstr "Dataset nuevo:"
+
+msgid "New task"
+msgstr "Problema nuevo"
+
+msgid "New testcase"
+msgstr "Caso nuevo"
+
+msgid "No attachments."
+msgstr "Sin adjuntos."
+
+msgid "No datasets have been created for this task."
+msgstr "Este problema no tiene datasets."
+
+msgid "No language code specified"
+msgstr "No se indicó el código de idioma"
+
+msgid "No managers."
+msgstr "Sin managers."
+
+msgid "No statements uploaded yet"
+msgstr "Todavía no se subieron enunciados"
+
+msgid "No submissions for this task yet."
+msgstr "Todavía no hay envíos para este problema."
+
+msgid "No test submissions yet."
+msgstr "Todavía no hay envíos de prueba."
+
+msgid "No users"
+msgstr "Ningún usuario"
+
+msgid "Notify"
+msgstr "Notificar"
+
+msgid "Notify:"
+msgstr "Notificar:"
+
+msgid "Number of Processes"
+msgstr "Número de procesos"
+
+msgid "OI Restricted"
+msgstr "Restringido OI"
+
+msgid "One test submission per file. The expected verdict goes in the name, as in the solutions/ directory of a package: correct.ac.cpp, slow.tle.py. A zip holds the files of one submission (output-only tasks, several files)."
+msgstr "Un envío de prueba por archivo. El veredicto esperado va en el nombre, como en el directorio solutions/ de un paquete: correcta.ac.cpp, lenta.tle.py. Un zip contiene los archivos de un envío (problemas de solo salida, varios archivos)."
+
+msgid "Ops"
+msgstr "Acciones"
+
+msgid "Output evaluation"
+msgstr "Evaluación de la salida"
+
+msgid "Output file"
+msgstr "Archivo de salida"
+
+msgid "Output file names template (use * as a testcase codename, for example: output.* or *.out)"
+msgstr "Plantilla de nombres de salida (use * para el nombre del caso, por ejemplo: output.* o *.out)"
+
+msgid "Output:"
+msgstr "Salida:"
+
+msgid "Outputs are checked by a testlib checker"
+msgstr "Las salidas las revisa un checker de testlib"
+
+msgid "Outputs are compared by a comparator"
+msgstr "Las salidas las compara un comparador"
+
+msgid "Outputs compared byte by byte"
+msgstr "Salidas comparadas byte a byte"
+
+msgid "Outputs compared token by token, numbers with a tolerance of 1e-6"
+msgstr "Salidas comparadas palabra por palabra, los números con tolerancia 1e-6"
+
+msgid "Outputs compared with white diff"
+msgstr "Salidas comparadas ignorando espacios (white diff)"
+
+msgid "Overwrite existing testcases"
+msgstr "Reemplazar los casos existentes"
+
+msgid "Package (zip):"
+msgstr "Paquete (zip):"
+
+msgid "Please choose a unique name for this dataset."
+msgstr "Elija un nombre único para este dataset."
+
+msgid "Please choose tests archive."
+msgstr "Elija el archivo de casos."
+
+msgid "Please choose the files of the solutions."
+msgstr "Elija los archivos de las soluciones."
+
+msgid "Please choose the files."
+msgstr "Elija los archivos."
+
+msgid "Please choose the generator."
+msgstr "Elija el generador."
+
+msgid "Please choose the zip file of the package."
+msgstr "Elija el zip del paquete."
+
+msgid "Please fill both input and output."
+msgstr "Complete la entrada y la salida."
+
+msgid "Please give the input of the testcase."
+msgstr "Indique la entrada del caso."
+
+msgid "Please see the score type documentation."
+msgstr "Vea la documentación del tipo de puntaje."
+
+msgid "Please see the task type documentation."
+msgstr "Vea la documentación del tipo de problema."
+
+msgid "Please select another score type, or make the original one available and refresh the page without updating the task to avoid losing the parameters."
+msgstr "Elija otro tipo de puntaje, o haga disponible el original y recargue la página sin actualizar el problema para no perder los parámetros."
+
+msgid "Please select another task type, or make the original one available and refresh the page without updating the task to avoid losing the parameters."
+msgstr "Elija otro tipo de problema, o haga disponible el original y recargue la página sin actualizar el problema para no perder los parámetros."
+
+msgid "Position"
+msgstr "Posición"
+
+msgid "Preview"
+msgstr "Vista previa"
+
+msgid "Preview dataset change for %(title)s"
+msgstr "Vista previa del cambio de dataset de %(title)s"
+
+msgid "Primary?"
+msgstr "¿Principal?"
+
+msgid "Problem preparation"
+msgstr "Preparación del problema"
+
+msgid "Process limit"
+msgstr "Límite de procesos"
+
+msgid "Programming languages that contestants can use to solve this task.\n                                    If none are selected, all contest languages are allowed.\n                                    Otherwise, only the selected languages are allowed."
+msgstr "Lenguajes que los concursantes pueden usar en este problema. Sin ninguno marcado se permiten todos los del concurso; si no, solo los marcados."
+
+msgid "Public"
+msgstr "Público"
+
+msgid "Ranking score:"
+msgstr "Puntaje del ranking:"
+
+msgid "Reading testcase %s failed"
+msgstr "No se pudo leer el caso %s"
+
+msgid "Recognized as"
+msgstr "Reconocido como"
+
+msgid "Reevaluate all submissions for the dataset \"%(description)s\":"
+msgstr "Reevaluar todos los envíos del dataset \"%(description)s\":"
+
+msgid "Reload the page to see the runs that finished: their results are stored then."
+msgstr "Recargue la página para ver las ejecuciones terminadas: sus resultados se guardan en ese momento."
+
+msgid "Remove Task"
+msgstr "Eliminar problema"
+
+msgid "Rename"
+msgstr "Renombrar"
+
+msgid "Rename dataset"
+msgstr "Renombrar dataset"
+
+msgid "Restricted"
+msgstr "Restringido"
+
+msgid "Results"
+msgstr "Resultados"
+
+msgid "Score Parameters"
+msgstr "Parámetros del puntaje"
+
+msgid "Score Type"
+msgstr "Tipo de puntaje"
+
+msgid "Score mode"
+msgstr "Modo de puntaje"
+
+msgid "Score options"
+msgstr "Opciones de puntaje"
+
+msgid "Score type `%(name)s' not found."
+msgstr "No se encontró el tipo de puntaje `%(name)s'."
+
+msgid "Score type settings"
+msgstr "Configuración del tipo de puntaje"
+
+msgid "Select 'disabled' to remove tokens completely for this task, 'infinite' for allowing any number of tokens for this task, or 'finite' to specify the amount with the following parameters.\n                                    If you prefer to control tokens at the task level, select 'infinite' here."
+msgstr "Elija 'disabled' para quitar las fichas de este problema, 'infinite' para permitir cualquier cantidad, o 'finite' para fijarla con los parámetros siguientes."
+
+msgid "Show input"
+msgstr "Ver entrada"
+
+msgid "Show output"
+msgstr "Ver salida"
+
+msgid "Solution"
+msgstr "Solución"
+
+msgid "Solutions"
+msgstr "Soluciones"
+
+msgid "Solutions of the package"
+msgstr "Soluciones del paquete"
+
+msgid "Statement for language \"%(lang)s\""
+msgstr "Enunciado en el idioma \"%(lang)s\""
+
+msgid "Statements"
+msgstr "Enunciados"
+
+msgid "Submission format"
+msgstr "Formato de envío"
+
+msgid "Submission id"
+msgstr "Id del envío"
+
+msgid "Submissions are compiled with a grader"
+msgstr "Los envíos se compilan con un grader"
+
+msgid "Submissions are judged on this dataset (live or background judging)"
+msgstr "Los envíos se juzgan con este dataset (activo o en segundo plano)"
+
+msgid "Submissions are not judged on this dataset: make it live or enable background judging."
+msgstr "Los envíos no se juzgan con este dataset: actívelo o active el juzgamiento en segundo plano."
+
+msgid "Submissions are self-sufficient"
+msgstr "Los envíos son autosuficientes"
+
+msgid "Submit the solutions as test submissions (the task must be in a contest)"
+msgstr "Enviar las soluciones como envíos de prueba (el problema debe estar en un concurso)"
+
+msgid "Successfully added %d and overwritten %d testcase(s)"
+msgstr "Se agregaron %d casos y se reemplazaron %d"
+
+msgid "Switching to this dataset will cause the following changes:"
+msgstr "Cambiar a este dataset causará los siguientes cambios:"
+
+msgid "Task %(name)s has been rejudged"
+msgstr "El problema %(name)s fue rejuzgado"
+
+msgid "Task configuration"
+msgstr "Configuración del problema"
+
+msgid "Task information"
+msgstr "Datos del problema"
+
+msgid "Task statement storage failed"
+msgstr "Falló el almacenamiento del enunciado"
+
+msgid "Task type"
+msgstr "Tipo de problema"
+
+msgid "Task type `%(name)s' not found."
+msgstr "No se encontró el tipo de problema `%(name)s'."
+
+msgid "Task type settings"
+msgstr "Configuración del tipo de problema"
+
+msgid "Tasks list"
+msgstr "Lista de problemas"
+
+msgid "Test cases"
+msgstr "Casos de prueba"
+
+msgid "Test submissions"
+msgstr "Envíos de prueba"
+
+msgid "Testcase"
+msgstr "Caso"
+
+msgid "Testcase %(codename)s"
+msgstr "Caso %(codename)s"
+
+msgid "Testcase storage failed"
+msgstr "Falló el almacenamiento del caso"
+
+msgid "Testcases"
+msgstr "Casos"
+
+msgid "Testcases (one per line: name arguments):"
+msgstr "Casos (uno por línea: nombre argumentos):"
+
+msgid "The amount of time (in minutes) between two token generation events for this task.\n                                    It is used only if tokens are finite."
+msgstr "Tiempo (en minutos) entre dos generaciones de fichas de este problema. Solo se usa si las fichas son finitas."
+
+msgid "The expected verdict holds when it describes the result: ac the full score, pa some points, wa/tle/mle/re some testcase with that outcome, ce a compilation error."
+msgstr "El veredicto esperado se cumple cuando describe el resultado: ac el puntaje completo, pa algunos puntos, wa/tle/mle/re algún caso con ese resultado, ce un error de compilación."
+
+msgid "The following message will be sent to the selected users:"
+msgstr "Se enviará el siguiente mensaje a los usuarios seleccionados:"
+
+msgid "The format of problem.yaml is in the guide \"Task package format\"; the changes are shown before they are written."
+msgstr "El formato de problem.yaml está en la guía \"Formato de paquete\"; los cambios se muestran antes de escribirlos."
+
+msgid "The generator runs in the sandbox like a contestant's program of this task (same limits and input/output files): each line gives the name of a testcase and the arguments the generator reads on its input; what it writes becomes the input of the testcase. With a reference solution, the outputs are generated next."
+msgstr "El generador corre en el sandbox como un programa de concursante de este problema (mismos límites y archivos de entrada y salida): cada línea da el nombre de un caso y los argumentos que el generador lee de su entrada; lo que escribe es la entrada del caso. Con una solución de referencia, después se generan las salidas."
+
+msgid "The index of the task within the contest, if the task is associated with a contest."
+msgstr "La posición del problema en el concurso, si pertenece a uno."
+
+msgid "The language code can be any string."
+msgstr "El código de idioma puede ser cualquier texto."
+
+msgid "The list is cut: only the first changes are shown, and only their participants can be notified."
+msgstr "La lista está cortada: solo se muestran los primeros cambios y solo se puede notificar a sus participantes."
+
+msgid "The maximum number of tokens a contestant can use in this task.\n                                    It is used only if tokens are finite."
+msgstr "Máximo de fichas que un concursante puede usar en este problema. Solo se usa si las fichas son finitas."
+
+msgid "The minimum amount of time (in seconds) for this task that a contestant needs to wait after a submission before being able to submit another.\n                                    Leave empty for no limits."
+msgstr "Tiempo mínimo (en segundos) que un concursante debe esperar en este problema entre dos envíos. Vacío: sin límite."
+
+msgid "The minimum amount of time (in seconds) for this task that a contestant needs to wait after a user test before being able to send another.\n                                    Leave empty for no limits."
+msgstr "Tiempo mínimo (en segundos) que un concursante debe esperar en este problema entre dos pruebas de usuario. Vacío: sin límite."
+
+msgid "The minimum amount of time (in seconds) that a contestant needs to wait for this task after using a token before being able to use another.\n                                    It is used only if tokens are finite."
+msgstr "Tiempo mínimo (en segundos) que un concursante debe esperar en este problema entre dos fichas. Solo se usa si las fichas son finitas."
+
+msgid "The number of decimal places the scores will be rounded to.\n                                    Example: '2' to allow 98.76."
+msgstr "Cantidad de decimales a la que se redondean los puntajes. Ejemplo: '2' permite 98.76."
+
+msgid "The number of tokens that a contestant has available for this task when their contest time starts.\n                                    It is used only if tokens are finite."
+msgstr "Fichas de este problema que un concursante tiene al empezar su concurso. Solo se usa si las fichas son finitas."
+
+msgid "The number of tokens that are generated periodically for this task.\n                                    It is used only if tokens are finite."
+msgstr "Fichas de este problema que se generan periódicamente. Solo se usa si las fichas son finitas."
+
+msgid "The package cannot be imported"
+msgstr "El paquete no se puede importar"
+
+msgid "The selected file is not a zip file. Please select a valid zip file."
+msgstr "El archivo elegido no es un zip. Elija un zip válido."
+
+msgid "The statements of this task, by language code. Primary statements are shown prominently to contestants."
+msgstr "Los enunciados del problema por código de idioma. Los principales se destacan a los concursantes."
+
+msgid "The task \"%(name)s\" has been rejudged and the score on your submissions has been updated."
+msgstr "El problema \"%(name)s\" fue rejuzgado y el puntaje de sus envíos se actualizó."
+
+msgid "The task cannot be written as a package:"
+msgstr "El problema no se puede escribir como paquete:"
+
+msgid "The task has no dataset."
+msgstr "El problema no tiene dataset."
+
+msgid "The task statement must be a .pdf file."
+msgstr "El enunciado debe ser un archivo .pdf."
+
+msgid "The title of the task as seen by the contestants."
+msgstr "El título del problema que ven los concursantes."
+
+msgid "The user test does not exist any more."
+msgstr "La prueba de usuario ya no existe."
+
+msgid "Then generate the outputs with:"
+msgstr "Luego generar las salidas con:"
+
+msgid "This will remove %(count)s submission(s)."
+msgstr "Esto eliminará %(count)s envío(s)."
+
+msgid "Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."
+msgstr "Memoria máxima total de cada evaluación, en MiB (2^20 bytes)."
+
+msgid "Total maximum time for each evaluation, in seconds."
+msgstr "Tiempo máximo total de cada evaluación, en segundos."
+
+msgid "Update from a package"
+msgstr "Actualizar desde un paquete"
+
+msgid "Update the task from a package"
+msgstr "Actualizar el problema desde un paquete"
+
+msgid "Update the task if it exists"
+msgstr "Actualizar el problema si existe"
+
+msgid "Upload"
+msgstr "Subir"
+
+msgid "Upload attachment"
+msgstr "Subir adjunto"
+
+msgid "Upload manager"
+msgstr "Subir manager"
+
+msgid "Upload statement"
+msgstr "Subir enunciado"
+
+msgid "Upload testcase"
+msgstr "Subir caso"
+
+msgid "Upload testcases"
+msgstr "Subir casos"
+
+msgid "Use best among all submissions (IOI 2013-2016)"
+msgstr "Usar el mejor de todos los envíos (IOI 2013-2016)"
+
+msgid "Use best among tokened and last submissions (IOI 2010-2012)"
+msgstr "Usar el mejor entre los envíos con ficha y el último (IOI 2010-2012)"
+
+msgid "Use the sum over each subtask of the best result for that subtask across all submissions (IOI 2017-)"
+msgstr "Usar la suma, por subtarea, del mejor resultado de esa subtarea entre todos los envíos (IOI 2017-)"
+
+msgid "User I/O"
+msgstr "E/S del usuario"
+
+msgid "User processes read from and write to fifos, whose paths are given as arguments"
+msgstr "Los procesos del usuario leen y escriben en fifos cuyas rutas reciben como argumentos"
+
+msgid "User processes read from stdin and write to stdout"
+msgstr "Los procesos del usuario leen de stdin y escriben en stdout"
+
+msgid "Users with visible changes only"
+msgstr "Solo usuarios con cambios visibles"
+
+msgid "Valid score type parameters (subtasks and their points)"
+msgstr "Parámetros de puntaje válidos (subtareas y sus puntos)"
+
+msgid "Validation"
+msgstr "Validación"
+
+msgid "Verdict"
+msgstr "Veredicto"
+
+msgid "View results"
+msgstr "Ver resultados"
+
+msgid "Warnings"
+msgstr "Advertencias"
+
+msgid "What is missing"
+msgstr "Qué falta"
+
+msgid "Where"
+msgstr "Dónde"
+
+msgid "Whether to copy over the evaluations from the original dataset."
+msgstr "Si se copian las evaluaciones del dataset original."
+
+msgid "Whether to copy the managers from the original dataset."
+msgstr "Si se copian los managers del dataset original."
+
+msgid "With 'restricted' contestants only see limited technical information about each testcase; with 'full' they see more details, but malicious contestants might use this data to get some information about the test data."
+msgstr "Con 'restricted' los concursantes ven poca información técnica de cada caso; con 'full' ven más detalles, pero un concursante malicioso podría usarlos para deducir datos de los casos."
+
+msgid "Write or generate a testcase"
+msgstr "Escribir o generar un caso"
+
+msgid "You are cloning the dataset \"%(description)s\"."
+msgstr "Está clonando el dataset \"%(description)s\"."
+
+msgid "You do not have permission to remove a task."
+msgstr "No tiene permiso para eliminar un problema."
+
+msgid "You must have exactly one '*' in input/output template."
+msgstr "Las plantillas de entrada y salida deben tener exactamente un '*'."
+
+msgid "Zip file name"
+msgstr "Nombre del zip"
+
+msgid "add"
+msgstr "agregar"
+
+msgid "attachment"
+msgstr "adjunto"
+
+msgid "attachment %s"
+msgstr "adjunto %s"
+
+msgid "compiled with g++ as at import, stored as checker, controller or manager"
+msgstr "compilado con g++ como al importar, guardado como checker, controller o manager"
+
+msgid "detect"
+msgstr "detectar"
+
+msgid "empty"
+msgstr "vacía"
+
+msgid "generated by the reference solution:"
+msgstr "generada por la solución de referencia:"
+
+msgid "input of a testcase"
+msgstr "entrada de un caso"
+
+msgid "input of testcase %s"
+msgstr "entrada del caso %s"
+
+msgid "keep"
+msgstr "conservar"
+
+msgid "manager %s"
+msgstr "manager %s"
+
+msgid "manager %s, compiled from the source"
+msgstr "manager %s, compilado desde la fuente"
+
+msgid "manager (graders, stubs, headers)"
+msgstr "manager (graders, stubs, cabeceras)"
+
+msgid "manager, as it is (an executable)"
+msgstr "manager, tal cual (un ejecutable)"
+
+msgid "none"
+msgstr "ninguno"
+
+msgid "not recognized: ignored"
+msgstr "no reconocido: ignorado"
+
+msgid "or upload a problem.yaml:"
+msgstr "o suba un problem.yaml:"
+
+msgid "output"
+msgstr "salida"
+
+msgid "output of a testcase"
+msgstr "salida de un caso"
+
+msgid "output of testcase %s"
+msgstr "salida del caso %s"
+
+msgid "second(s)"
+msgstr "segundo(s)"
+
+msgid "statement (in the language of its name)"
+msgstr "enunciado (en el idioma de su nombre)"
+
+msgid "statement in %s"
+msgstr "enunciado en %s"
+
+msgid "test submission"
+msgstr "envío de prueba"
+
+msgid "test submission expected to be %s"
+msgstr "envío de prueba que debe dar %s"
+
+msgid "test submission with its expected verdict"
+msgstr "envío de prueba con su veredicto esperado"
+
+msgid "the testcase has no input: send its .in file too"
+msgstr "el caso no tiene entrada: envíe también su archivo .in"
+
+msgid "upload:"
+msgstr "subir:"
+
+msgid "write:"
+msgstr "escribir:"
+
+msgid "%(n)s submission"
+msgid_plural "%(n)s submissions"
+msgstr[0] "%(n)s envío"
+msgstr[1] "%(n)s envíos"

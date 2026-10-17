@@ -16,7 +16,7 @@
 | Instalación, requisitos y dimensionamiento | F9 |
 | Actualización y respaldos | F9 |
 | Operación (servicios, jueces, monitoreo) | F6–F9 |
-| Crear un problema | F6 |
+| [Crear un problema (preparación desde el navegador)](crear-problema.md) | disponible |
 | Guía del concursante | F5 |
 | Clarificaciones y comunicación | F5–F6 |
 | Glosario | F5 |

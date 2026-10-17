@@ -79,6 +79,30 @@ func compileProgram(src source, file string, mode compileMode) ([]byte, error) {
 		}
 		inputs[f] = data
 	}
+	return compileInputs(file, inputs, mode)
+}
+
+// CompileFiles compiles the C++ source file, given with the headers it
+// may include in files (name -> content), as the loader compiles the
+// programs of graders/: a comparator (CMS protocol) gets -DCMS and the
+// testlib.h of CMS, other programs the testlib.h of files if there is
+// one. The administration uses it for the checker, manager or controller
+// uploaded alone (problem preparation, R6.2).
+func CompileFiles(file string, files map[string][]byte, comparator bool) ([]byte, error) {
+	inputs := map[string][]byte{}
+	for name, data := range files {
+		if name == file || slices.Contains(headerExtensions, filepath.Ext(name)) {
+			inputs[name] = data
+		}
+	}
+	if _, ok := inputs[file]; !ok {
+		return nil, fmt.Errorf("%s: no such file", file)
+	}
+	return compileInputs(file, inputs, compileMode{cms: comparator})
+}
+
+// compileInputs compiles file with the other inputs next to it.
+func compileInputs(file string, inputs map[string][]byte, mode compileMode) ([]byte, error) {
 	if _, ok := inputs[testlibHeader]; !ok || mode.cms {
 		inputs[testlibHeader] = checker.TestlibHeader
 	}

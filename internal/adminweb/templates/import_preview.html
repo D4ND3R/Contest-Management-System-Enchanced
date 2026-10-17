@@ -1,0 +1,81 @@
+{{/*
+New page of this fork (problem preparation, R6.2), built with the components
+of the original task page (core_title, tables, forms, notifications).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{if .Task}}<a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{end}}{{.Title}}</h1>
+</div>
+
+{{if .Loader}}<p>{{T "Format:"}} {{.Loader}}</p>{{end}}
+
+{{if .Error}}
+<div class="notifications">
+  <div class="notification">
+    <div class="notification_msg">
+      <div class="notification_subject">{{T "The package cannot be imported"}}</div>
+      <div class="notification_text"><pre>{{.Error}}</pre></div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{if .Errors}}
+<h2 id="title_errors" class="toggling_on">{{T "Errors"}}</h2>
+<div id="errors">
+  <table class="bordered">
+    <thead><tr><th>{{T "Where"}}</th><th>{{T "Message"}}</th></tr></thead>
+    <tbody>{{range .Errors}}<tr><td>{{.Where}}</td><td>{{.Message}}</td></tr>{{end}}</tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{{end}}
+
+{{if .Warnings}}
+<h2 id="title_warnings" class="toggling_on">{{T "Warnings"}}</h2>
+<div id="warnings">
+  <table class="bordered">
+    <thead><tr><th>{{T "Where"}}</th><th>{{T "Message"}}</th></tr></thead>
+    <tbody>{{range .Warnings}}<tr><td>{{.Where}}</td><td>{{.Message}}</td></tr>{{end}}</tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{{end}}
+
+{{if .Changes}}
+<h2 id="title_changes" class="toggling_on">{{T "Changes"}}</h2>
+<div id="changes">
+  <table class="bordered">
+    <thead><tr><th>{{T "Action"}}</th><th>{{T "Kind"}}</th><th>{{T "Name"}}</th><th>{{T "Details"}}</th></tr></thead>
+    <tbody>{{range .Changes}}<tr><td>{{.Action}}</td><td>{{.Kind}}</td><td>{{.Name}}</td><td>{{.Details}}</td></tr>{{end}}</tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{{end}}
+
+{{if .Solutions}}
+<h2 id="title_solutions" class="toggling_on">{{T "Solutions of the package"}}</h2>
+<div id="solutions">
+  <table class="bordered">
+    <thead><tr><th>{{T "Solution"}}</th><th>{{T "Expected"}}</th><th>{{T "Language"}}</th></tr></thead>
+    <tbody>{{range .Solutions}}<tr><td>{{.Name}}</td><td>{{.Verdict}}</td><td>{{.Language}}</td></tr>{{end}}</tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{{end}}
+
+{{if .CanConfirm}}
+<form action="{{.ConfirmURL}}" method="POST">
+  {{xsrf_form_html}}
+  {{range .Hidden}}<input type="hidden" name="{{.Name}}" value="{{.Value}}"/>
+  {{end}}
+  {{if .Solutions}}<label><input type="checkbox" name="submit_solutions" checked/> {{T "Submit the solutions as test submissions (the task must be in a contest)"}}</label><br/>{{end}}
+  <input type="submit" value="{{T "Confirm"}}"/>
+  <input type="button" value="{{T "Cancel"}}" data-history-back/>
+</form>
+{{else}}
+<p><a href="{{.BackURL}}">{{T "Back"}}</a></p>
+{{end}}
+{{end}}

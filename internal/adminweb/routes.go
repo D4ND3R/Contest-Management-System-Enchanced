@@ -243,7 +243,29 @@ func (s *Server) routes() []Route {
 		{Method: "GET", Path: "/dataset/{dataset_id}/testcases/download", Perm: PermRead, Handler: s.downloadTestcasesPage},
 		{Method: "POST", Path: "/dataset/{dataset_id}/testcases/download", Perm: PermRead, Handler: s.downloadTestcasesPost},
 
-		// Problem preparation (B: prepare.go, R6.2): its routes go here.
+		// Problem preparation (B: prepare*.go, R6.2).
+		{Method: "GET", Path: "/tasks/import", Perm: PermTasks, Handler: s.importTaskPage},
+		{Method: "POST", Path: "/tasks/import", Perm: PermTasks, Handler: s.importTaskPost, Upload: true},
+		{Method: "POST", Path: "/tasks/import/confirm", Perm: PermTasks, Handler: s.importConfirmPost},
+		{Method: "GET", Path: "/task/{task_id}/import", Perm: PermTasks, Handler: s.importTaskPage},
+		{Method: "POST", Path: "/task/{task_id}/import", Perm: PermTasks, Handler: s.importTaskPost, Upload: true},
+		{Method: "POST", Path: "/task/{task_id}/import/confirm", Perm: PermTasks, Handler: s.importConfirmPost},
+		{Method: "GET", Path: "/task/{task_id}/export", Perm: PermRead, Handler: s.exportTaskPage},
+		{Method: "GET", Path: "/task/{task_id}/problem.yaml", Perm: PermRead, Handler: s.problemYAMLPage},
+		{Method: "GET", Path: "/task/{task_id}/problem.yaml/raw", Perm: PermRead, Handler: s.problemYAMLRaw},
+		{Method: "POST", Path: "/task/{task_id}/problem.yaml", Perm: PermTasks, Handler: s.problemYAMLPost, Upload: true},
+		{Method: "POST", Path: "/task/{task_id}/problem.yaml/confirm", Perm: PermTasks, Handler: s.problemYAMLPost},
+		{Method: "GET", Path: "/task/{task_id}/prepare", Perm: PermRead, Handler: s.preparePage},
+		{Method: "GET", Path: "/task/{task_id}/files", Perm: PermTasks, Handler: s.taskFilesPage},
+		{Method: "POST", Path: "/task/{task_id}/files", Perm: PermTasks, Handler: s.taskFilesPost, Upload: true},
+		{Method: "GET", Path: "/task/{task_id}/test_submissions", Perm: PermRead, Handler: s.testSubmissionsPage},
+		{Method: "POST", Path: "/task/{task_id}/test_submissions", Perm: PermTasks, Handler: s.testSubmissionsPost, Upload: true},
+		{Method: "GET", Path: "/dataset/{dataset_id}/testcase/{testcase_id}", Perm: PermRead, Handler: s.testcasePage},
+		{Method: "POST", Path: "/dataset/{dataset_id}/testcase/{testcase_id}", Perm: PermTasks, Handler: s.testcasePost, Upload: true},
+		{Method: "GET", Path: "/dataset/{dataset_id}/testcases/new", Perm: PermTasks, Handler: s.testcasePage},
+		{Method: "POST", Path: "/dataset/{dataset_id}/testcases/new", Perm: PermTasks, Handler: s.testcasePost, Upload: true},
+		{Method: "GET", Path: "/dataset/{dataset_id}/generator", Perm: PermTasks, Handler: s.generatorPage},
+		{Method: "POST", Path: "/dataset/{dataset_id}/generator", Perm: PermTasks, Handler: s.generatorPost, Upload: true},
 
 		// Users and teams (A: users.go).
 		{Method: "GET", Path: "/users", Perm: PermRead, Handler: s.usersPage},

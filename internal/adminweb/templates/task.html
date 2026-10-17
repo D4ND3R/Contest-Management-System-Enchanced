@@ -141,8 +141,8 @@ $("select[name=task_type_{{.ID}}]").change(function() {
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "A comma-separated list with the names of the files that need to be submitted (with the language extensions changed to %l).
-                                    The task type dictates the submission format. Consult the task type documentation to know the requirements."}}"></span>
+          <span class="info" title="{{T `A comma-separated list with the names of the files that need to be submitted (with the language extensions changed to %l).
+                                    The task type dictates the submission format. Consult the task type documentation to know the requirements.`}}"></span>
           {{T "Submission format"}}
         </td>
         <td>
@@ -151,9 +151,9 @@ $("select[name=task_type_{{.ID}}]").change(function() {
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "Programming languages that contestants can use to solve this task.
+          <span class="info" title="{{T `Programming languages that contestants can use to solve this task.
                                     If none are selected, all contest languages are allowed.
-                                    Otherwise, only the selected languages are allowed."}}"></span>
+                                    Otherwise, only the selected languages are allowed.`}}"></span>
           {{T "Allowed programming languages"}}
         </td>
         <td class="wrapping-options">
@@ -178,8 +178,8 @@ $("select[name=task_type_{{.ID}}]").change(function() {
       <tr><td colspan=2><h2>{{T "Tokens parameters"}} (<a href="http://cms.readthedocs.org/en/latest/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">{{T "documentation"}}</a>)</h2></td></tr>
       <tr>
         <td>
-          <span class="info" title="{{T "Select 'disabled' to remove tokens completely for this task, 'infinite' for allowing any number of tokens for this task, or 'finite' to specify the amount with the following parameters.
-                                    If you prefer to control tokens at the task level, select 'infinite' here."}}"></span>
+          <span class="info" title="{{T `Select 'disabled' to remove tokens completely for this task, 'infinite' for allowing any number of tokens for this task, or 'finite' to specify the amount with the following parameters.
+                                    If you prefer to control tokens at the task level, select 'infinite' here.`}}"></span>
           {{T "Token mode"}}
         </td>
         <td>
@@ -192,48 +192,48 @@ $("select[name=task_type_{{.ID}}]").change(function() {
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The maximum number of tokens a contestant can use in this task.
-                                    It is used only if tokens are finite."}}"></span>
+          <span class="info" title="{{T `The maximum number of tokens a contestant can use in this task.
+                                    It is used only if tokens are finite.`}}"></span>
           {{T "Maximum number of tokens"}}
         </td>
         <td><input type="text" name="token_max_number" value="{{.Form.TokenMaxNumber}}" /></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The minimum amount of time (in seconds) that a contestant needs to wait for this task after using a token before being able to use another.
-                                    It is used only if tokens are finite."}}"></span>
+          <span class="info" title="{{T `The minimum amount of time (in seconds) that a contestant needs to wait for this task after using a token before being able to use another.
+                                    It is used only if tokens are finite.`}}"></span>
           {{T "Minimum interval between tokens"}}
         </td>
         <td><input type="text" name="token_min_interval" value="{{.Form.TokenMinInterval}}" /></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The number of tokens that a contestant has available for this task when their contest time starts.
-                                    It is used only if tokens are finite."}}"></span>
+          <span class="info" title="{{T `The number of tokens that a contestant has available for this task when their contest time starts.
+                                    It is used only if tokens are finite.`}}"></span>
           {{T "Initial number of tokens"}}
         </td>
         <td><input type="text" name="token_gen_initial" value="{{.Task.TokenGenInitial}}" /></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The number of tokens that are generated periodically for this task.
-                                    It is used only if tokens are finite."}}"></span>
+          <span class="info" title="{{T `The number of tokens that are generated periodically for this task.
+                                    It is used only if tokens are finite.`}}"></span>
           {{T "Token generation number"}}
         </td>
         <td><input type="text" name="token_gen_number" value="{{.Task.TokenGenNumber}}" /></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The amount of time (in minutes) between two token generation events for this task.
-                                    It is used only if tokens are finite."}}"></span>
+          <span class="info" title="{{T `The amount of time (in minutes) between two token generation events for this task.
+                                    It is used only if tokens are finite.`}}"></span>
           {{T "Token generation period"}}
         </td>
         <td><input type="text" name="token_gen_interval" value="{{.Form.TokenGenInterval}}" /></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "Maximum number of tokens for this task available to a contestant at any given time during the contest.
-                                    It is used only if tokens are finite."}}"></span>
+          <span class="info" title="{{T `Maximum number of tokens for this task available to a contestant at any given time during the contest.
+                                    It is used only if tokens are finite.`}}"></span>
           {{T "Maximum accumulated tokens"}}
         </td>
         <td><input type="text" name="token_gen_max" value="{{.Form.TokenGenMax}}" /></td>
@@ -242,32 +242,32 @@ $("select[name=task_type_{{.ID}}]").change(function() {
       <tr><td colspan=2><h2>{{T "Limits"}}</h2></td></tr>
       <tr>
         <td>
-          <span class="info" title="{{T "Maximum number of submissions each contestant can submit for this task, for the whole contest.
-                                    Leave empty for no limits."}}"></span>
+          <span class="info" title="{{T `Maximum number of submissions each contestant can submit for this task, for the whole contest.
+                                    Leave empty for no limits.`}}"></span>
           {{T "Maximum number of submissions"}}
         </td>
         <td><input type="text" name="max_submission_number" value="{{.Form.MaxSubmissionNumber}}"></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "Maximum number of user tests each contestant can submit for this task, for the whole contest.
-                                    Leave empty for no limits."}}"></span>
+          <span class="info" title="{{T `Maximum number of user tests each contestant can submit for this task, for the whole contest.
+                                    Leave empty for no limits.`}}"></span>
           {{T "Maximum number of user tests"}}
         </td>
         <td><input type="text" name="max_user_test_number" value="{{.Form.MaxUserTestNumber}}"></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The minimum amount of time (in seconds) for this task that a contestant needs to wait after a submission before being able to submit another.
-                                    Leave empty for no limits."}}"></span>
+          <span class="info" title="{{T `The minimum amount of time (in seconds) for this task that a contestant needs to wait after a submission before being able to submit another.
+                                    Leave empty for no limits.`}}"></span>
           {{T "Minimum interval between submissions"}}
         </td>
         <td><input type="text" name="min_submission_interval" value="{{.Form.MinSubmissionInterval}}"></td>
       </tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The minimum amount of time (in seconds) for this task that a contestant needs to wait after a user test before being able to send another.
-                                    Leave empty for no limits."}}"></span>
+          <span class="info" title="{{T `The minimum amount of time (in seconds) for this task that a contestant needs to wait after a user test before being able to send another.
+                                    Leave empty for no limits.`}}"></span>
           {{T "Minimum interval between user tests"}}
         </td>
         <td><input type="text" name="min_user_test_interval" value="{{.Form.MinUserTestInterval}}"></td>
@@ -276,8 +276,8 @@ $("select[name=task_type_{{.ID}}]").change(function() {
       <tr><td colspan=2><h2>{{T "Score options"}}</h2></td></tr>
       <tr>
         <td>
-          <span class="info" title="{{T "The number of decimal places the scores will be rounded to.
-                                    Example: '2' to allow 98.76."}}"></span>
+          <span class="info" title="{{T `The number of decimal places the scores will be rounded to.
+                                    Example: '2' to allow 98.76.`}}"></span>
           {{T "Score decimal places"}}
         </td>
         <td><input type="text" name="score_precision" value="{{.Task.ScorePrecision}}"></td>

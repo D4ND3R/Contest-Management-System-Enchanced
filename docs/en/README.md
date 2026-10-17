@@ -16,7 +16,7 @@
 | Installation, requirements and sizing | F9 |
 | Upgrades and backups | F9 |
 | Operation (services, judges, monitoring) | F6–F9 |
-| Creating a problem | F6 |
+| [Creating a problem (preparation in the browser)](creating-a-problem.md) | available |
 | Contestant guide | F5 |
 | Clarifications and communication | F5–F6 |
 | Glossary | F5 |

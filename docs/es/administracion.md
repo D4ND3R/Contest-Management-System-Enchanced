@@ -196,3 +196,23 @@ problemas) se documentan a medida que se completan.
 Cada cambio queda en el registro de auditoría y publica los eventos en
 vivo correspondientes (cambios del concurso, de una participación, del
 scoreboard).
+
+## Problemas y datasets
+
+Las páginas de problemas y datasets son las del CMS original: lista de
+problemas, agregar y eliminar (eliminar requiere el permiso **todo**),
+página del problema con todas sus opciones, enunciados y adjuntos,
+datasets (agregar, clonar con o sin resultados, renombrar, borrar,
+activar con la vista previa de los cambios de puntaje y el aviso a los
+concursantes, juzgamiento en segundo plano), tipo de problema y de
+puntaje con sus formularios de parámetros, managers y casos (agregar uno,
+agregar desde un zip con plantillas de nombres, borrar, descargar todos en
+un zip). El preparador de problemas (`permission_tasks`) puede hacer todo
+eso salvo eliminar problemas y moverlos entre concursos. Diferencias con
+CMS: la vista previa de la activación muestra a lo sumo 5000 envíos que
+cambian; los casos de un zip se escriben en una sola transacción.
+
+La preparación desde el navegador (importar paquetes con vista previa,
+`problem.yaml`, archivos uno por uno, casos uno por uno con salidas
+generadas, generador, envíos de prueba y lista de lo que falta) está en
+[Crear un problema](crear-problema.md).

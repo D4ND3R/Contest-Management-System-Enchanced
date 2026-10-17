@@ -1,0 +1,52 @@
+{{/*
+New page of this fork (problem preparation, R6.2), built with the components
+of the original task page (core_title, tables, forms, notifications).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "What is missing"}}</h1>
+</div>
+
+{{template "prepare.datasets" .}}
+
+<h2 id="title_checklist" class="toggling_on">{{T "Checklist"}}</h2>
+<div id="checklist">
+  <table class="bordered">
+    <tbody>
+    {{range .Items}}
+      <tr>
+        <td style="font-weight:bold;">{{if .OK}}<span class="correct">{{T "Yes"}}</span>{{else if .Warn}}<span class="partiallycorrect">{{T "Check"}}</span>{{else}}<span class="notcorrect">{{T "No"}}</span>{{end}}</td>
+        <td>{{.Text}}</td>
+        <td>{{.Detail}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+
+{{if .Issues}}
+<h2 id="title_issues" class="toggling_on">{{T "Validation"}}</h2>
+<div id="issues">
+  <table class="bordered">
+    <thead><tr><th>{{T "Severity"}}</th><th>{{T "Where"}}</th><th>{{T "Message"}}</th></tr></thead>
+    <tbody>
+    {{range .Issues}}
+      <tr><td>{{.Severity}}</td><td>{{.Where}}</td><td>{{.Message}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{{end}}
+
+{{template "prepare.pending" .Pending}}
+
+<p>
+  <a href="{{url "task" .Task.ID "test_submissions"}}">[{{T "Test submissions"}}]</a>
+  <a href="{{url "task" .Task.ID "files"}}">[{{T "Add files"}}]</a>
+  <a href="{{url "task" .Task.ID "problem.yaml"}}">[problem.yaml]</a>
+</p>
+{{end}}

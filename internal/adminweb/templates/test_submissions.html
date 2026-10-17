@@ -1,0 +1,79 @@
+{{/*
+New page of this fork (problem preparation, R6.2), built with the components
+of the original task page (core_title, tables, forms, notifications).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "Test submissions"}}</h1>
+</div>
+
+{{template "prepare.datasets" .}}
+{{if and .Dataset (not .Judged)}}
+<p>{{T "Submissions are not judged on this dataset: make it live or enable background judging."}}</p>
+{{end}}
+
+{{if .Admin.CanTasks}}
+<h2 id="title_submit" class="toggling_on">{{T "Submit"}}</h2>
+<div id="submit">
+<form enctype="multipart/form-data" action="{{url "task" .Task.ID "test_submissions"}}" method="POST">
+  {{xsrf_form_html}}
+  <table>
+    <tr>
+      <td>
+        <span class="info" title="{{T "One test submission per file. The expected verdict goes in the name, as in the solutions/ directory of a package: correct.ac.cpp, slow.tle.py. A zip holds the files of one submission (output-only tasks, several files)."}}"></span>
+        {{T "Solutions"}}
+      </td>
+      <td><input type="file" name="solution" multiple/></td>
+    </tr>
+    <tr>
+      <td>{{T "Expected verdict (for names without one)"}}</td>
+      <td>
+        <select name="expected">
+          <option value="">-</option>
+          {{range .Verdicts}}<option value="{{.}}">{{.}}</option>{{end}}
+        </select>
+      </td>
+    </tr>
+  </table>
+  <input type="submit" value="{{T "Submit"}}"/>
+</form>
+<div class="hr"></div>
+</div>
+{{end}}
+
+<h2 id="title_results" class="toggling_on">{{T "Results"}}</h2>
+<div id="results">
+{{if not .Submissions}}
+  <p>{{T "No test submissions yet."}}</p>
+{{else}}
+  <table class="bordered" style="text-align:center">
+    <thead>
+      <tr>
+        <th>{{T "ID"}}</th>
+        <th>{{T "Solution"}}</th>
+        <th>{{T "Expected"}}</th>
+        <th>{{T "Verdict"}}</th>
+        <th>{{T "Score"}}</th>
+        {{range .Testcases}}<th>{{.Codename}}</th>{{end}}
+      </tr>
+    </thead>
+    <tbody>
+    {{range .Submissions}}
+      <tr>
+        <td><a href="{{url "submission" .ID $.Dataset.ID}}">{{.ID}}</a></td>
+        <td>{{.Name}}<br/>{{.Language}}</td>
+        <td>{{.Expected}}</td>
+        <td>{{if .Done}}{{if .Expected}}{{if .Matches}}<span class="correct">{{.Verdict}} &#10003;</span>{{else}}<span class="notcorrect">{{.Verdict}} &#10007;</span>{{end}}{{else}}{{.Verdict}}{{end}}{{else}}{{.Status}}{{end}}</td>
+        <td>{{.Score}}</td>
+        {{range .Cells}}<td class="{{.Class}}" title="{{.Text}} {{.Time}} {{.Memory}}">{{.Outcome}}</td>{{end}}
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  <p>{{T "The expected verdict holds when it describes the result: ac the full score, pa some points, wa/tle/mle/re some testcase with that outcome, ce a compilation error."}}</p>
+{{end}}
+<div class="hr"></div>
+</div>
+{{end}}

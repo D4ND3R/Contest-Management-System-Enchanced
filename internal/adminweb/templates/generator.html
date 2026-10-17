@@ -1,0 +1,47 @@
+{{/*
+New page of this fork (problem preparation, R6.2), built with the components
+of the original task page (core_title, tables, forms, notifications).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "Generate inputs"}} ({{.Dataset.Description}})</h1>
+</div>
+
+{{if not .Judged}}
+<p>{{T "Submissions are not judged on this dataset: make it live or enable background judging."}}</p>
+{{end}}
+
+<p>{{T "The generator runs in the sandbox like a contestant's program of this task (same limits and input/output files): each line gives the name of a testcase and the arguments the generator reads on its input; what it writes becomes the input of the testcase. With a reference solution, the outputs are generated next."}}</p>
+
+<form enctype="multipart/form-data" action="{{url "dataset" .Dataset.ID "generator"}}" method="POST">
+  {{xsrf_form_html}}
+  <table>
+    <tr>
+      <td>{{T "Generator (a source file):"}}</td>
+      <td><input type="file" name="generator"/></td>
+    </tr>
+    <tr>
+      <td>{{T "Testcases (one per line: name arguments):"}}</td>
+      <td><textarea name="lines" rows="12" cols="60" placeholder="01 1 10&#10;02 2 1000"></textarea></td>
+    </tr>
+    <tr>
+      <td>{{T "Public"}}</td>
+      <td><input type="checkbox" name="public"/></td>
+    </tr>
+    <tr>
+      <td>{{T "Then generate the outputs with:"}}</td>
+      <td>
+        <select name="solution">
+          <option value="">-</option>
+          {{range .Solutions}}<option value="{{.ID}}" {{if .Selected}}selected{{end}}>{{.Name}}</option>{{end}}
+        </select>
+      </td>
+    </tr>
+  </table>
+  <input type="submit" value="{{T "Generate"}}"/>
+</form>
+
+{{template "prepare.pending" .Pending}}
+{{end}}

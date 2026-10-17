@@ -1,0 +1,57 @@
+{{/*
+New page of this fork (problem preparation, R6.2), built with the components
+of the original task page (core_title, tables, forms, notifications).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1><a href="{{url "task" .Task.ID}}">{{.Task.Title}} ({{.Task.Name}})</a> - {{T "Add files"}}</h1>
+</div>
+
+{{template "prepare.datasets" .}}
+
+{{if .Results}}
+<h2 id="title_recognized" class="toggling_on">{{T "Files received"}}</h2>
+<div id="recognized">
+  <table class="bordered">
+    <thead><tr><th>{{T "File"}}</th><th>{{T "Recognized as"}}</th><th>{{T "Error"}}</th></tr></thead>
+    <tbody>{{range .Results}}<tr><td>{{.File}}</td><td>{{.Description}}</td><td>{{.Error}}</td></tr>{{end}}</tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{{end}}
+
+<form enctype="multipart/form-data" action="{{url "task" .Task.ID "files"}}{{if .Dataset}}?dataset_id={{.Dataset.ID}}{{end}}" method="POST">
+  {{xsrf_form_html}}
+  <table>
+    <tr>
+      <td>{{T "Files:"}}</td>
+      <td><input type="file" name="files" multiple/></td>
+    </tr>
+    <tr>
+      <td>{{T "Language of a statement without one in its name:"}}</td>
+      <td><input type="text" name="language" value="en"/></td>
+    </tr>
+  </table>
+  <input type="submit" value="{{T "Upload"}}"/>
+</form>
+
+<h2 id="title_names" class="toggling_on">{{T "Names recognized"}}</h2>
+<div id="names">
+  <table class="bordered">
+    <tbody>
+      <tr><td>statement.pdf, statement.md, statement-es.pdf, statement/en.pdf</td><td>{{T "statement (in the language of its name)"}}</td></tr>
+      <tr><td>attachments/&lt;file&gt;</td><td>{{T "attachment"}}</td></tr>
+      <tr><td>01.in, input.01, input_01.txt, tests/01.in</td><td>{{T "input of a testcase"}}</td></tr>
+      <tr><td>01.out, 01.ans, output.01, output_01.txt</td><td>{{T "output of a testcase"}}</td></tr>
+      <tr><td>checker, manager, controller</td><td>{{T "manager, as it is (an executable)"}}</td></tr>
+      <tr><td>checker.cpp, controller.cpp, manager.cpp (Communication)</td><td>{{T "compiled with g++ as at import, stored as checker, controller or manager"}}</td></tr>
+      <tr><td>grader.cpp, grader.py, stub.c, sum.h</td><td>{{T "manager (graders, stubs, headers)"}}</td></tr>
+      <tr><td>correct.ac.cpp, slow.tle.py, solutions/&lt;file&gt;</td><td>{{T "test submission with its expected verdict"}}</td></tr>
+    </tbody>
+  </table>
+  <p>{{T "A file with the name of an existing one replaces it. Testcases and managers go to the dataset chosen."}}</p>
+  <div class="hr"></div>
+</div>
+{{end}}
