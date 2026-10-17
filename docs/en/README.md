@@ -12,6 +12,7 @@
 | [Contestant site (configuration, login, languages, live updates)](contestant-site.md) | available |
 | [JSON API of the contestant site (scripts, impersonation)](api.md) | available |
 | [Administration (permissions, audit log, Server page, live updates)](administration.md) | available (the contest, task and submission pages, with F6) |
+| [Public scoreboard (configuration, visibility, secret link, freeze, proxies)](scoreboard.md) | available |
 | Getting started | F9 |
 | Installation, requirements and sizing | F9 |
 | Upgrades and backups | F9 |

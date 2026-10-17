@@ -3,7 +3,7 @@
 
 // Package dispatcher is the service that replaces CMS EvaluationService
 // and ScoringService (SPEC R4.1-R4.6) and hosts the hook of ProxyService
-// (ScoreSink, implemented in F7). The database side (what to do, storing
+// (ScoreSink: RankingSink). The database side (what to do, storing
 // results, scores, the task score cache) is internal/judging; this
 // package drives it with the queues (internal/queue) and the workers
 // (internal/worker).
@@ -150,15 +150,29 @@ func Run(ctx context.Context, rt *app.Runtime) error {
 
 	pub := live.NewPublisher(kvc, rt.Log, rt.Metrics, live.PublisherOptions{})
 	judge := judging.New(pool, judging.Options{Languages: langs, Logger: rt.Log, Tries: judging.TriesFrom(dc)})
+	// The public scoreboards (CMS ProxyService): nil without rankings.
+	rankings, err := NewRankingSink(cfg, pool, rt.Log, rt.Metrics)
+	if err != nil {
+		return err
+	}
+	var scores ScoreSink
+	if rankings != nil {
+		scores = rankings
+	}
 	d, err := New(pool, kvc, jobs, results, judge, Options{
 		SweepInterval: dc.SweepInterval.D(),
 		ResultBatch:   dc.ResultBatch,
 		Live:          pub,
+		Scores:        scores,
 		Log:           rt.Log,
 		Metrics:       rt.Metrics,
 	})
 	if err != nil {
 		return err
+	}
+	if rankings != nil {
+		rankings.SetLeading(d.Leading)
+		tasks = append(tasks, rankings.Run)
 	}
 	rt.Health.Register(Name, d.Health)
 	// The publisher stops after the loop, so the last events go out.

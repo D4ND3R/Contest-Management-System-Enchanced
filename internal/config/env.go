@@ -6,6 +6,7 @@ package config
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -138,6 +139,17 @@ func (c *Config) Redacted() *Config {
 		} else {
 			s.field.SetString("<redacted>")
 		}
+	}
+	// The rankings are a list (Settings does not walk lists).
+	if len(cp.Dispatcher.Rankings) > 0 {
+		rs := slices.Clone(cp.Dispatcher.Rankings)
+		for i := range rs {
+			rs[i].URL = redactURL(rs[i].URL)
+			if rs[i].Password != "" {
+				rs[i].Password = "<redacted>"
+			}
+		}
+		cp.Dispatcher.Rankings = rs
 	}
 	return &cp
 }

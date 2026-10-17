@@ -12,6 +12,7 @@
 | [Sitio del concursante (configuración, entrada, idiomas, tiempo real)](sitio-concursante.md) | disponible |
 | [API JSON del sitio del concursante (scripts, suplantación)](api.md) | disponible |
 | [Administración (permisos, auditoría, página Servidor, tiempo real)](administracion.md) | disponible (las páginas de concursos, problemas y envíos, con F6) |
+| [Scoreboard público (configuración, visibilidad, enlace secreto, congelamiento, proxies)](scoreboard.md) | disponible |
 | Primeros pasos | F9 |
 | Instalación, requisitos y dimensionamiento | F9 |
 | Actualización y respaldos | F9 |

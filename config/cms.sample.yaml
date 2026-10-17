@@ -101,8 +101,23 @@ ranking_web:
   listen: 127.0.0.1:8890
   ops_listen: 127.0.0.1:9190
   num_proxies: 0
-  # Scoreboard state pushed by the dispatcher (no database access needed).
+  # Scoreboard state pushed by the dispatcher (no database access needed):
+  # a snapshot and a journal; logo.<ext>, faces/<user>.<ext> and
+  # flags/<team>.<ext> are read from here too (png, jpg, gif, bmp).
   data_dir: /var/lib/cms/ranking
+  # Credentials of the writes (HTTP basic, CMS username/password). An empty
+  # password is derived from secret_key, which the dispatcher derives too:
+  # set one only for other clients (an upstream ProxyService) or a
+  # dispatcher with another secret_key.
+  username: cms
+  password: ""
+  # Who sees the scoreboard: public (everybody), secret (whoever opened the
+  # secret link printed by the admin ranking page, and administrators) or
+  # admins (administrators coming from the admin site). Administrators also
+  # see the scores hidden by a freeze.
+  visibility: public
+  # Show the username column (CMS [public] show_id_column).
+  show_id_column: false
 
 dispatcher:
   ops_listen: 127.0.0.1:9191
@@ -123,6 +138,18 @@ dispatcher:
   max_evaluation_tries: 3
   # Largest number of results stored in one transaction.
   result_batch: 128
+  # Public scoreboards kept up to date by the active dispatcher (CMS
+  # ProxyService and its rankings list). Example:
+  #   rankings:
+  #     - url: http://127.0.0.1:8890/  # as the dispatcher reaches it
+  #       username: ""      # empty: cms
+  #       password: ""      # empty: derived from secret_key
+  #       contests: []      # contest names; empty: every contest
+  #       freeze: 1h        # hide the scores of the last hour; 0: no freeze
+  rankings: []
+  # How often contests, tasks, teams and users are read again and what
+  # changed is sent to the rankings (scores are sent at once).
+  ranking_refresh: 30s
 
 worker:
   ops_listen: 127.0.0.1:9192

@@ -14,14 +14,15 @@ import (
 
 // ScoreSink receives, after each commit, what changed for the public
 // scoreboard: the hook of upstream ProxyService (submission_scored,
-// submission_tokened, dataset_updated). Phase F7 implements it (the push
-// to ranking-web); until then the dispatcher uses NopScoreSink.
+// submission_tokened, dataset_updated). RankingSink implements it (the
+// push to the rankings of dispatcher.rankings); without rankings the
+// dispatcher uses NopScoreSink.
 //
 // Push is called by the main loop of the active dispatcher, so it must not
 // block: an implementation queues the update and sends it in the
 // background. Updates are not durable (a crash after the commit loses the
 // last ones), so the implementation must also resend everything
-// periodically or when the ranking restarts, as upstream does.
+// periodically and when the dispatcher becomes active (RankingSink does).
 type ScoreSink interface {
 	Push(ctx context.Context, u ScoreUpdate)
 }
@@ -46,7 +47,7 @@ func (u *ScoreUpdate) empty() bool {
 	return len(u.Submissions) == 0 && len(u.Tokens) == 0 && len(u.Tasks) == 0 && len(u.TaskScores) == 0
 }
 
-// NopScoreSink drops every update (until F7).
+// NopScoreSink drops every update (no rankings configured).
 type NopScoreSink struct{}
 
 // Push implements ScoreSink.

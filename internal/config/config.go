@@ -174,6 +174,22 @@ type RankingWeb struct {
 	// DataDir stores the scoreboard state pushed by the dispatcher, so the
 	// site can run on a separate host without database access.
 	DataDir string `yaml:"data_dir"`
+	// Username and Password are the HTTP basic credentials of the writes
+	// (the REST API of CMS RankingWebServer). An empty password is derived
+	// from secret_key (RankingPushPassword), which the dispatcher derives
+	// too: set one only for other clients (an upstream ProxyService,
+	// cmsRWSHelper) or a dispatcher with another secret_key.
+	Username string `yaml:"username"`
+	Password string `yaml:"password" secret:"true"`
+	// Visibility is who sees the scoreboard: "public" (everyone, as CMS),
+	// "secret" (whoever opened the secret link of one of its contests,
+	// printed by the admin ranking page, and administrators) or "admins"
+	// (administrators coming from the admin site only). Administrators
+	// also see the scores hidden by a freeze.
+	Visibility string `yaml:"visibility"`
+	// ShowIDColumn shows the username column (CMS [public]
+	// show_id_column).
+	ShowIDColumn bool `yaml:"show_id_column"`
 }
 
 // Dispatcher configures the service that replaces EvaluationService,
@@ -202,6 +218,35 @@ type Dispatcher struct {
 	// ResultBatch is the largest number of results stored in one
 	// transaction.
 	ResultBatch int `yaml:"result_batch"`
+	// Rankings are the public scoreboards (ranking-web or CMS
+	// RankingWebServer) the active dispatcher keeps up to date (CMS
+	// ProxyService and its rankings list).
+	Rankings []RankingTarget `yaml:"rankings"`
+	// RankingRefresh is how often the contests, tasks, teams and users are
+	// read again and what changed is sent to the rankings (edits of the
+	// admin site do not notify the dispatcher). Scores are sent at once.
+	RankingRefresh Duration `yaml:"ranking_refresh"`
+}
+
+// RankingTarget is a scoreboard the dispatcher pushes to.
+type RankingTarget struct {
+	// URL is the address of the ranking as the dispatcher reaches it
+	// ("http://127.0.0.1:8890/", with the path prefix of a proxy if any).
+	// Credentials in the URL (CMS style) are accepted.
+	URL string `yaml:"url" secret:"true"`
+	// Username and Password are the basic credentials of the ranking.
+	// Empty: "cms" and the password derived from secret_key, which a
+	// ranking-web sharing secret_key accepts.
+	Username string `yaml:"username"`
+	Password string `yaml:"password" secret:"true"`
+	// Contests are the names of the contests sent; empty sends every
+	// contest.
+	Contests []string `yaml:"contests"`
+	// Freeze hides from the public the scores of submissions (and tokens)
+	// made in the last Freeze of each contest: the ranking keeps them and
+	// shows them to administrators, and reveals them when the freeze is
+	// removed (set 0 and restart the dispatchers). 0: no freeze.
+	Freeze Duration `yaml:"freeze"`
 }
 
 // Worker configures a judging host. Workers never connect to PostgreSQL:
@@ -314,9 +359,11 @@ func Default() *Config {
 			CookieDuration: Duration(10 * time.Hour),
 		},
 		RankingWeb: RankingWeb{
-			Listen:    "127.0.0.1:8890",
-			OpsListen: "127.0.0.1:9190",
-			DataDir:   "/var/lib/cms/ranking",
+			Listen:     "127.0.0.1:8890",
+			OpsListen:  "127.0.0.1:9190",
+			DataDir:    "/var/lib/cms/ranking",
+			Username:   "cms",
+			Visibility: RankingPublic,
 		},
 		Dispatcher: Dispatcher{
 			OpsListen:           "127.0.0.1:9191",
@@ -324,6 +371,8 @@ func Default() *Config {
 			MaxCompilationTries: 3,
 			MaxEvaluationTries:  3,
 			ResultBatch:         128,
+			Rankings:            []RankingTarget{},
+			RankingRefresh:      Duration(30 * time.Second),
 		},
 		Worker: Worker{
 			OpsListen:   "127.0.0.1:9192",
@@ -430,6 +479,7 @@ func (c *Config) Validate() error {
 	}
 	errs = append(errs, c.validateSandbox()...)
 	errs = append(errs, c.validateDispatcher()...)
+	errs = append(errs, c.validateRankings()...)
 	for name, addr := range map[string]string{
 		"contest_web.listen":     c.ContestWeb.Listen,
 		"contest_web.ops_listen": c.ContestWeb.OpsListen,
