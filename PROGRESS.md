@@ -295,3 +295,43 @@ trabajos reales.
   atacante (un NAT para toda la sala).
 - `testdata/contests/demo/sum/sol/partial.cpp` saca 100: su caso de
   desborde todavía cabe en `int`.
+
+---
+
+## F9 — Instalación simple (código; pruebas pendientes)
+
+Por pedido del dueño esta fase se implementó sin pruebas: compila
+(`go build ./...`, `go vet`), los scripts pasan `bash -n` y los Compose
+`docker compose config`. Las pruebas van en la fase final.
+
+### Hecho
+
+- `scripts/install.sh`: modos `--domain` (Caddy, subdominios) y
+  `--http-ports`, `--worker-only` para jueces adicionales, `--uninstall
+  [--purge]`; PostgreSQL, Valkey/Redis ≥ 7, isolate (compilado en arm64),
+  compiladores, unidades systemd con aislamiento, ufw, respaldos
+  programados; secretos una vez, `cms.yaml` solo si no existe, primer admin
+  con contraseña generada, `verify-host` y resumen (D45).
+- `cms ctl add-admin`, `public-urls`, `backup`, `restore` (D44) y `upgrade`
+  (D46); `db.MigrateTx`.
+- `deploy/docker-compose.yml` de producción con secretos de Docker,
+  `deploy/compose-init.sh`, `deploy/compose/{cms.yaml,Caddyfile}`,
+  `deploy/env.example`; Dockerfiles multi-arquitectura
+  (`BINARY_SOURCE=release`); workflows `images.yml` (GHCR, amd64 y arm64) y
+  `release.yml` (GoReleaser, `.goreleaser.yaml`).
+- El scoreboard local configurado en `dispatcher.rankings` en el instalador,
+  los Compose y `scripts/dev.sh` (los `.dev/cms.yaml` existentes no se
+  tocan: agregar el ranking a mano o borrarlo).
+- Guías en español e inglés: instalación y dimensionamiento, actualización y
+  respaldos, Docker, operación, problemas frecuentes, primeros pasos.
+
+### Pendiente (fase de pruebas)
+
+- Instalar en VMs limpias (Ubuntu 22.04, 24.04, Debian 12; amd64 y arm64),
+  ambos modos y un juez adicional; volver a correr el instalador;
+  desinstalar.
+- Pruebas de `backup`/`restore` (ida y vuelta tabla por tabla, `--clean`,
+  respaldo de un esquema anterior, archivo dañado) y de `upgrade` con
+  `CMS_UPGRADE_FAIL_AT` en cada paso.
+- Correr GoReleaser (`--snapshot`) y el workflow de imágenes; comprobar la
+  imagen arm64 del worker.

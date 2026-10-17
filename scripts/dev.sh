@@ -52,6 +52,10 @@ storage:
   cache_dir: $DEV/cache
 ranking_web:
   data_dir: $DEV/data/ranking
+dispatcher:
+  # The local scoreboard (credentials derived from secret_key).
+  rankings:
+    - url: http://127.0.0.1:8890/
 worker:
   work_dir: $DEV/worker
 YAML

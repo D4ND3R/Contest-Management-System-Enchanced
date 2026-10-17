@@ -1,0 +1,28 @@
+# Caddy in front of the Compose stack (profile "caddy"): HTTPS with
+# certificates issued automatically for the three names (DNS must point to
+# this host). Server-sent events (*/events) are never compressed. To give
+# Let's Encrypt a contact address, add a global options block at the top:
+#   {
+#   	email you@example.org
+#   }
+
+(cms_site) {
+	@noevents not path */events
+	encode @noevents zstd gzip
+	header -Server
+}
+
+{$CMS_DOMAIN} {
+	import cms_site
+	reverse_proxy contest-web:8888
+}
+
+{$CMS_ADMIN_DOMAIN} {
+	import cms_site
+	reverse_proxy admin-web:8889
+}
+
+{$CMS_RANKING_DOMAIN} {
+	import cms_site
+	reverse_proxy ranking-web:8890
+}

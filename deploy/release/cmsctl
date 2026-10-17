@@ -1,0 +1,8 @@
+#!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# cmsctl is `cms ctl`. Release archives ship this wrapper next to the cms
+# binary; the installer instead links /usr/local/bin/cmsctl to cms (the
+# binary recognises its name).
+exec "$(dirname "$(readlink -f "$0")")/cms" ctl "$@"

@@ -1,5 +1,8 @@
 *
 !bin/cms
+!dist/linux_amd64/cms
+!dist/linux_arm64/cms
 !LICENSE.txt
 !AUTHORS.txt
+!config/cms.sample.yaml
 !deploy/docker/worker-entrypoint.sh

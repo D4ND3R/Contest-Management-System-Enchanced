@@ -12,7 +12,12 @@ x-cms: &cms
     context: ..
     dockerfile: deploy/docker/Dockerfile
   restart: unless-stopped
+  # dispatcher.rankings (the scoreboard of the stack) is a list, which
+  # variables cannot express: it comes from compose/cms.yaml.
+  volumes:
+    - ./compose/cms.yaml:/etc/cms/cms.yaml:ro
   environment: &cms-env
+    CMS_CONFIG: /etc/cms/cms.yaml
     CMS_SECRET_KEY: ${CMS_SECRET_KEY:?run make dev, which generates it}
     CMS_DATABASE_URL: postgres://cms:cms@postgres:5432/cms?sslmode=disable
     CMS_REDIS_URL: redis://valkey:6379/0

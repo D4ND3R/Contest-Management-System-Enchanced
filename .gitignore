@@ -6,3 +6,6 @@
 *.test
 *.prof
 /testdata/contests/demo/half/check/checker
+/deploy/.env
+/deploy/secrets/
+/deploy/backups/

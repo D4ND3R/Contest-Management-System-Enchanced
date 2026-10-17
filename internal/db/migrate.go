@@ -212,3 +212,45 @@ func CheckSchema(ctx context.Context, pool *pgxpool.Pool) error {
 	}
 	return nil
 }
+
+// MigrateTx applies, inside the caller's transaction, the embedded
+// migrations after the current version up to version upTo (0: all). It is
+// used by `cms ctl restore`, which rebuilds the schema of a backup and loads
+// its data in a single transaction: nothing changes unless all of it works.
+// A transaction-scoped advisory lock serialises it with Migrate.
+func MigrateTx(ctx context.Context, tx pgx.Tx, upTo int) ([]Migration, error) {
+	all, err := Migrations()
+	if err != nil {
+		return nil, err
+	}
+	if upTo < 0 || upTo > len(all) {
+		return nil, fmt.Errorf("schema version %d is unknown to this binary (it knows 1 to %d)", upTo, len(all))
+	}
+	if upTo == 0 {
+		upTo = len(all)
+	}
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, migrationLockID); err != nil {
+		return nil, fmt.Errorf("taking the migration lock: %w", err)
+	}
+	if _, err := tx.Exec(ctx, createTracking); err != nil {
+		return nil, fmt.Errorf("creating schema_migrations: %w", err)
+	}
+	done, err := readApplied(ctx, tx)
+	if err != nil {
+		return nil, err
+	}
+	pending, err := compare(done, all[:max(upTo, len(done))])
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range pending {
+		if _, err := tx.Exec(ctx, m.SQL); err != nil {
+			return nil, fmt.Errorf("migration %04d_%s: %w", m.Version, m.Name, err)
+		}
+		if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations (version, name, checksum) VALUES ($1, $2, $3)`,
+			m.Version, m.Name, m.Checksum); err != nil {
+			return nil, err
+		}
+	}
+	return pending, nil
+}

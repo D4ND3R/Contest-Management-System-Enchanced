@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Releases (R9.5): run by .github/workflows/release.yml when the owner
+# pushes a tag v*. Archives are named without the version
+# (cms_linux_amd64.tar.gz) so that .../releases/latest/download/<name>
+# works for scripts/install.sh and `cmsctl upgrade`.
+#
+# Local dry run: goreleaser release --snapshot --clean
+version: 2
+project_name: cms
+
+builds:
+  - id: cms
+    main: ./cmd/cms
+    binary: cms
+    env: [CGO_ENABLED=0]
+    goos: [linux]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w
+      - -X github.com/d4nd3r/contest-management-system-enchanced/internal/buildinfo.Version={{ .Tag }}
+      - -X github.com/d4nd3r/contest-management-system-enchanced/internal/buildinfo.Commit={{ .FullCommit }}
+      - -X github.com/d4nd3r/contest-management-system-enchanced/internal/buildinfo.Date={{ .Date }}
+
+archives:
+  - id: cms
+    ids: [cms]
+    formats: [tar.gz]
+    name_template: "cms_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE.txt
+      - AUTHORS.txt
+      - README.md
+      - src: deploy/release/cmsctl
+        dst: cmsctl
+        info:
+          mode: 0755
+      - src: config/cms.sample.yaml
+        dst: cms.sample.yaml
+      - src: scripts/install.sh
+        dst: install.sh
+        info:
+          mode: 0755
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+changelog:
+  use: git
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))?!?:.+$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\(.+\))?!?:.+$'
+      order: 1
+    - title: Other changes
+      order: 999
+  filters:
+    exclude:
+      - '^Merge '
+
+release:
+  github:
+    owner: D4ND3R
+    name: Contest-Management-System-Enchanced
+  # The installer, also as a release asset (curl it from the release of a
+  # given version).
+  extra_files:
+    - glob: scripts/install.sh
+  footer: |
+    Install: `curl -fsSL https://github.com/D4ND3R/Contest-Management-System-Enchanced/releases/download/{{ .Tag }}/install.sh | sudo bash -s -- --version {{ .Tag }} --domain example.org`
+    Upgrade: `sudo cmsctl upgrade --version {{ .Tag }}`
+    Images: `ghcr.io/d4nd3r/cms:{{ .Version }}`, `ghcr.io/d4nd3r/cms-worker:{{ .Version }}`
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"

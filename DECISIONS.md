@@ -601,3 +601,67 @@ subtarea con casos públicos y privados muestra los públicos (CMS muestra
 **Por qué.** Una sola implementación de seguridad y formato para las tres
 webs; las páginas portadas salen idénticas byte a byte a las de CMS salvo
 lo listado.
+
+## D44 — Respaldos con COPY desde Go, un archivo con manifiesto
+
+**Decisión.** `cms ctl backup` escribe un `.tar.gz` con `manifest.json`
+(versión de cms, versión del esquema y checksums de sus migraciones, tablas
+y columnas), `db/<tabla>.copy` (COPY de texto, todas las tablas en una
+instantánea REPEATABLE READ), `blobs/<sha256>` (Walk del almacén, después
+de la instantánea), `config/cms.yaml` y `SHA256SUMS` al final. Se escribe
+con nombre temporal y se renombra; `--keep N` borra los más viejos.
+`task_scores` no se guarda (derivada, D34). `cms ctl restore` lee el
+archivo dos veces (verificar todo, después cargar) y restaura la base en
+**una transacción**: `--clean` borra tablas, funciones y tipos del esquema
+public (no el esquema: en PostgreSQL 14 no es del usuario cms, y en Docker
+cms es superusuario dueño de los catálogos, así que `DROP OWNED` no sirve);
+`db.MigrateTx` reconstruye el esquema del respaldo; las tablas sembradas
+por migraciones se vacían; triggers de usuario desactivados y claves
+foráneas quitadas durante la carga (hay ciclos, p. ej. tasks↔datasets) y
+agregadas de nuevo al final (verifica cada fila); secuencias reajustadas;
+migraciones más nuevas aplicadas; `task_scores` recalculada.
+
+**Por qué.** `pg_dump`/`pg_restore` exigen clientes de la versión del
+servidor y no existen en la imagen distroless; COPY es igual de rápido.
+Una transacción hace que una restauración fallida (y la vuelta atrás de
+`upgrade`) no deje la base a medias. Verificar antes de tocar nada evita
+restaurar un archivo truncado.
+
+## D45 — Instalador: subdominios, secretos una vez, juez local por el servidor de blobs
+
+**Decisión.** `scripts/install.sh` con `--domain D` publica el concurso en
+`D`, la administración en `admin.D` y el scoreboard en `ranking.D` (Caddy).
+Los secretos se generan una vez en `/etc/cms/secrets` y `cms.yaml` se
+escribe solo si no existe; lo que depende del modo (direcciones, proxies,
+servidor de blobs) va a `/etc/cms/cms.env`, reescrito en cada ejecución.
+Los servicios web, dispatcher y monitor corren como `cms` con el
+aislamiento de systemd; el worker corre como root (isolate) y usa el
+servidor de blobs del dispatcher en localhost (`worker.env`), como un juez
+remoto. Las credenciales del scoreboard se derivan de `secret_key`
+(F7): no hay otro secreto. Valkey con contraseña, `appendonly` y
+`noeviction`; en Ubuntu 22.04 se usa el repositorio de Redis (trae 6.0).
+isolate se compila de la misma versión en arm64 (el repositorio de sus
+autores solo tiene amd64), igual que en la imagen del worker.
+
+**Por qué.** Las páginas de CMS usan rutas absolutas: cada sitio necesita
+la raíz de su host, y hosts separados aíslan las cookies del admin. El
+almacén local crea directorios 0700: si el worker (root) escribiera en él,
+los servicios del usuario `cms` no podrían leer lo que crea. Cambiar de
+modo al volver a correr el instalador no debe tocar los secretos.
+
+## D46 — `cmsctl upgrade` con vuelta atrás automática
+
+**Decisión.** Pasos fetch (release de GitHub verificada con
+`checksums.txt`, o `--binary`), backup (sin blobs: solo se agregan), stop,
+install (el binario anterior queda como `cms.prev`), migrate (con el binario
+**nuevo**), start y health (`systemctl is-active` y `/healthz` de cada
+listener de operaciones). Ante cualquier falla: detener, reponer el
+binario, restaurar el respaldo con el binario anterior (el proceso que
+corre) si se llegó a migrar, arrancar y verificar. `CMS_UPGRADE_FAIL_AT=<paso>`
+simula una falla después de ese paso. Los archivos de la release no llevan
+la versión en el nombre (`cms_linux_amd64.tar.gz`) para que
+`releases/latest/download/…` funcione.
+
+**Por qué.** Las migraciones son solo hacia adelante (D3): volver atrás es
+restaurar. Lo escrito entre el arranque de la versión nueva y la vuelta
+atrás se pierde; es preferible a dejar una instalación rota en un concurso.

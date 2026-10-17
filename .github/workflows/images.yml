@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Container images (R9.4): when the owner pushes a tag v*, build the service
+# image (deploy/docker/Dockerfile) and the judge image (Dockerfile.worker)
+# for linux/amd64 and linux/arm64 and push them to GHCR:
+#   ghcr.io/<owner>/cms:<version>, ghcr.io/<owner>/cms-worker:<version>
+# (and :latest for releases that are not pre-releases). Binaries are built
+# here, outside Docker (D15), one per architecture in dist/linux_<arch>/.
+name: images
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: build the binaries (amd64, arm64)
+        run: |
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build -trimpath \
+              -ldflags "-s -w -X github.com/d4nd3r/contest-management-system-enchanced/internal/buildinfo.Version=${GITHUB_REF_NAME} -X github.com/d4nd3r/contest-management-system-enchanced/internal/buildinfo.Commit=${GITHUB_SHA} -X github.com/d4nd3r/contest-management-system-enchanced/internal/buildinfo.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              -o dist/linux_$arch/cms ./cmd/cms
+          done
+      - name: image names (GHCR wants lowercase)
+        id: names
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "cms=ghcr.io/$owner/cms" >>"$GITHUB_OUTPUT"
+          echo "worker=ghcr.io/$owner/cms-worker" >>"$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta-cms
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.names.outputs.cms }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=branch
+      - id: meta-worker
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.names.outputs.worker }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=branch
+      - name: service image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build-args: BINARY_SOURCE=release
+          push: true
+          tags: ${{ steps.meta-cms.outputs.tags }}
+          labels: ${{ steps.meta-cms.outputs.labels }}
+      - name: judge image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/docker/Dockerfile.worker
+          platforms: linux/amd64,linux/arm64
+          build-args: BINARY_SOURCE=release
+          push: true
+          tags: ${{ steps.meta-worker.outputs.tags }}
+          labels: ${{ steps.meta-worker.outputs.labels }}

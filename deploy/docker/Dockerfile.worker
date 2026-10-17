@@ -15,18 +15,46 @@
 #
 # On development hosts without cgroups v2 set CMS_SANDBOX_CGROUPS=false
 # (memory limits then work per process only; see sandbox.cgroups).
+#
+# Multi-arch release images: --build-arg BINARY_SOURCE=release takes the
+# binary from dist/linux_<arch>/cms (see Dockerfile). isolate comes from
+# its authors' repository on amd64 and is built from the same release on
+# arm64 (the repository has no arm64 packages).
+ARG BINARY_SOURCE=local
+
+FROM scratch AS bin-local
+COPY bin/cms /cms
+
+FROM scratch AS bin-release
+ARG TARGETARCH
+COPY dist/linux_${TARGETARCH}/cms /cms
+
+FROM bin-${BINARY_SOURCE} AS bin
+
 FROM ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG ISOLATE_TAG=v2.7
 # The same packages the CI sandbox job tests with.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl \
- && install -d -m 0755 /etc/apt/keyrings \
- && curl -fsSL https://www.ucw.cz/isolate/debian/signing-key.asc -o /etc/apt/keyrings/isolate.asc \
- && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ noble-isolate main" \
-      >/etc/apt/sources.list.d/isolate.list \
- && apt-get update \
- && apt-get install -y --no-install-recommends isolate \
+ && if [ "$(dpkg --print-architecture)" = amd64 ]; then \
+      install -d -m 0755 /etc/apt/keyrings \
+      && curl -fsSL https://www.ucw.cz/isolate/debian/signing-key.asc -o /etc/apt/keyrings/isolate.asc \
+      && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ noble-isolate main" \
+           >/etc/apt/sources.list.d/isolate.list \
+      && apt-get update \
+      && apt-get install -y --no-install-recommends isolate; \
+    else \
+      apt-get install -y --no-install-recommends build-essential git pkg-config libcap-dev libseccomp-dev libsystemd-dev \
+      && git clone -q --depth 1 --branch "$ISOLATE_TAG" https://github.com/ioi/isolate /tmp/isolate \
+      && make -C /tmp/isolate PREFIX=/usr VARPREFIX=/var CONFIGDIR=/etc isolate isolate-cg-keeper isolate-check-environment \
+      && make -C /tmp/isolate PREFIX=/usr VARPREFIX=/var CONFIGDIR=/etc install \
+      && rm -rf /tmp/isolate \
+      && apt-get purge -y build-essential git pkg-config libcap-dev libseccomp-dev libsystemd-dev \
+      && apt-get install -y --no-install-recommends libcap2 libseccomp2 libsystemd0; \
+    fi \
+ && apt-get install -y --no-install-recommends \
       g++ gcc python3 pypy3 default-jdk-headless fp-compiler ghc mono-mcs mono-runtime \
       rustc golang-go php-cli kotlin \
  && apt-get purge -y curl \
@@ -38,7 +66,7 @@ RUN apt-get update \
 RUN CGO_ENABLED=0 GODEBUG=installgoroot=all /usr/bin/go install -pkgdir=/var/lib/cms/go-std std \
  && rm -rf /root/.cache/go-build
 
-COPY bin/cms /usr/local/bin/cms
+COPY --from=bin /cms /usr/local/bin/cms
 COPY deploy/docker/worker-entrypoint.sh /usr/local/bin/cms-worker-entrypoint
 COPY LICENSE.txt AUTHORS.txt /usr/share/doc/cms/
 # isolate runs as root (it drops to its own box users).

@@ -1,0 +1,9 @@
+# Configuration file of the Compose stacks (deploy/docker-compose.yml and
+# deploy/docker-compose.dev.yml), mounted at /etc/cms/cms.yaml. Everything
+# else comes from CMS_* variables and Docker secrets; only what variables
+# cannot express (lists) lives here.
+dispatcher:
+  # The scoreboard of the stack. Its credentials are derived from
+  # secret_key, which the dispatcher and ranking-web share.
+  rankings:
+    - url: http://ranking-web:8890/

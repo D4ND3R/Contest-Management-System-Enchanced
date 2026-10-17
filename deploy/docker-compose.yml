@@ -1,0 +1,205 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+#
+# Production stack (R9.4): PostgreSQL, Valkey, the migration job, the six
+# services and, with --profile caddy, Caddy with automatic HTTPS.
+#
+#   deploy/compose-init.sh                                # once: .env and secrets
+#   docker compose -f deploy/docker-compose.yml up -d
+#   docker compose -f deploy/docker-compose.yml run --rm migrate ctl add-admin admin
+#
+# Upgrade: set CMS_VERSION in .env, back up (below), then `pull` and `up -d`
+# (the migrate job runs before the services start). Backups:
+#   docker compose -f deploy/docker-compose.yml run --rm migrate ctl backup --output /backups/ --keep 14
+# See docs/en/docker.md.
+name: cms
+
+x-cms: &cms
+  image: ${CMS_IMAGE:-ghcr.io/d4nd3r/cms}:${CMS_VERSION:-latest}
+  restart: unless-stopped
+  environment: &cms-env
+    CMS_CONFIG: /etc/cms/cms.yaml
+    CMS_SECRET_KEY_FILE: /run/secrets/secret_key
+    CMS_DATABASE_URL_FILE: /run/secrets/database_url
+    CMS_REDIS_URL_FILE: /run/secrets/redis_url
+    CMS_TIMEZONE: ${CMS_TIMEZONE:-UTC}
+    CMS_LOG_FORMAT: json
+    CMS_DATA_DIR: /var/lib/cms
+    CMS_STORAGE_LOCAL_PATH: /var/lib/cms/blobs
+    CMS_STORAGE_CACHE_DIR: /var/cache/cms
+    CMS_RANKING_WEB_DATA_DIR: /var/lib/cms/ranking
+    CMS_CONTEST_WEB_LISTEN: 0.0.0.0:8888
+    CMS_ADMIN_WEB_LISTEN: 0.0.0.0:8889
+    CMS_RANKING_WEB_LISTEN: 0.0.0.0:8890
+    CMS_CONTEST_WEB_NUM_PROXIES: ${CMS_NUM_PROXIES:-0}
+    CMS_ADMIN_WEB_NUM_PROXIES: ${CMS_NUM_PROXIES:-0}
+    CMS_RANKING_WEB_NUM_PROXIES: ${CMS_NUM_PROXIES:-0}
+    # Operations listeners stay inside the stack network (never published).
+    CMS_CONTEST_WEB_OPS_LISTEN: 0.0.0.0:9188
+    CMS_ADMIN_WEB_OPS_LISTEN: 0.0.0.0:9189
+    CMS_RANKING_WEB_OPS_LISTEN: 0.0.0.0:9190
+    CMS_DISPATCHER_OPS_LISTEN: 0.0.0.0:9191
+    CMS_DISPATCHER_BLOB_LISTEN: 0.0.0.0:8891
+    CMS_WORKER_OPS_LISTEN: 0.0.0.0:9192
+    CMS_MONITOR_LISTEN: 0.0.0.0:9193
+  secrets: [secret_key, database_url, redis_url]
+  volumes:
+    - ./compose/cms.yaml:/etc/cms/cms.yaml:ro
+    - cms-data:/var/lib/cms
+  depends_on: &cms-deps
+    postgres:
+      condition: service_healthy
+    valkey:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cms
+      POSTGRES_DB: cms
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: --locale=en_US.UTF-8 --encoding=UTF8
+    command: ["postgres", "-c", "max_connections=200", "-c", "shared_buffers=512MB",
+              "-c", "effective_cache_size=1536MB", "-c", "work_mem=8MB", "-c", "wal_compression=on"]
+    secrets: [postgres_password]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "cms", "-d", "cms"]
+      interval: 2s
+      retries: 30
+
+  valkey:
+    image: valkey/valkey:8
+    restart: unless-stopped
+    # requirepass, appendonly and noeviction (queues must never be evicted).
+    command: ["valkey-server", "/run/secrets/valkey.conf"]
+    secrets: [valkey.conf]
+    volumes:
+      - valkeydata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$(sed -n 's/^requirepass //p' /run/secrets/valkey.conf)\" valkey-cli ping | grep -q PONG"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    <<: *cms
+    restart: "no"
+    command: ["migrate"]
+    volumes:
+      - ./compose/cms.yaml:/etc/cms/cms.yaml:ro
+      - cms-data:/var/lib/cms
+      - ${CMS_BACKUP_DIR:-./backups}:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+
+  contest-web:
+    <<: *cms
+    command: ["contest-web"]
+    ports: ["${CMS_BIND:-0.0.0.0}:${CMS_CONTEST_PORT:-8888}:8888"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9188/healthz"]
+      interval: 5s
+
+  admin-web:
+    <<: *cms
+    command: ["admin-web"]
+    ports: ["${CMS_BIND:-0.0.0.0}:${CMS_ADMIN_PORT:-8889}:8889"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9189/healthz"]
+      interval: 5s
+
+  ranking-web:
+    <<: *cms
+    command: ["ranking-web"]
+    ports: ["${CMS_BIND:-0.0.0.0}:${CMS_RANKING_PORT:-8890}:8890"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9190/healthz"]
+      interval: 5s
+
+  dispatcher:
+    <<: *cms
+    command: ["dispatcher"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9191/healthz"]
+      interval: 5s
+
+  worker:
+    # isolate and the compilers. The judge never gets secret_key nor the
+    # database: files come from the blob server of the dispatcher (D12, D25).
+    image: ${CMS_WORKER_IMAGE:-ghcr.io/d4nd3r/cms-worker}:${CMS_VERSION:-latest}
+    restart: unless-stopped
+    # isolate needs namespaces and its own cgroup tree.
+    privileged: true
+    cgroup: private
+    environment:
+      CMS_REDIS_URL_FILE: /run/secrets/redis_url
+      CMS_LOG_FORMAT: json
+      CMS_STORAGE_BACKEND: remote
+      CMS_STORAGE_REMOTE_URL: http://dispatcher:8891
+      CMS_STORAGE_REMOTE_TOKEN_FILE: /run/secrets/blob_token
+      CMS_STORAGE_CACHE_DIR: /var/cache/cms
+      CMS_WORKER_CONCURRENCY: ${CMS_WORKER_CONCURRENCY:-1}
+      CMS_WORKER_OPS_LISTEN: 0.0.0.0:9192
+      CMS_WORKER_WORK_DIR: /var/lib/cms/worker
+      CMS_SANDBOX_CGROUPS: ${CMS_SANDBOX_CGROUPS:-true}
+    secrets: [redis_url, blob_token]
+    command: ["worker"]
+    depends_on:
+      valkey:
+        condition: service_healthy
+      dispatcher:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9192/healthz"]
+      interval: 5s
+
+  monitor:
+    <<: *cms
+    command: ["monitor"]
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cms", "healthcheck", "http://127.0.0.1:9193/healthz"]
+      interval: 5s
+
+  caddy:
+    image: caddy:2
+    profiles: [caddy]
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      CMS_DOMAIN: ${CMS_DOMAIN:-}
+      CMS_ADMIN_DOMAIN: ${CMS_ADMIN_DOMAIN:-}
+      CMS_RANKING_DOMAIN: ${CMS_RANKING_DOMAIN:-}
+    volumes:
+      - ./compose/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [contest-web, admin-web, ranking-web]
+
+secrets:
+  secret_key:
+    file: ./secrets/secret_key
+  postgres_password:
+    file: ./secrets/postgres_password
+  database_url:
+    file: ./secrets/database_url
+  redis_url:
+    file: ./secrets/redis_url
+  valkey.conf:
+    file: ./secrets/valkey.conf
+  blob_token:
+    file: ./secrets/blob_token
+
+volumes:
+  pgdata:
+  valkeydata:
+  cms-data:
+  caddy-data:
+  caddy-config:
