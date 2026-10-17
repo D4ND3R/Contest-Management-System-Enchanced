@@ -8,6 +8,7 @@ package rankingweb
 
 import (
 	"cmp"
+	"math"
 	"slices"
 	"strconv"
 )
@@ -96,7 +97,10 @@ func (s *score) appendChange(c change) {
 			}
 		}
 	case ScoreModeMaxSubtask:
-		var best []float64
+		// The best of each subtask over all submissions; a submission
+		// without some subtask counts 0 there (zip_longest).
+		cols := make([][]float64, 0, len(s.subs))
+		n := 0
 		for _, x := range s.subs {
 			vals := []float64{x.score}
 			if len(x.extra) > 0 {
@@ -105,17 +109,19 @@ func (s *score) appendChange(c change) {
 					vals[i], _ = strconv.ParseFloat(e, 64)
 				}
 			}
-			for i, f := range vals {
-				if i >= len(best) {
-					// zip_longest fills the missing columns with 0.
-					best = append(best, max(0, f))
-				} else {
-					best[i] = max(best[i], f)
-				}
-			}
+			cols = append(cols, vals)
+			n = max(n, len(vals))
 		}
-		for _, f := range best {
-			v += f
+		for i := range n {
+			best := math.Inf(-1)
+			for _, vals := range cols {
+				f := 0.0
+				if i < len(vals) {
+					f = vals[i]
+				}
+				best = max(best, f)
+			}
+			v += best
 		}
 	default: // ScoreModeMaxTokenedLast
 		rel := 0.0

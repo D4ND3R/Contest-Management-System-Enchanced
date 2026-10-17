@@ -235,6 +235,7 @@ func (s *Store) persist(o op) error {
 		err = s.j.f.Sync()
 	}
 	if err != nil {
+		s.rollbackJournal()
 		err = fmt.Errorf("writing the ranking journal: %w", err)
 		s.persistErr.Store(&err)
 		s.log.Error("cannot store a write of the ranking", "err", err)
@@ -243,6 +244,15 @@ func (s *Store) persist(o op) error {
 	s.persistErr.Store(nil)
 	s.j.size += int64(len(b))
 	return nil
+}
+
+// rollbackJournal cuts what a failed write left at the end of the journal:
+// a partial line would hide every later (acknowledged) write at the next
+// start, since the replay stops at the first invalid line.
+func (s *Store) rollbackJournal() {
+	if err := s.j.f.Truncate(s.j.size); err != nil {
+		s.log.Error("cannot cut a failed write of the ranking journal", "err", err)
+	}
 }
 
 // maybeCompact folds the journal into the snapshot once it is large. The

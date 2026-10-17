@@ -127,7 +127,11 @@ func NewRankingSink(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger, re
 			return nil, fmt.Errorf("dispatcher.rankings[%d].url: %w", i, err)
 		}
 		user, pass := tc.Credentials(cfg)
-		if tc.Password == "" && (u.User == nil || !hasPassword(u.User)) {
+		var urlPass string
+		if u.User != nil {
+			urlPass, _ = u.User.Password()
+		}
+		if tc.Password == "" && urlPass == "" {
 			if err := cfg.RequireSecretKey(); err != nil {
 				return nil, fmt.Errorf("dispatcher.rankings[%d] has no password, which is then derived from secret_key: %w", i, err)
 			}
@@ -147,8 +151,6 @@ func NewRankingSink(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger, re
 	}
 	return s, nil
 }
-
-func hasPassword(u *url.Userinfo) bool { _, ok := u.Password(); return ok }
 
 // SetLeading sets how the sink knows whether this dispatcher is the
 // active one: only the active one sends.

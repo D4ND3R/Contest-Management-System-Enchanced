@@ -109,7 +109,7 @@ func (s *Server) grant(w http.ResponseWriter, r *http.Request) bool {
 	switch {
 	case adm != "" && s.cfg.CheckRankingAdminToken(adm, time.Now()):
 		value = "a"
-	case sec != "":
+	case sec != "" && s.cfg.RankingWeb.Visibility != config.RankingAdmins:
 		if name, ok := s.secretContest(sec); ok {
 			value = "s:" + name
 		}
@@ -125,7 +125,10 @@ func (s *Server) grant(w http.ResponseWriter, r *http.Request) bool {
 	}
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Referrer-Policy", "no-referrer")
-	http.Redirect(w, r, "./", http.StatusSeeOther)
+	// Relative, so that it works behind a proxy with a path prefix
+	// (http.Redirect would make it absolute).
+	w.Header().Set("Location", "./")
+	w.WriteHeader(http.StatusSeeOther)
 	return true
 }
 
