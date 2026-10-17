@@ -154,6 +154,10 @@ func TestServicesSmoke(t *testing.T) {
 	t.Chdir(t.TempDir())
 	t.Setenv("CMS_WORKER_WORK_DIR", "relative/work")
 	t.Setenv("CMS_STORAGE_LOCAL_PATH", t.TempDir())
+	// The services run unprivileged in CI: keep every state directory in
+	// the test (the defaults live under /var/lib/cms).
+	t.Setenv("CMS_DATA_DIR", t.TempDir())
+	t.Setenv("CMS_RANKING_WEB_DATA_DIR", t.TempDir())
 	t.Setenv("CMS_LOG_LEVEL", "debug")
 
 	// Services refuse an outdated schema; `cms migrate` fixes it.
