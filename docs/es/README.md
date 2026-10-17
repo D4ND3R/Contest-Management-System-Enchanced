@@ -11,6 +11,7 @@
 | [Importar concursos, problemas y dumps de CMS](importar.md) | disponible |
 | [Sitio del concursante (configuración, entrada, idiomas, tiempo real)](sitio-concursante.md) | disponible |
 | [API JSON del sitio del concursante (scripts, suplantación)](api.md) | disponible |
+| [Administración (permisos, auditoría, página Servidor, tiempo real)](administracion.md) | disponible (las páginas de concursos, problemas y envíos, con F6) |
 | Primeros pasos | F9 |
 | Instalación, requisitos y dimensionamiento | F9 |
 | Actualización y respaldos | F9 |

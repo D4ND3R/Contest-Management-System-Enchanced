@@ -1,0 +1,80 @@
+{{/*
+The audit log page (R6.6; new in this fork, built with the components of
+the CMS administration: core_title, a filter form, a bordered table, the
+links of the page selector).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "Audit log"}}</h1>
+</div>
+
+<form action="{{if .Contest}}{{url "contest" .Contest.ID "audit"}}{{else}}{{url "audit"}}{{end}}" method="GET">
+  <table>
+    <tr>
+{{if not .Contest}}
+      <td>{{T "Contest"}}</td>
+      <td>
+        <select name="contest_id">
+          <option value="">{{T "All"}}</option>
+{{range .Contests}}
+          <option value="{{.ID}}"{{if eq .ID $.ContestID}} selected{{end}}>{{.Name}}</option>
+{{end}}
+        </select>
+      </td>
+{{end}}
+      <td>{{T "Admin"}}</td>
+      <td>
+        <select name="admin_id">
+          <option value="">{{T "All"}}</option>
+{{range .Admins}}
+          <option value="{{.ID}}"{{if eq .ID $.AdminID}} selected{{end}}>{{.Username}}</option>
+{{end}}
+        </select>
+      </td>
+      <td>{{T "Target"}}</td>
+      <td><input type="text" name="target_type" value="{{.TargetType}}" placeholder="{{T "task, user..."}}" size="10"/></td>
+      <td>{{T "Id"}}</td>
+      <td><input type="text" name="target_id" value="{{.TargetID}}" size="6"/></td>
+      <td><input type="submit" value="{{T "Filter"}}"/></td>
+    </tr>
+  </table>
+</form>
+
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>{{T "Time"}}</th>
+      <th>{{T "Admin"}}</th>
+      <th>{{T "Action"}}</th>
+      <th>{{T "Target"}}</th>
+      <th>{{T "Contest"}}</th>
+      <th>{{T "Address"}}</th>
+      <th>{{T "Details"}}</th>
+    </tr>
+  </thead>
+  <tbody>
+{{range .Rows}}
+    <tr>
+      <td>{{format_datetime .At}}</td>
+      <td>{{.Admin}}</td>
+      <td>{{.Action}}</td>
+      <td>{{.TargetType}}{{if .TargetID}} {{.TargetID}}{{end}}</td>
+      <td>{{if .ContestID}}<a href="{{url "contest" .ContestID}}">{{.Contest}}</a>{{end}}</td>
+      <td>{{.IP}}</td>
+      <td>{{if .Details}}<pre>{{.Details}}</pre>{{end}}</td>
+    </tr>
+{{else}}
+    <tr><td colspan="7">{{T "No entries."}}</td></tr>
+{{end}}
+  </tbody>
+</table>
+
+<div>
+{{if .NewestURL}}  <a href="{{.NewestURL}}">{{T "Newest entries"}}</a>{{end}}
+{{if .OlderURL}}  <a href="{{.OlderURL}}">{{T "Older entries"}}</a>{{end}}
+</div>
+
+{{end}}

@@ -1,0 +1,18 @@
+{{/*
+Ported from cms/server/admin/templates/error.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2012-2018 Luca Wehrstedt and the
+CMS contributors.
+*/}}
+{{/* extends "base.html" */}}
+{{define "core"}}
+
+<div class="core_title">
+    <h1>{{Format (T "Error %(status_code)s") "status_code" .StatusCode}}</h1>
+</div>
+
+<p>
+{{T "An error occured while the server was handling your request."}}
+</p>
+
+{{end}}

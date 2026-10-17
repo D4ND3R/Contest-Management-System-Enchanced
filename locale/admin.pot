@@ -5,6 +5,193 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: ../internal/adminweb/funcs.go:192
+msgid " [%(n)s time(s) in queue]"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:193
+msgid " [testcase: `%(codename)s']"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:130
+msgid " and %(count)s more"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:188
+msgid "%(job)s the <a href=\"%(result_url)s\">result</a> of <a href=\"%(submission_url)s\">submission %(submission)s</a> on <a href=\"%(dataset_url)s\">dataset %(dataset)s</a>"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:189
+msgid "%(job)s the result of user_test %(user_test)s on <a href=\"%(dataset_url)s\">dataset %(dataset)s</a>"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:196
+msgid "%(n)s hour(s), "
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:195
+msgid "%(n)s minute(s), "
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:194
+msgid "%(n)s second(s)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:156
+msgid "(create new contest...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:189
+msgid "(create new task...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:243
+msgid "(create new team...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:216
+msgid "(create new user...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:23
+msgid "(in use: %(zone)s)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:133
+msgid "(no contests available)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:166
+msgid "(no tasks available)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:226
+msgid "(no team available)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:199
+msgid "(no user available)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:148
+#: ../internal/adminweb/templates/base.html:181
+msgid "(show more...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:234
+msgid "(show the %(count)s teams...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:207
+msgid "(show the %(count)s users...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:232
+msgid "(show the only team...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:205
+msgid "(show the only user...)"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:51
+#: ../internal/adminweb/templates/overview.html:261
+msgid "Action"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:52
+msgid "Add a new admin"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:54
+msgid "Address"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:28
+#: ../internal/adminweb/templates/audit.html:50
+#: ../internal/adminweb/templates/base.html:43
+#: ../internal/adminweb/templates/base.html:45
+#: ../internal/adminweb/templates/login.html:17
+msgid "Admin"
+msgstr ""
+
+#: ../internal/adminweb/templates/add_admin.html:18
+#: ../internal/adminweb/templates/admin.html:19
+msgid "Admin information"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:97
+#: ../internal/adminweb/templates/base.html:107
+#: ../internal/adminweb/templates/base.html:109
+msgid "Administration"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:13
+msgid "Admins list"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:59
+msgid "Admins with the \"All permissions\" bit set can do any operation, regardless of the status of the other permission bits."
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:62
+msgid "Admins without any of these bits can see every page but change nothing."
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:21
+#: ../internal/adminweb/templates/audit.html:31
+#: ../internal/adminweb/templates/resourceslist.html:25
+#: ../internal/adminweb/templates/resourceslist.html:27
+msgid "All"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:23
+#: ../internal/adminweb/templates/fragments/admin_form.html:42
+msgid "All permissions"
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:50
+msgid "An address that starts with a colon, as :8888, means the host of the page being shown on that port: it works in installations by ports whatever name or address the server is reached by."
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:178
+msgid "Announcement. "
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:11
+#: ../internal/adminweb/templates/base.html:119
+#: ../internal/adminweb/templates/base.html:266
+msgid "Audit log"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:108
+msgid "Background judging"
+msgstr ""
+
+#: ../internal/adminweb/templates/resources.html:38
+msgid "Broken"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:275
+msgid "CMS"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:200
+msgid "Call to service failed."
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:39
+msgid "Cannot compile (please check)"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:41
+msgid "Cannot evaluate (please check)"
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:51
+msgid "Changes to the time zone reach every site within 30 seconds."
+msgstr ""
+
 #: ../internal/grading/steps/messages.go:111
 msgid "Compilation killed with signal %s"
 msgstr ""
@@ -13,33 +200,476 @@ msgstr ""
 msgid "Compilation memory limit exceeded"
 msgstr ""
 
+#: ../internal/adminweb/funcs.go:190
+msgid "Compiling"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:258
+msgid "Connected"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:18
+#: ../internal/adminweb/templates/audit.html:53
+msgid "Contest"
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:28
+msgid "Contestant site address"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:129
+msgid "Contests"
+msgstr ""
+
+#: ../internal/adminweb/templates/add_admin.html:22
+msgid "Create"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:259
+msgid "Current job"
+msgstr ""
+
+#: ../internal/adminweb/templates/admin.html:34
+msgid "Delete this admin"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:157
+msgid "Disable"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:58
+msgid "Disabled admins cannot log in."
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:92
+msgid "Do you really want to disable worker %(worker)s?"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:78
+msgid "Do you really want to enable worker %(worker)s?"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:205
+msgid "Do you really want to reevaluate?"
+msgstr ""
+
+#: ../internal/adminweb/templates/resources.html:38
+msgid "Draining"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:285
+msgid "Each service writes its logs to its standard output: see journalctl or docker compose logs."
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:151
+msgid "Enable"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:20
+#: ../internal/adminweb/templates/fragments/admin_form.html:60
+msgid "Enabled"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:204
+msgid "Error: "
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:191
+msgid "Evaluating"
+msgstr ""
+
 #: ../internal/grading/steps/messages.go:167
 msgid "Execution killed because of a forbidden system call"
 msgstr ""
 
+#: ../internal/adminweb/templates/admins.html:31
+#: ../internal/adminweb/templates/admins.html:40
+#: ../internal/adminweb/templates/admins.html:41
+#: ../internal/adminweb/templates/admins.html:42
+msgid "False"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:176
+msgid "File request failed."
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:41
+msgid "Filter"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/pages.html:23
+msgid "First"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:251
+msgid "General"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:256
+msgid "Groups"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:102
+msgid "Hello,"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:202
+msgid "Hide reply"
+msgstr ""
+
+#: ../internal/adminweb/templates/resources.html:20
+msgid "Host statistics (CPU, memory, disk) are measured by the monitor service and are not shown here: see its metrics. Services are supervised by systemd or Docker."
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:39
+#: ../internal/adminweb/templates/overview.html:239
+msgid "Id"
+msgstr ""
+
+#: ../internal/adminweb/ctx.go:318
+msgid "Internal error: see the logs of the server."
+msgstr ""
+
+#: ../internal/adminweb/serverpage.go:241
+msgid "Invalid address: "
+msgstr ""
+
+#: ../internal/adminweb/admins.go:129
+#: ../internal/adminweb/admins.go:134
+#: ../internal/adminweb/serverpage.go:234
+#: ../internal/adminweb/serverpage.go:241
+msgid "Invalid field(s)"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:240
+msgid "Job"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:117
+msgid "Judges"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/pages.html:33
+msgid "Last"
+msgstr ""
+
+#: ../internal/adminweb/templates/admin.html:28
+msgid "Leaving the password field empty will keep the previous password."
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:106
+msgid "Live"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:102
 #: ../internal/contestweb/templates/contest.html:89
 msgid "Live updates: connected"
 msgstr ""
 
+#: ../internal/adminweb/templates/base.html:102
+#: ../internal/adminweb/templates/base.html:102
 #: ../internal/contestweb/templates/contest.html:89
 #: ../internal/contestweb/templates/contest.html:89
 msgid "Live updates: connecting"
 msgstr ""
 
+#: ../internal/adminweb/templates/base.html:102
 #: ../internal/contestweb/templates/contest.html:89
 msgid "Live updates: disconnected, the page checks for news periodically"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:271
+msgid "Logs"
+msgstr ""
+
+#: ../internal/adminweb/templates/resources.html:23
+msgid "Machine %(index)s (%(host)s)"
+msgstr ""
+
+#: ../internal/adminweb/templates/resourceslist.html:12
+msgid "Machine list"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:24
+#: ../internal/adminweb/templates/fragments/admin_form.html:48
+msgid "Messaging permissions"
+msgstr ""
+
+#: ../internal/adminweb/templates/add_admin.html:12
+msgid "New admin"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:180
+msgid "New question: "
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:76
+msgid "Newest entries"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:70
+msgid "No entries."
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:118
+msgid "No workers found."
+msgstr ""
+
+#: ../internal/adminweb/templates/resources.html:38
+msgid "Not running"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:223
+msgid "Number"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:77
+msgid "Older entries"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:280
+msgid "Operation"
+msgstr ""
+
+#: ../internal/adminweb/ctx.go:312
+#: ../internal/adminweb/ctx.go:315
+#: ../internal/adminweb/ctx.go:318
+msgid "Operation failed."
+msgstr ""
+
+#: ../internal/adminweb/ctx.go:305
+msgid "Operation successful."
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/pages.html:12
+msgid "Pages:"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:201
+msgid "Pages: "
+msgstr ""
+
+#: ../internal/adminweb/templates/login.html:27
+msgid "Please log in:"
 msgstr ""
 
 #: ../internal/contestweb/communication.go:142
 msgid "Please wait a few seconds before asking another question."
 msgstr ""
 
+#: ../internal/adminweb/templates/overview.html:241
+msgid "Priority"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:177
+msgid "Private message. "
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:25
+#: ../internal/adminweb/templates/fragments/admin_form.html:54
+msgid "Problem preparer permissions"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:59
+msgid "Queue empty."
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:234
+msgid "Queue status"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:252
+msgid "Ranking"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:203
+msgid "Reply"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:179
+msgid "Reply to your question. "
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:116
+#: ../internal/adminweb/templates/base.html:122
+#: ../internal/adminweb/templates/resources.html:17
+msgid "Resource usage"
+msgstr ""
+
+#: ../internal/adminweb/templates/resources.html:38
+msgid "Running"
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:35
+msgid "Scoreboard address"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:29
+msgid "Scored"
+msgstr ""
+
+#: ../internal/adminweb/templates/resourceslist.html:15
+msgid "See resource usage of the machines:"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:118
+#: ../internal/adminweb/templates/server.html:11
+msgid "Server"
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:16
+msgid "Server settings"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:279
+#: ../internal/adminweb/templates/resources.html:28
+msgid "Service"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:198
+msgid "Service not connected."
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:278
+msgid "Severity"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:257
+msgid "Shard"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:242
+#: ../internal/adminweb/templates/overview.html:260
+#: ../internal/adminweb/templates/resources.html:30
+msgid "Since"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:275
 #: ../internal/contestweb/templates/contest.html:213
 msgid "Source code"
 msgstr ""
 
+#: ../internal/adminweb/templates/overview.html:217
+msgid "Submissions status"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:37
+#: ../internal/adminweb/templates/audit.html:52
+msgid "Target"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:162
+#: ../internal/adminweb/templates/base.html:257
+msgid "Tasks"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:222
+msgid "Teams"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:60
+msgid "The \"Messaging\" permissions allow the admin to communicate with the contestants, answering questions, sending private messages and announcements."
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:61
+msgid "The \"Problem preparer\" permissions allow the admin to create and change tasks, their statements, attachments, datasets, managers and testcases, and to try submissions on them, but not users or the settings of contests."
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:27
+msgid "The address contestants use, for example https://contest.example.org/ or :8888 (the host of this page on that port)."
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:34
+msgid "The address of the public scoreboard, for example https://ranking.example.org/ or :8890 (the host of this page on that port)."
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:49
+msgid "The administration does not know the addresses contestants and spectators use: links to the other sites are built from these values."
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:20
+msgid "The time zone of every date shown by the three sites. Empty: the one of cms.yaml."
+msgstr ""
+
+#: ../internal/adminweb/templates/server.html:21
+msgid "Time zone"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:184
+msgid "To end of analysis: "
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:182
+msgid "To end of contest: "
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:183
+msgid "To start of analysis: "
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:181
+msgid "To start of contest: "
+msgstr ""
+
 #: ../internal/contestweb/communication.go:141
 msgid "Too many questions!"
+msgstr ""
+
+#: ../internal/adminweb/templates/admins.html:31
+#: ../internal/adminweb/templates/admins.html:40
+#: ../internal/adminweb/templates/admins.html:41
+#: ../internal/adminweb/templates/admins.html:42
+msgid "True"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:185
+msgid "Unable to invalidate (%(msg)s)."
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:197
+msgid "Unexpected reply `%(status)s'. This should not happen."
+msgstr ""
+
+#: ../internal/adminweb/templates/resources.html:38
+msgid "Unknown"
+msgstr ""
+
+#: ../internal/adminweb/serverpage.go:234
+msgid "Unknown time zone: "
+msgstr ""
+
+#: ../internal/adminweb/templates/admin.html:23
+#: ../internal/adminweb/templates/server.html:41
+msgid "Update"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:254
+msgid "User tests"
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:195
+#: ../internal/adminweb/templates/base.html:255
+msgid "Users"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:187
+msgid "Worker disabled"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:252
+msgid "Workers status"
+msgstr ""
+
+#: ../internal/adminweb/templates/overview.html:162
+msgid "Workers status (%(connected)s connected, %(configured)s configured)"
+msgstr ""
+
+#: ../internal/adminweb/templates/login.html:52
+msgid "You are already logged in."
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:199
+msgid "You are not authorized to call this method."
 msgstr ""
 
 #: ../internal/grading/steps/messages.go:109
@@ -52,4 +682,24 @@ msgstr ""
 
 #: ../internal/grading/steps/messages.go:112
 msgid "Your submission was killed with the specified signal. This might be caused by a bug in the compiler, for example."
+msgstr ""
+
+#: ../internal/adminweb/templates/base.html:275
+msgid "codebase"
+msgstr ""
+
+#: ../internal/adminweb/funcs.go:175
+msgid "copy"
+msgstr ""
+
+#: ../internal/adminweb/templates/login.html:53
+msgid "or go to the"
+msgstr ""
+
+#: ../internal/adminweb/templates/login.html:53
+msgid "overview"
+msgstr ""
+
+#: ../internal/adminweb/templates/audit.html:38
+msgid "task, user..."
 msgstr ""

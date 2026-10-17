@@ -1,0 +1,25 @@
+{{/*
+Ported from cms/server/admin/templates/add_admin.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2016 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "New admin"}}</h1>
+</div>
+
+{{comment " We use \"multipart/form-data\" to have Tornado distinguish between missing and empty values. "}}
+<form enctype="multipart/form-data" action="{{url "admins" "add"}}" method="post" >
+  {{xsrf_form_html}}
+  <h2>{{T "Admin information"}}</h2>
+
+  {{template "fragments/admin_form.html" .}}
+
+  <input type="submit" value="{{T "Create"}}" />
+  <input type="reset" value="{{T "Reset"}}" />
+</form>
+{{end}}

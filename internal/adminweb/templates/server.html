@@ -1,0 +1,54 @@
+{{/*
+The Server page (R6.8; new in this fork, built with the components of the
+CMS administration: core_title, a form table as contest.html, the notes as
+admins.html).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "Server"}}</h1>
+</div>
+
+<form action="{{url "server"}}" method="POST">
+  {{xsrf_form_html}}
+  <h2>{{T "Server settings"}}</h2>
+  <table>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The time zone of every date shown by the three sites. Empty: the one of cms.yaml."}}"></span>
+        {{T "Time zone"}}
+      </td>
+      <td><input type="text" name="timezone" value="{{.Timezone}}" placeholder="{{.ConfigTimezone}}"/> {{Format (T "(in use: %(zone)s)") "zone" .Current}}</td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The address contestants use, for example https://contest.example.org/ or :8888 (the host of this page on that port)."}}"></span>
+        {{T "Contestant site address"}}
+      </td>
+      <td><input type="text" name="public_url_contest" value="{{.ContestURL}}"/>{{if .ContestLink}} <a href="{{.ContestLink}}">{{.ContestLink}}</a>{{end}}</td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="{{T "The address of the public scoreboard, for example https://ranking.example.org/ or :8890 (the host of this page on that port)."}}"></span>
+        {{T "Scoreboard address"}}
+      </td>
+      <td><input type="text" name="public_url_ranking" value="{{.RankingURL}}"/>{{if .RankingLink}} <a href="{{.RankingLink}}">{{.RankingLink}}</a>{{end}}</td>
+    </tr>
+  </table>
+{{if .Admin.CanAll}}
+  <input type="submit" value="{{T "Update"}}" />
+  <input type="reset" value="{{T "Reset"}}" />
+{{end}}
+</form>
+
+<hr/>
+
+<ul>
+  <li>{{T "The administration does not know the addresses contestants and spectators use: links to the other sites are built from these values."}}</li>
+  <li>{{T "An address that starts with a colon, as :8888, means the host of the page being shown on that port: it works in installations by ports whatever name or address the server is reached by."}}</li>
+  <li>{{T "Changes to the time zone reach every site within 30 seconds."}}</li>
+</ul>
+
+{{end}}

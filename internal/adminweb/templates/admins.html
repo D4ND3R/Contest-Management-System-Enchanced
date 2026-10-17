@@ -1,0 +1,65 @@
+{{/*
+Ported from cms/server/admin/templates/admins.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2016 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the column and the note
+of the problem preparer role (R6.5).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{T "Admins list"}}</h1>
+</div>
+
+<div id="details">
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>{{T "Enabled"}}</th>
+        <th>{{T "Username"}}</th>
+        <th>{{T "Name"}}</th>
+        <th>{{T "All permissions"}}</th>
+        <th>{{T "Messaging permissions"}}</th>
+        <th>{{T "Problem preparer permissions"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Admins}}
+      <tr>
+        <td>{{if .Enabled}}{{T "True"}}{{else}}{{T "False"}}{{end}}</td>
+        <td>
+{{if or $.Admin.CanAll (eq $.Admin.ID .ID)}}
+          <a href="{{url "admin" .ID}}">{{.Username}}</a>
+{{else}}
+          {{.Username}}
+{{end}}
+        </td>
+        <td>{{.Name}}</td>
+        <td>{{if .PermissionAll}}{{T "True"}}{{else}}{{T "False"}}{{end}}</td>
+        <td>{{if .PermissionMessaging}}{{T "True"}}{{else}}{{T "False"}}{{end}}</td>
+        <td>{{if .PermissionTasks}}{{T "True"}}{{else}}{{T "False"}}{{end}}</td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+</div>
+
+{{if .Admin.CanAll}}
+<hr/>
+
+<a href="{{url "admins" "add"}}">{{T "Add a new admin"}}</a>
+{{end}}
+
+<hr/>
+
+<ul>
+  <li>{{T "Disabled admins cannot log in."}}</li>
+  <li>{{T "Admins with the \"All permissions\" bit set can do any operation, regardless of the status of the other permission bits."}}</li>
+  <li>{{T "The \"Messaging\" permissions allow the admin to communicate with the contestants, answering questions, sending private messages and announcements."}}</li>
+  <li>{{T "The \"Problem preparer\" permissions allow the admin to create and change tasks, their statements, attachments, datasets, managers and testcases, and to try submissions on them, but not users or the settings of contests."}}</li>
+  <li>{{T "Admins without any of these bits can see every page but change nothing."}}</li>
+</ul>
+
+{{end}}

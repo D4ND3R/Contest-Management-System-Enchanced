@@ -1,0 +1,67 @@
+{{/*
+Ported from cms/server/admin/templates/fragments/admin_form.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2016 Stefano Maggiolo and the CMS
+contributors.
+This snippet shows a form to add/edit an admin; with .Edited set, its data
+are the defaults. Changes in this fork: every text goes through T; the
+problem preparer checkbox (R6.5).
+*/}}
+
+{{$username := ""}}
+{{$name := ""}}
+{{$all := true}}
+{{$messaging := false}}
+{{$tasks := false}}
+{{$enabled := true}}
+{{with .Edited}}
+{{$username = .Username}}
+{{$name = .Name}}
+{{$all = .PermissionAll}}
+{{$messaging = .PermissionMessaging}}
+{{$tasks = .PermissionTasks}}
+{{$enabled = .Enabled}}
+{{end}}
+
+<div>
+  <table>
+    <tr>
+      <td>{{T "Username"}}</td>
+      <td><input type="text" name="username" value="{{$username}}"/></td>
+    </tr>
+    <tr>
+      <td>{{T "Password"}}</td>
+      <td><input type="password" name="password" value=""/></td>
+    </tr>
+    <tr>
+      <td>{{T "Name"}}</td>
+      <td><input type="text" name="name" value="{{$name}}"/></td>
+    </tr>
+{{if .Admin.CanAll}}
+    <tr>
+      <td>{{T "All permissions"}}</td>
+      <td>
+        <input type="checkbox" name="permission_all" {{if $all}}checked{{end}} />
+      </td>
+    </tr>
+    <tr>
+      <td>{{T "Messaging permissions"}}</td>
+      <td>
+        <input type="checkbox" name="permission_messaging" {{if $messaging}}checked{{end}} />
+      </td>
+    </tr>
+    <tr>
+      <td>{{T "Problem preparer permissions"}}</td>
+      <td>
+        <input type="checkbox" name="permission_tasks" {{if $tasks}}checked{{end}} />
+      </td>
+    </tr>
+    <tr>
+      <td>{{T "Enabled"}}</td>
+      <td>
+        <input type="checkbox" name="enabled" {{if $enabled}}checked{{end}} />
+      </td>
+    </tr>
+{{end}}
+  </table>
+</div>

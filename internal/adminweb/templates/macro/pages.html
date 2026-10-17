@@ -1,0 +1,38 @@
+{{/*
+Ported from cms/server/admin/templates/macro/pages.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2018 Stefano Maggiolo and the CMS contributors.
+A page selector for a paginated view: {{template "pages.selector" .Pager}}
+with an *adminweb.Pager (pagination.go). Changes in this fork: every text
+goes through T.
+*/}}
+{{define "pages.selector"}}
+{{if gt .Pages 1}}
+<div>
+  {{T "Pages:"}}
+{{if not .Many}}
+{{range .Range}}
+{{if not .Current}}
+  <a href="{{.URL}}">{{.Label}}</a>
+{{else}}
+  {{.Label}}
+{{end}}
+{{end}}
+{{else}}
+{{if ne .Page 0}}
+  <a href="{{.URL 0}}">{{T "First"}}</a>
+{{end}}
+{{range .Range}}
+{{if not .Current}}
+  <a href="{{.URL}}">{{.Label}}</a>
+{{else}}
+  {{.Label}}
+{{end}}
+{{end}}
+{{if ne .Page .Last}}
+  <a href="{{.URL .Last}}">{{T "Last"}}</a>
+{{end}}
+{{end}}
+</div>
+{{end}}
+{{end}}

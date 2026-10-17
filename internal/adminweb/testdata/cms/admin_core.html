@@ -1,0 +1,69 @@
+      <div id="core">
+        <div id="notifications" class="notifications"></div>
+        <dialog id="subpage_popup">
+          <button id="subpage_close">x</button>
+          <div id="subpage_content"></div>
+        </dialog>
+
+<div class="core_title">
+  <h1>admin (admin)</h1>
+</div>
+
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="../admin/1" method="POST">
+  <input type="hidden" name="_xsrf" value="2|c23b08b7|1c380269e883787b524153d8e4bc3113|1792195255"/>
+  <h2>Admin information</h2>
+
+
+
+<div>
+  <table>
+    <tr>
+      <td>Username</td>
+      <td><input type="text" name="username" value="admin"/></td>
+    </tr>
+    <tr>
+      <td>Password</td>
+      <td><input type="password" name="password" value=""/></td>
+    </tr>
+    <tr>
+      <td>Name</td>
+      <td><input type="text" name="name" value="admin"/></td>
+    </tr>
+    <tr>
+      <td>All permissions</td>
+      <td>
+        <input type="checkbox" name="permission_all" checked />
+      </td>
+    </tr>
+    <tr>
+      <td>Messaging permissions</td>
+      <td>
+        <input type="checkbox" name="permission_messaging"  />
+      </td>
+    </tr>
+    <tr>
+      <td>Enabled</td>
+      <td>
+        <input type="checkbox" name="enabled" checked />
+      </td>
+    </tr>
+  </table>
+</div>
+  <input type="submit" value="Update" />
+  <input type="reset" value="Reset" />
+
+  <br/>
+
+  Leaving the password field empty will keep the previous password.
+</form>
+
+<hr/>
+
+<a onclick="CMS.AWSUtils.ajax_delete('../admin/1'); ">Delete this admin</a>
+
+      </div>
+
+    </div>
+  </body>
+</html>

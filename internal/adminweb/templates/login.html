@@ -1,0 +1,59 @@
+{{/*
+Ported from cms/server/admin/templates/login.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2012-2018 Luca Wehrstedt and the
+CMS contributors.
+Changes in this fork: every text goes through T; <html lang> is the page's
+language.
+*/}}
+
+<!DOCTYPE html>
+<html lang="{{lang}}">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="{{static "favicon.ico"}}" />
+    <link rel="stylesheet" type="text/css" href="{{static "reset.css"}}">
+    <link rel="stylesheet" type="text/css" href="{{static "aws_style.css"}}">
+    <title>{{T "Admin"}}</title>
+  </head>
+  <body class="admin">
+    <div id="login-content">
+
+{{if not .Admin}}
+<h1>{{T "Welcome"}}</h1>
+{{if .LoginError}}
+<h4 class="alert">{{T "Failed to log in."}}</h4>
+{{end}}
+<p>{{T "Please log in:"}}</p>
+<form action="{{url "login"}}" method="POST">
+  {{xsrf_form_html}}
+{{if .Next}}
+  <input type="hidden" name="next" value="{{.Next}}">
+{{end}}
+  <div class="section">
+    <label>
+      <span>{{T "Username"}}</span>
+      <input type="text" name="username" autofocus>
+    </label>
+  </div>
+  <div class="section">
+    <label class="control-label">
+      <span>{{T "Password"}}</span>
+      <input type="password" name="password" autocomplete="current-password">
+    </label>
+  </div>
+  <div class="section">
+    <button type="submit">{{T "Login"}}</button>
+    <button type="reset">{{T "Reset"}}</button>
+  </div>
+</form>
+{{else}}
+
+{{T "You are already logged in."}} <a href="{{url "logout"}}">{{T "Logout"}}</a>
+{{T "or go to the"}} <a href="{{url}}">{{T "overview"}}</a>.
+
+{{end}}
+
+    </div>
+  </body>
+</html>

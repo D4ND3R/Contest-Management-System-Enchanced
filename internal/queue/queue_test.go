@@ -769,6 +769,12 @@ func TestStatsAndMetrics(t *testing.T) {
 	if err != nil || len(fl) != 1 || fl[0].ID != m.ID || fl[0].Consumer != "worker-1" || fl[0].Deliveries != 1 || fl[0].Priority != 0 {
 		t.Fatalf("in flight: %+v %v", fl, err)
 	}
+	peek, err := q.Peek(ctx, 2)
+	if err != nil || len(peek) != 3 || string(peek[0].Payload) != "p0-1" || peek[0].Priority != 0 ||
+		string(peek[1].Payload) != "p2-0" || string(peek[2].Payload) != "p2-1" || peek[2].Priority != 2 ||
+		peek[0].Attempt != 1 || peek[0].EnqueuedAt.IsZero() {
+		t.Fatalf("peek: %+v %v", peek, err)
+	}
 	if dead, err := q.Retry(ctx, m, errors.New("no more")); err != nil || !dead {
 		t.Fatalf("retry with MaxAttempts 1: %v %v", dead, err)
 	}

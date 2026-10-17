@@ -1,0 +1,4 @@
+Pages captured from the original CMS (cms-dev/cms 1914a5a, AGPL-3.0-or-later)
+admin site with the demo contest of testdata/dumps/demo: TestCMSPages compares
+the pages of this fork with them (see pages_cms_test.go for the deliberate
+differences it normalizes).

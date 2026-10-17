@@ -118,11 +118,12 @@ func queriesNotRun() ([]string, error) {
 	defer executed.mu.Unlock()
 	var missing []string
 	for _, f := range files {
-		// The queries of the judging core, of the importer and of the
-		// contestant site are exercised by the tests of internal/judging,
-		// internal/importer and internal/contestweb.
+		// The queries of the judging core, of the importer, of the
+		// contestant site and of the administration are exercised by the
+		// tests of internal/judging, internal/importer,
+		// internal/contestweb and internal/adminweb.
 		if b := filepath.Base(f); strings.HasPrefix(b, "judging") || strings.HasPrefix(b, "import") ||
-			strings.HasPrefix(b, "contestweb") {
+			strings.HasPrefix(b, "contestweb") || strings.HasPrefix(b, "admin_") {
 			continue
 		}
 		data, err := os.ReadFile(f)

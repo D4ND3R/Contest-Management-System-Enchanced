@@ -1,0 +1,146 @@
+# Administración
+
+*English: [../en/administration.md](../en/administration.md).*
+
+La administración (`cms admin-web`) es el equivalente del AdminWebServer de
+CMS: las mismas páginas, con el mismo HTML, CSS y JavaScript, más las
+páginas nuevas de este fork (preparación de problemas, jueces, servidor y
+registro de auditoría). Esta guía explica cómo se configura, quién puede
+hacer qué, cómo se registra cada cambio y qué difiere de CMS.
+
+## Configuración
+
+Sección `admin_web` de `cms.yaml` (cada clave tiene su variable
+`CMS_ADMIN_WEB_*`; ver [Configuración](configuracion.md)):
+
+| Clave | Por defecto | Qué hace |
+|---|---|---|
+| `listen` | `127.0.0.1:8889` | dirección del sitio |
+| `ops_listen` | `127.0.0.1:9189` | métricas, estado detallado y pprof (no lo expongas) |
+| `num_proxies` | `0` | proxies de confianza delante del sitio (dirección del cliente y HTTPS, como en el sitio del concursante) |
+| `cookie_duration` | `10h` | cuánto dura una sesión sin actividad |
+
+Además necesita `secret_key` (la misma en todos los servicios), la base
+de datos, Valkey (notificaciones, eventos en vivo, colas y jueces) y el
+almacén de archivos (`storage`).
+
+El sitio sirve `/static/…` (los archivos de CMS y `live.js`), `/source`
+(el código de la versión que corre, enlazado al pie de cada página) y
+`/healthz`. Todas las URLs son relativas, como en CMS.
+
+## Administradores y permisos
+
+Cada administrador tiene un usuario, un nombre, una contraseña (bcrypt;
+también se aceptan las `plaintext:` importadas de CMS), un interruptor de
+habilitado y tres permisos:
+
+| Permiso | Puede |
+|---|---|
+| Todos los permisos (`permission_all`) | todo |
+| Mensajería (`permission_messaging`) | responder, ignorar y tomar preguntas; mandar anuncios y mensajes privados |
+| Preparador de problemas (`permission_tasks`, nuevo) | crear y cambiar problemas, enunciados, adjuntos, datasets, managers y casos de prueba de cualquier concurso, y probar envíos en ellos; no usuarios, ni concursos, ni su configuración, ni borrar problemas |
+| ninguno | ver todas las páginas sin cambiar nada |
+
+Un administrador deshabilitado no puede entrar. Siempre queda al menos un
+administrador habilitado con todos los permisos: el sitio no deja
+deshabilitarlo, quitarle el permiso ni borrarlo. Cualquiera puede cambiar
+su propio nombre, usuario y contraseña en la página **Admins**.
+
+Mientras no exista el instalador (F9), el primer administrador se crea en
+la base de datos:
+
+```sql
+INSERT INTO admins (name, username, authentication, enabled, permission_all)
+VALUES ('Admin', 'admin', 'plaintext:una-contraseña-larga', true, true);
+```
+
+y después se le pone una contraseña nueva desde la página del
+administrador (queda guardada con bcrypt).
+
+## Sesiones y entrada
+
+- La sesión dura `cookie_duration` desde la última página abierta (las
+  páginas que se actualizan solas no la extienden, salvo las
+  notificaciones, como en CMS). La cookie es `HttpOnly` y
+  `SameSite=Lax`.
+- Deshabilitar a un administrador, borrarlo o cambiarle la contraseña
+  cierra sus sesiones en el siguiente pedido.
+- Los intentos de entrada tienen límite por dirección y por usuario (10
+  fallos seguidos y después uno cada 6 s) y las comprobaciones bcrypt
+  pasan por una cola con una por núcleo (D42): un ataque de fuerza bruta
+  recibe 429 sin frenar al resto del servidor.
+- Todo formulario lleva el token CSRF; los pedidos de otros sitios se
+  rechazan.
+
+## Registro de auditoría
+
+Cada cambio hecho desde la administración queda en la tabla `audit_log`,
+en la misma transacción que el cambio (si el cambio no se guarda, la
+entrada tampoco): quién (usuario y dirección), cuándo, qué acción
+(`contest.update`, `task.create`, `submission.reevaluate`…), sobre qué
+objeto y de qué concurso, con los campos que cambiaron (valor anterior y
+nuevo). Las contraseñas y los secretos aparecen como `[redacted]`.
+
+La página **Registro de auditoría** (menú principal, y en el menú de cada
+concurso la del concurso) muestra las entradas más recientes primero, de a
+50, con filtros por concurso, administrador y objeto (tipo e id).
+
+## Página Servidor
+
+La página **Servidor** guarda en la base de datos (`server_settings`):
+
+- **Zona horaria**: la de todas las fechas de los tres sitios (D6). Vacía
+  usa `timezone` de `cms.yaml`. Los otros sitios la leen cada 30 segundos.
+- **Dirección del sitio de concursantes** y **del scoreboard**: la
+  administración no sabe con qué nombre llegan concursantes y
+  espectadores, así que los enlaces a esos sitios se arman con estos
+  valores. Una dirección completa (`https://concurso.ejemplo.org/`) se usa
+  tal cual; `:8888` significa «el host de esta página en el puerto 8888»,
+  que funciona en las instalaciones por puertos se entre por el nombre o
+  por la IP.
+
+Solo los administradores con todos los permisos pueden cambiarla.
+
+## Tiempo real
+
+Junto al nombre del administrador hay un indicador verde, amarillo o rojo
+(conectado, reconectando, sin conexión), como en el sitio del concursante.
+Las páginas reciben eventos en vivo (`/events` y `/contest/<id>/events`):
+las preguntas nuevas muestran la notificación al instante y actualizan el
+contador del menú, y el resumen recarga las colas y los jueces al cambiar.
+Sin conexión, las páginas vuelven a consultar como CMS (notificaciones cada
+15 s, resumen cada 5 s). Detrás de un proxy, `*/events` no debe
+comprimirse ni guardarse en búfer (ver [qué necesita un
+proxy](sitio-concursante.md#qué-necesita-un-proxy)).
+
+## Páginas
+
+| Página | Qué muestra |
+|---|---|
+| Resumen (`/`, `/contest/<id>/overview`) | estado de los envíos del concurso, cola de trabajos (los primeros 100 de cada prioridad), jueces y lo que corre cada uno |
+| Uso de recursos | los servicios vistos desde este servidor: la administración, PostgreSQL, Valkey, el dispatcher activo y los jueces de cada máquina. Las estadísticas de CPU, memoria y disco son del servicio `monitor` (sus métricas); CMS las graficaba con ResourceService, que no existe acá |
+| Admins | lista, alta, edición y baja de administradores |
+| Servidor, Registro de auditoría | ver arriba |
+
+Las demás páginas (concursos, grupos, usuarios, equipos, problemas,
+datasets, envíos, comunicación, ranking, jueces y preparación de
+problemas) se documentan a medida que se completan.
+
+## Diferencias con CMS
+
+- Textos traducibles (español e inglés, elegido por `Accept-Language`);
+  en inglés las páginas son las de CMS.
+- Permiso de preparador de problemas, página Servidor, registro de
+  auditoría, indicador en vivo y menú con Jueces, Servidor y Registro de
+  auditoría.
+- Los manejadores en línea (`onclick=`) pasaron a `aws_handlers.js` por la
+  política de seguridad de contenido (D10).
+- No hay LogService: la sección «Registros» del resumen indica que cada
+  servicio escribe en su salida estándar (`journalctl`, `docker compose
+  logs`). No hay aviso de `secret_key` por defecto: no existe una clave
+  por defecto (D5).
+- Los jueces se identifican por nombre (CMS los numera).
+- Las notificaciones de «Operación exitosa» son de cada administrador
+  (CMS se las da al primero que consulta).
+- Las fechas de los formularios están en la zona horaria del servidor
+  (CMS usa UTC).

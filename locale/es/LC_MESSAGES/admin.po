@@ -42,3 +42,456 @@ msgstr "¡Demasiadas preguntas!"
 
 msgid "Please wait a few seconds before asking another question."
 msgstr "Espera unos segundos antes de hacer otra pregunta."
+
+msgid " [%(n)s time(s) in queue]"
+msgstr " [%(n)s vez/veces en la cola]"
+
+msgid " [testcase: `%(codename)s']"
+msgstr " [caso: `%(codename)s']"
+
+msgid " and %(count)s more"
+msgstr " y %(count)s más"
+
+msgid "%(job)s the <a href=\"%(result_url)s\">result</a> of <a href=\"%(submission_url)s\">submission %(submission)s</a> on <a href=\"%(dataset_url)s\">dataset %(dataset)s</a>"
+msgstr "%(job)s el <a href=\"%(result_url)s\">resultado</a> del <a href=\"%(submission_url)s\">envío %(submission)s</a> en el <a href=\"%(dataset_url)s\">dataset %(dataset)s</a>"
+
+msgid "%(job)s the result of user_test %(user_test)s on <a href=\"%(dataset_url)s\">dataset %(dataset)s</a>"
+msgstr "%(job)s el resultado de la prueba de usuario %(user_test)s en el <a href=\"%(dataset_url)s\">dataset %(dataset)s</a>"
+
+msgid "%(n)s hour(s), "
+msgstr "%(n)s hora(s), "
+
+msgid "%(n)s minute(s), "
+msgstr "%(n)s minuto(s), "
+
+msgid "%(n)s second(s)"
+msgstr "%(n)s segundo(s)"
+
+msgid "(create new contest...)"
+msgstr "(crear un concurso...)"
+
+msgid "(create new task...)"
+msgstr "(crear un problema...)"
+
+msgid "(create new team...)"
+msgstr "(crear un equipo...)"
+
+msgid "(create new user...)"
+msgstr "(crear un usuario...)"
+
+msgid "(in use: %(zone)s)"
+msgstr "(en uso: %(zone)s)"
+
+msgid "(no contests available)"
+msgstr "(no hay concursos)"
+
+msgid "(no tasks available)"
+msgstr "(no hay problemas)"
+
+msgid "(no team available)"
+msgstr "(no hay equipos)"
+
+msgid "(no user available)"
+msgstr "(no hay usuarios)"
+
+msgid "(show more...)"
+msgstr "(ver más...)"
+
+msgid "(show the %(count)s teams...)"
+msgstr "(ver los %(count)s equipos...)"
+
+msgid "(show the %(count)s users...)"
+msgstr "(ver los %(count)s usuarios...)"
+
+msgid "(show the only team...)"
+msgstr "(ver el único equipo...)"
+
+msgid "(show the only user...)"
+msgstr "(ver el único usuario...)"
+
+msgid "Action"
+msgstr "Acción"
+
+msgid "Add a new admin"
+msgstr "Agregar un administrador"
+
+msgid "Address"
+msgstr "Dirección"
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Admin information"
+msgstr "Datos del administrador"
+
+msgid "Administration"
+msgstr "Administración"
+
+msgid "Admins list"
+msgstr "Lista de administradores"
+
+msgid "Admins with the \"All permissions\" bit set can do any operation, regardless of the status of the other permission bits."
+msgstr "Los administradores con el permiso \"Todos los permisos\" pueden hacer cualquier operación, sin importar los demás permisos."
+
+msgid "Admins without any of these bits can see every page but change nothing."
+msgstr "Los administradores sin ninguno de estos permisos pueden ver todas las páginas pero no cambiar nada."
+
+msgid "All"
+msgstr "Todos"
+
+msgid "All permissions"
+msgstr "Todos los permisos"
+
+msgid "An address that starts with a colon, as :8888, means the host of the page being shown on that port: it works in installations by ports whatever name or address the server is reached by."
+msgstr "Una dirección que empieza con dos puntos, como :8888, significa el host de la página que se está viendo en ese puerto: funciona en instalaciones por puertos con cualquier nombre o dirección con que se llegue al servidor."
+
+msgid "Announcement. "
+msgstr "Anuncio. "
+
+msgid "Audit log"
+msgstr "Registro de auditoría"
+
+msgid "Background judging"
+msgstr "Evaluación en segundo plano"
+
+msgid "Broken"
+msgstr "Con fallas"
+
+msgid "CMS"
+msgstr "CMS"
+
+msgid "Call to service failed."
+msgstr "Falló la llamada al servicio."
+
+msgid "Cannot compile (please check)"
+msgstr "No se puede compilar (revisar)"
+
+msgid "Cannot evaluate (please check)"
+msgstr "No se puede evaluar (revisar)"
+
+msgid "Changes to the time zone reach every site within 30 seconds."
+msgstr "Los cambios de zona horaria llegan a todos los sitios en 30 segundos como máximo."
+
+msgid "Compiling"
+msgstr "Compilando"
+
+msgid "Connected"
+msgstr "Conectado"
+
+msgid "Contest"
+msgstr "Concurso"
+
+msgid "Contestant site address"
+msgstr "Dirección del sitio de concursantes"
+
+msgid "Contests"
+msgstr "Concursos"
+
+msgid "Create"
+msgstr "Crear"
+
+msgid "Current job"
+msgstr "Trabajo actual"
+
+msgid "Delete this admin"
+msgstr "Eliminar este administrador"
+
+msgid "Disable"
+msgstr "Desactivar"
+
+msgid "Disabled admins cannot log in."
+msgstr "Los administradores deshabilitados no pueden entrar."
+
+msgid "Do you really want to disable worker %(worker)s?"
+msgstr "¿Seguro que quiere desactivar el juez %(worker)s?"
+
+msgid "Do you really want to enable worker %(worker)s?"
+msgstr "¿Seguro que quiere activar el juez %(worker)s?"
+
+msgid "Do you really want to reevaluate?"
+msgstr "¿Seguro que quiere reevaluar?"
+
+msgid "Draining"
+msgstr "Terminando sus trabajos"
+
+msgid "Each service writes its logs to its standard output: see journalctl or docker compose logs."
+msgstr "Cada servicio escribe sus registros en su salida estándar: vea journalctl o docker compose logs."
+
+msgid "Enable"
+msgstr "Activar"
+
+msgid "Enabled"
+msgstr "Habilitado"
+
+msgid "Error: "
+msgstr "Error: "
+
+msgid "Evaluating"
+msgstr "Evaluando"
+
+msgid "False"
+msgstr "No"
+
+msgid "File request failed."
+msgstr "No se pudo obtener el archivo."
+
+msgid "Filter"
+msgstr "Filtrar"
+
+msgid "First"
+msgstr "Primera"
+
+msgid "General"
+msgstr "General"
+
+msgid "Groups"
+msgstr "Grupos"
+
+msgid "Hello,"
+msgstr "Hola,"
+
+msgid "Hide reply"
+msgstr "Ocultar respuesta"
+
+msgid "Host statistics (CPU, memory, disk) are measured by the monitor service and are not shown here: see its metrics. Services are supervised by systemd or Docker."
+msgstr "Las estadísticas de los equipos (CPU, memoria, disco) las mide el servicio monitor y no se muestran aquí: vea sus métricas. Los servicios los supervisan systemd o Docker."
+
+msgid "Id"
+msgstr "Id"
+
+msgid "Internal error: see the logs of the server."
+msgstr "Error interno: vea los registros del servidor."
+
+msgid "Invalid address: "
+msgstr "Dirección inválida: "
+
+msgid "Invalid field(s)"
+msgstr "Campo(s) inválido(s)"
+
+msgid "Job"
+msgstr "Trabajo"
+
+msgid "Judges"
+msgstr "Jueces"
+
+msgid "Last"
+msgstr "Última"
+
+msgid "Leaving the password field empty will keep the previous password."
+msgstr "Si deja vacía la contraseña se conserva la anterior."
+
+msgid "Live"
+msgstr "En vivo"
+
+msgid "Logs"
+msgstr "Registros"
+
+msgid "Machine %(index)s (%(host)s)"
+msgstr "Máquina %(index)s (%(host)s)"
+
+msgid "Machine list"
+msgstr "Lista de máquinas"
+
+msgid "Messaging permissions"
+msgstr "Permisos de mensajería"
+
+msgid "New admin"
+msgstr "Nuevo administrador"
+
+msgid "New question: "
+msgstr "Nueva pregunta: "
+
+msgid "Newest entries"
+msgstr "Entradas más recientes"
+
+msgid "No entries."
+msgstr "No hay entradas."
+
+msgid "No workers found."
+msgstr "No hay jueces."
+
+msgid "Not running"
+msgstr "Detenido"
+
+msgid "Number"
+msgstr "Cantidad"
+
+msgid "Older entries"
+msgstr "Entradas anteriores"
+
+msgid "Operation"
+msgstr "Operación"
+
+msgid "Operation failed."
+msgstr "La operación falló."
+
+msgid "Operation successful."
+msgstr "Operación exitosa."
+
+msgid "Pages:"
+msgstr "Páginas:"
+
+msgid "Pages: "
+msgstr "Páginas: "
+
+msgid "Please log in:"
+msgstr "Ingrese sus datos:"
+
+msgid "Priority"
+msgstr "Prioridad"
+
+msgid "Private message. "
+msgstr "Mensaje privado. "
+
+msgid "Problem preparer permissions"
+msgstr "Permisos de preparador de problemas"
+
+msgid "Queue empty."
+msgstr "Cola vacía."
+
+msgid "Queue status"
+msgstr "Estado de la cola"
+
+msgid "Ranking"
+msgstr "Ranking"
+
+msgid "Reply"
+msgstr "Responder"
+
+msgid "Reply to your question. "
+msgstr "Respuesta a su pregunta. "
+
+msgid "Resource usage"
+msgstr "Uso de recursos"
+
+msgid "Running"
+msgstr "En marcha"
+
+msgid "Scoreboard address"
+msgstr "Dirección del scoreboard"
+
+msgid "Scored"
+msgstr "Puntuados"
+
+msgid "See resource usage of the machines:"
+msgstr "Vea el uso de recursos de las máquinas:"
+
+msgid "Server"
+msgstr "Servidor"
+
+msgid "Server settings"
+msgstr "Ajustes del servidor"
+
+msgid "Service"
+msgstr "Servicio"
+
+msgid "Service not connected."
+msgstr "Servicio no conectado."
+
+msgid "Severity"
+msgstr "Gravedad"
+
+msgid "Shard"
+msgstr "Juez"
+
+msgid "Since"
+msgstr "Desde"
+
+msgid "Submissions status"
+msgstr "Estado de los envíos"
+
+msgid "Target"
+msgstr "Objeto"
+
+msgid "Tasks"
+msgstr "Problemas"
+
+msgid "Teams"
+msgstr "Equipos"
+
+msgid "The \"Messaging\" permissions allow the admin to communicate with the contestants, answering questions, sending private messages and announcements."
+msgstr "Los permisos de \"Mensajería\" permiten comunicarse con los concursantes: responder preguntas y enviar mensajes privados y anuncios."
+
+msgid "The \"Problem preparer\" permissions allow the admin to create and change tasks, their statements, attachments, datasets, managers and testcases, and to try submissions on them, but not users or the settings of contests."
+msgstr "Los permisos de \"Preparador de problemas\" permiten crear y cambiar problemas, sus enunciados, adjuntos, datasets, managers y casos de prueba, y probar envíos en ellos, pero no usuarios ni la configuración de los concursos."
+
+msgid "The address contestants use, for example https://contest.example.org/ or :8888 (the host of this page on that port)."
+msgstr "La dirección que usan los concursantes, por ejemplo https://contest.example.org/ o :8888 (el host de esta página en ese puerto)."
+
+msgid "The address of the public scoreboard, for example https://ranking.example.org/ or :8890 (the host of this page on that port)."
+msgstr "La dirección del scoreboard público, por ejemplo https://ranking.example.org/ o :8890 (el host de esta página en ese puerto)."
+
+msgid "The administration does not know the addresses contestants and spectators use: links to the other sites are built from these values."
+msgstr "La administración no conoce las direcciones que usan los concursantes y los espectadores: los enlaces a los otros sitios se arman con estos valores."
+
+msgid "The time zone of every date shown by the three sites. Empty: the one of cms.yaml."
+msgstr "La zona horaria de todas las fechas que muestran los tres sitios. Vacía: la de cms.yaml."
+
+msgid "Time zone"
+msgstr "Zona horaria"
+
+msgid "To end of analysis: "
+msgstr "Para el fin del análisis: "
+
+msgid "To end of contest: "
+msgstr "Para el fin del concurso: "
+
+msgid "To start of analysis: "
+msgstr "Para el inicio del análisis: "
+
+msgid "To start of contest: "
+msgstr "Para el inicio del concurso: "
+
+msgid "True"
+msgstr "Sí"
+
+msgid "Unable to invalidate (%(msg)s)."
+msgstr "No se pudo invalidar (%(msg)s)."
+
+msgid "Unexpected reply `%(status)s'. This should not happen."
+msgstr "Respuesta inesperada `%(status)s'. Esto no debería pasar."
+
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgid "Unknown time zone: "
+msgstr "Zona horaria desconocida: "
+
+msgid "Update"
+msgstr "Actualizar"
+
+msgid "User tests"
+msgstr "Pruebas de usuario"
+
+msgid "Users"
+msgstr "Usuarios"
+
+msgid "Worker disabled"
+msgstr "Juez desactivado"
+
+msgid "Workers status"
+msgstr "Estado de los jueces"
+
+msgid "Workers status (%(connected)s connected, %(configured)s configured)"
+msgstr "Estado de los jueces (%(connected)s conectados, %(configured)s configurados)"
+
+msgid "You are already logged in."
+msgstr "Ya inició sesión."
+
+msgid "You are not authorized to call this method."
+msgstr "No tiene permiso para llamar a este método."
+
+msgid "codebase"
+msgstr "código"
+
+msgid "copy"
+msgstr "copiar"
+
+msgid "or go to the"
+msgstr "o vaya al"
+
+msgid "overview"
+msgstr "resumen"
+
+msgid "task, user..."
+msgstr "task, user..."

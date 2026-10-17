@@ -145,6 +145,54 @@ func (q *Queue) InFlight(ctx context.Context, limit int64) ([]InFlight, error) {
 	return out, nil
 }
 
+// Peek returns up to limit ready messages of each priority (not yet
+// delivered to a consumer), highest priority first and oldest first
+// within a priority, without taking them: the queue listings of the
+// administration (CMS queue_status).
+func (q *Queue) Peek(ctx context.Context, limit int64) ([]*Message, error) {
+	pipe := q.rdb.Pipeline()
+	groups := make([]*redis.XInfoGroupsCmd, len(q.streams))
+	for i, s := range q.streams {
+		groups[i] = pipe.XInfoGroups(ctx, s)
+	}
+	_, _ = pipe.Exec(ctx)
+	pipe = q.rdb.Pipeline()
+	ranges := make([]*redis.XMessageSliceCmd, len(q.streams))
+	for i, s := range q.streams {
+		last := "0-0"
+		if err := groups[i].Err(); err == nil {
+			for _, g := range groups[i].Val() {
+				if g.Name == Group {
+					last = g.LastDeliveredID
+				}
+			}
+		}
+		ranges[i] = pipe.XRangeN(ctx, s, "("+last, "+", limit)
+	}
+	_, _ = pipe.Exec(ctx)
+	var out []*Message
+	for i, c := range ranges {
+		if err := c.Err(); err != nil {
+			if errors.Is(err, redis.Nil) {
+				continue
+			}
+			return nil, fmt.Errorf("queue %s: peek: %w", q.name, err)
+		}
+		for _, m := range c.Val() {
+			fields := make([]any, 0, 2*len(m.Values))
+			for k, v := range m.Values {
+				fields = append(fields, k, v)
+			}
+			msg, err := q.parse(i, m.ID, fields, 0, "")
+			if err != nil {
+				continue
+			}
+			out = append(out, msg)
+		}
+	}
+	return out, nil
+}
+
 // DeadLetter is a message that exhausted its attempts or deliveries.
 type DeadLetter struct {
 	// ID identifies the dead letter (RequeueDead, DeleteDead).

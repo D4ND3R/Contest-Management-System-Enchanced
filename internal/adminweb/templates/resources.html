@@ -1,0 +1,48 @@
+{{/*
+Replaces cms/server/admin/templates/resources.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+CMS plots the CPU, memory and swap of every machine and lists its services
+with data of ResourceService. There is no ResourceService here (D16):
+services are supervised by systemd or Docker and the host statistics are
+the monitor's, which does not publish them to the administration yet; the
+page lists the services seen from this server (the administration, the
+database, Valkey, the dispatcher holding the lease, the workers of each
+host) with the same headings, tables and toggles.
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{T "Resource usage"}}</h1>
+</div>
+
+<p>{{T "Host statistics (CPU, memory, disk) are measured by the monitor service and are not shown here: see its metrics. Services are supervised by systemd or Docker."}}</p>
+
+{{range .Machines}}
+<h2 id="title_machine_{{.Index}}" class="toggling_on">{{Format (T "Machine %(index)s (%(host)s)") "index" .Index "host" .Host}}</h2>
+<div id="machine_{{.Index}}">
+  <table id="services_{{.Index}}_table" class="sub_table">
+    <thead>
+      <tr>
+        <th>{{T "Service"}}</th>
+        <th>{{T "Status"}}</th>
+        <th>{{T "Since"}}</th>
+        <th>{{T "Details"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Services}}
+      <tr>
+        <td>{{.Name}}</td>
+        <td>{{if eq .Status "running"}}{{T "Running"}}{{else if eq .Status "draining"}}{{T "Draining"}}{{else if eq .Status "broken"}}{{T "Broken"}}{{else if eq .Status "down"}}{{T "Not running"}}{{else}}{{T "Unknown"}}{{end}}</td>
+        <td>{{if not .Since.IsZero}}{{format_datetime .Since}}{{end}}</td>
+        <td>{{.Detail}}</td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{{end}}
+{{end}}

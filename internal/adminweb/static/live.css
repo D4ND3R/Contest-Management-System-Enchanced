@@ -1,0 +1,33 @@
+/* Contest Management System (Go fork)
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
+ *
+ * The live updates indicator next to the admin name (R6.9): live.js sets
+ * the Bootstrap 2 classes badge-success, badge-warning and badge-important
+ * (green, yellow, red), which the administration's stylesheet does not
+ * have. Colors of Bootstrap 2, as on the contestant site.
+ */
+
+#live_indicator.badge {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    padding: 0.2em;
+    border-radius: 0.6em;
+    vertical-align: middle;
+    background-color: #999999;
+    line-height: 0.5em;
+    font-size: 0.5em;
+}
+
+#live_indicator.badge-success {
+    background-color: #468847;
+}
+
+#live_indicator.badge-warning {
+    background-color: #f89406;
+}
+
+#live_indicator.badge-important {
+    background-color: #b94a48;
+}

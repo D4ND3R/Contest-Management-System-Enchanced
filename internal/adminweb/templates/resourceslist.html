@@ -1,0 +1,30 @@
+{{/*
+Ported from cms/server/admin/templates/resourceslist.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the machines are this
+server and the hosts of the workers (there is no ResourceService, D16).
+*/}}
+{{/* extends "base.html" */}}
+
+{{define "core"}}
+<div class="core_title">
+  <h1>{{T "Machine list"}}</h1>
+</div>
+
+{{T "See resource usage of the machines:"}}
+<ul>
+{{range .Machines}}
+{{if $.Contest}}
+  <li><a href="{{url "resources" .Index $.Contest.ID}}">{{.Host}}</a> ({{.Index}})</li>
+{{else}}
+  <li><a href="{{url "resources" .Index}}">{{.Host}}</a> ({{.Index}})</li>
+{{end}}
+{{end}}
+{{if .Contest}}
+  <li><a href="{{url "resources" "all" .Contest.ID}}">{{T "All"}}</a></li>
+{{else}}
+  <li><a href="{{url "resources" "all"}}">{{T "All"}}</a></li>
+{{end}}
+</ul>
+{{end}}

@@ -1,0 +1,290 @@
+{{/*
+Ported from cms/server/admin/templates/base.html of CMS (Contest Management
+System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2010-2018 Stefano Maggiolo, © 2012-2018 Luca Wehrstedt and the
+CMS contributors.
+Changes in this fork:
+- every text goes through T (admin catalogs); <html lang> is the page's
+  language; on non-English pages the translations of aws_utils.js come in a
+  script before it;
+- the inline <script> carries the CSP nonce; aws_handlers.js holds the
+  inline event handlers of the pages (D10), live.js the live updates (R6.9)
+  with live.css for the indicator next to the admin name;
+- the notifications are fetched at once on a question event and polled
+  every 15 s as in CMS; the unanswered questions badge is a live region;
+- the menu has the new pages (Judges, Server, Audit log);
+- the secret_key notice is gone (there is no default key, D5) and the
+  footer links to the source code of the running server (N8).
+*/}}
+<!DOCTYPE html>
+<html lang="{{lang}}">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="{{static "favicon.ico"}}" />
+    <link rel="stylesheet" type="text/css" href="{{static "reset.css"}}">
+    <link rel="stylesheet" type="text/css" href="{{static "aws_style.css"}}">
+    <script src="{{static "web_rpc.js"}}"></script>
+{{if ne lang "en"}}
+    <script nonce="{{nonce}}">var CMS_TRANSLATIONS = {{js_translations}};</script>
+{{end}}
+    <script src="{{static "aws_utils.js"}}"></script>
+    <script src="{{static "jq" "jquery-3.6.0.min.js"}}"></script>
+    <script src="{{static "jq" "jquery.jqplot.min.js"}}"></script>
+    <script src="{{static "jq" "jqplot.dateAxisRenderer.min.js"}}"></script>
+    <script src="{{static "jq" "jqplot.enhancedLegendRenderer.min.js"}}"></script>
+    <link rel="stylesheet" type="text/css" href="{{static "jq" "jquery.jqplot.min.css"}}"/>
+    <link rel="stylesheet" type="text/css" href="{{static "prism.css"}}">
+    <script src="{{static "prism.js"}}" data-manual></script>
+    <script src="{{static "aws_handlers.js"}}"></script>
+    <script src="{{static "live.js"}}"></script>
+    <link rel="stylesheet" type="text/css" href="{{static "live.css"}}">
+
+{{if not .Contest}}
+    <title>{{T "Admin"}}</title>
+{{else}}
+    <title>{{T "Admin"}}: {{.Contest.Description}}</title>
+{{end}}
+
+    <script nonce="{{nonce}}">
+<!--
+function init()
+{
+{{if not .Contest}}
+    utils = new CMS.AWSUtils("{{url}}", {{make_timestamp .Timestamp}}, 0, 0, 0, 0, 0);
+{{else}}
+{{with .Contest.MainGroup}}
+    utils = new CMS.AWSUtils("{{url}}", {{make_timestamp $.Timestamp}},
+        {{make_timestamp .Start}},
+        {{make_timestamp .Stop}},
+        {{make_timestamp .AnalysisStart}},
+        {{make_timestamp .AnalysisStop}},
+        {{int .AnalysisEnabled}});
+{{else}}
+    utils = new CMS.AWSUtils("{{url}}", {{make_timestamp .Timestamp}}, 0, 0, 0, 0, 0);
+{{end}}
+
+    utils.update_remaining_time();
+    setInterval(function() { utils.update_remaining_time(); }, 1000);
+{{end}}
+    utils.update_notifications();
+    setInterval(function() { utils.update_notifications(); }, 15000);
+    CMS.live.on("question resync", function() { utils.update_notifications(); });
+
+    $(document).click(utils.hide_subpage);
+
+    // delegate() ensures that the event is fired even for elements
+    // that are added in the future.
+    $(document).delegate('.toggling_on', 'click', utils.toggle_visibility);
+    $(document).delegate('.toggling_off', 'click', utils.toggle_visibility);
+
+    $(".diff-radio").change(utils.update_diff_ids);
+
+    {{block "js_init" .}}{{end}}
+}
+
+{{block "js" .}}{{end}}
+
+$(document).ready(init);
+
+//-->
+    </script>
+  </head>
+  <body class="admin">
+    <div id="global">
+      <div id="sidebar">
+{{if not .Admin}}
+        <div id="sidebar_header">
+          <h1 class="parent">{{T "Administration"}}</h1>
+        </div>
+{{else}}
+        <div id="sidebar_header">
+          <div class="login_notice">
+            {{T "Hello,"}} <a href="{{url "admins"}}">{{.Admin.Name}}</a>.{{if .LiveURL}} <span id="live_indicator" class="badge badge-warning" title="{{T "Live updates: connecting"}}" data-live-url="{{.LiveURL}}" data-live-since="{{.LiveSince}}" data-live-title-green="{{T "Live updates: connected"}}" data-live-title-yellow="{{T "Live updates: connecting"}}" data-live-title-red="{{T "Live updates: disconnected, the page checks for news periodically"}}">&nbsp;</span>{{end}}
+
+              <form class="inline" action="{{url "logout"}}" method="POST">{{xsrf_form_html}}<input type="submit" value="{{T "Logout"}}"></form>
+          </div>
+{{if not .Contest}}
+          <h1 class="parent">{{T "Administration"}}</h1>
+{{else}}
+          <h1 class="parent"><a href="{{url}}">{{T "Administration"}}</a></h1>
+          <h1 class="child">{{.Contest.Name}}</h1>
+{{end}}
+        </div>
+        <ul class="menu">
+{{if not .Contest}}
+          <li class="menu_entry"><a class="menu_link" href="{{url}}">{{T "Overview"}}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{url "resourceslist"}}">{{T "Resource usage"}}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{url "judges"}}">{{T "Judges"}}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{url "server"}}">{{T "Server"}}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{url "audit"}}">{{T "Audit log"}}</a></li>
+{{else}}
+          <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "overview"}}">{{T "Overview"}}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "resourceslist"}}">{{T "Resource usage"}}</a></li>
+{{end}}
+        </ul>
+        <div class="hr"></div>
+
+{{if not .Contest}}
+{{with .Sidebar}}
+        <h1><a class="menu_link" href="{{url "contests"}}">{{T "Contests"}}</a></h1>
+        <ul class="menu">
+{{if not .Contests}}
+          <li class="menu_entry">
+            {{T "(no contests available)"}}
+          </li>
+{{end}}
+
+{{range .Contests}}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{url "contest" .ID}}" title="{{.Title}}">
+              {{.Name}}
+            </a>
+          </li>
+{{end}}
+
+{{if .MoreContests}}
+          <li>
+            <a class="menu_link" href="{{url "contests"}}">
+              {{T "(show more...)"}}
+            </a>
+          </li>
+{{end}}
+
+{{if $.Admin.CanAll}}
+          <li class="menu_entry">
+            <a class="menu_link" href="{{url "contests" "add"}}">
+              {{T "(create new contest...)"}}
+            </a>
+          </li>
+{{end}}
+        </ul>
+
+        <h1><a class="menu_link" href="{{url "tasks"}}">{{T "Tasks"}}</a></h1>
+        <ul class="menu">
+{{if not .Tasks}}
+          <li class="menu_entry">
+            {{T "(no tasks available)"}}
+          </li>
+{{end}}
+
+{{range .Tasks}}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{url "task" .ID}}" title="{{.Title}}">
+              {{.Name}}
+            </a>
+          </li>
+{{end}}
+
+{{if .MoreTasks}}
+          <li>
+            <a class="menu_link" href="{{url "tasks"}}">
+              {{T "(show more...)"}}
+            </a>
+          </li>
+{{end}}
+
+{{if $.Admin.CanTasks}}
+          <li class="menu_entry">
+            <a class="menu_link" href="{{url "tasks" "add"}}">
+              {{T "(create new task...)"}}
+            </a>
+          </li>
+{{end}}
+        </ul>
+
+        <h1><a class="menu_link" href="{{url "users"}}">{{T "Users"}}</a></h1>
+        <ul class="menu">
+{{if eq .Users 0}}
+            <li class="menu_entry">
+              {{T "(no user available)"}}
+            </li>
+{{else}}
+            <li>
+              <a class="menu_link" href="{{url "users"}}">
+{{if eq .Users 1}}
+                  {{T "(show the only user...)"}}
+{{else}}
+                  {{Format (T "(show the %(count)s users...)") "count" .Users}}
+{{end}}
+              </a>
+            </li>
+{{end}}
+
+{{if $.Admin.CanAll}}
+          <li class="menu_entry">
+            <a class="menu_link" href="{{url "users" "add"}}">
+              {{T "(create new user...)"}}
+            </a>
+          </li>
+{{end}}
+        </ul>
+
+        <h1><a class="menu_link" href="{{url "teams"}}">{{T "Teams"}}</a></h1>
+        <ul class="menu">
+{{if eq .Teams 0}}
+            <li class="menu_entry">
+              {{T "(no team available)"}}
+            </li>
+{{else}}
+            <li>
+              <a class="menu_link" href="{{url "teams"}}">
+{{if eq .Teams 1}}
+                  {{T "(show the only team...)"}}
+{{else}}
+                  {{Format (T "(show the %(count)s teams...)") "count" .Teams}}
+{{end}}
+              </a>
+            </li>
+{{end}}
+
+{{if $.Admin.CanAll}}
+          <li class="menu_entry">
+            <a class="menu_link" href="{{url "teams" "add"}}">
+              {{T "(create new team...)"}}
+            </a>
+          </li>
+{{end}}
+        </ul>
+{{end}}
+{{else}}
+          <ul class="menu">
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID}}">{{T "General"}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "ranking"}}">{{T "Ranking"}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "submissions"}}">{{T "Submissions"}}</a></li>
+            {{if .Contest.AllowUserTests}}<li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "user_tests"}}">{{T "User tests"}}</a></li>{{end}}
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "users"}}">{{T "Users"}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "groups"}}">{{T "Groups"}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "tasks"}}">{{T "Tasks"}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "announcements"}}">{{T "Announcements"}}</a></li>
+            <li class="menu_entry">
+              <span id="unanswered_questions" class="unread" data-live="question"
+                {{if eq .Contest.Unanswered 0}} style="display: none;" {{end}}>
+                {{.Contest.Unanswered}}
+              </span>
+              <a class="menu_link" href="{{url "contest" .Contest.ID "questions"}}">{{T "Questions"}}</a>
+            </li>
+            <li class="menu_entry"><a class="menu_link" href="{{url "contest" .Contest.ID "audit"}}">{{T "Audit log"}}</a></li>
+          </ul>
+          <div class="hr"></div>
+          <div class="footer">
+            <span id="remaining_text"></span>
+            <span id="remaining_value"></span>
+          </div>
+{{end}}
+{{end}}
+        <div class="cr_notice">{{T "CMS"}} <a href="http://github.com/cms-dev/cms/">{{T "codebase"}}</a> {{T "is released under the"}}<br/><a href="http://www.gnu.org/licenses/agpl.txt">{{T "GNU Affero General Public License"}}</a>.<br/><a href="{{url "source"}}" rel="noreferrer" target="_blank">{{T "Source code"}}</a>.</div>
+      </div>
+
+      <div id="border"></div>
+      <div id="core">
+        <div id="notifications" class="notifications"></div>
+        <dialog id="subpage_popup">
+          <button id="subpage_close">x</button>
+          <div id="subpage_content"></div>
+        </dialog>
+        {{block "core" .}}{{end}}
+      </div>
+
+    </div>
+  </body>
+</html>
