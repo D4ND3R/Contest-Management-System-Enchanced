@@ -298,7 +298,7 @@ trabajos reales.
 
 ---
 
-## F9 — Instalación simple (código; pruebas pendientes)
+## F9 — Instalación simple (hecha salvo pruebas en VM)
 
 Por pedido del dueño esta fase se implementó sin pruebas: compila
 (`go build ./...`, `go vet`), los scripts pasan `bash -n` y los Compose
@@ -338,7 +338,7 @@ Por pedido del dueño esta fase se implementó sin pruebas: compila
 
 ---
 
-## F6 + F7 — Administración y scoreboard público (código; pruebas pendientes)
+## F6 + F7 — Administración y scoreboard público (hecha)
 
 Por pedido del dueño, F6, F7 y F9 se construyeron sin pruebas por fase; las
 pruebas se hacen al final.
@@ -380,3 +380,17 @@ pruebas se hacen al final.
 - Instalador en VMs limpias (Ubuntu 22.04/24.04, Debian 12), imágenes y
   GoReleaser.
 - `scripts/dev.sh start` usa un `bin/cms` viejo si no se corrió `make build`.
+
+---
+
+## Fase final de pruebas (hecha)
+
+- Pruebas nuevas de la administración (cada página por rol, acciones con
+  auditoría, rankings, filtros, preparación de problemas), del scoreboard
+  y su sink, y de los comandos de F9 (backup/restore, upgrade con falla
+  simulada en cada paso, add-admin, public-urls). Encontraron y
+  corrigieron 12 errores.
+- `make lint` y la suite completa con `-race` en verde.
+- Pendiente: instalador en VMs limpias, imágenes multi-arquitectura y
+  GoReleaser (requieren infraestructura que esta VM no tiene); k6 sobre
+  hardware real de 2 vCPU.

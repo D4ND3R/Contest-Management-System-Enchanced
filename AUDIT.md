@@ -4,7 +4,7 @@ Cada requisito de SPEC.md con su código, su prueba y su estado:
 **hecho**, **parcial**, **falta** o **requiere hardware** (necesita una
 máquina que esta VM no ofrece, p. ej. cgroups v2 para isolate).
 
-Actualizada al cerrar F5.
+Actualizada al cerrar la fase final de pruebas.
 
 ## F0 — Cimientos
 
@@ -47,14 +47,14 @@ Actualizada al cerrar F5.
 | R4.5 Datasets en segundo plano y cambio en vivo | hecho — autojudge y `ActivateDataset`; prueba de carrera con resultados |
 | R4.6 Caos | hecho — `TestChaos` (binario real, `kill -9`) |
 | R5.1–R5.9 Sitio del concursante | hecho — `internal/contestweb`, `internal/web`, `internal/l10n`; comparado con el CMS original en 61 páginas/estados; API contra respuestas del original; `live.js` probado en navegador |
-| R6.1–R6.9 Administración | código — `internal/adminweb` (núcleo con roles, auditoría y página Servidor probado; páginas de concursos, tareas, preparación de problemas, envíos y jueces sin pruebas propias); revisión de campo: todas las páginas cargan sin errores de JS/CSP y un envío real aparece juzgado |
-| R7.1–R7.4 Scoreboard público | código — `internal/rankingweb`, `internal/dispatcher/ranking.go`; sin pruebas propias; revisión de campo: el puntaje de un envío real llega al scoreboard |
+| R6.1–R6.9 Administración | hecho — `internal/adminweb`; pruebas de cada página por rol, acciones con auditoría, rankings, filtros con consultas acotadas, preparación de problemas; revisión de campo con juez real |
+| R7.1–R7.4 Scoreboard público | hecho — `internal/rankingweb`, `internal/dispatcher/ranking.go`; pruebas de entidades, puntajes, congelamiento, persistencia, REST, SSE, visibilidad y del sink contra el handler real; revisión de campo |
 | R8.1 Loaders italy_yaml, Polygon, TPS | hecho — `internal/importer/{italy,polygon,tps}`, comparados con los loaders del original en pruebas |
 | R8.2 Formato propio con validación y exportación | hecho — `internal/importer/pkg`, `cms ctl validate-task`/`export-task`; pruebas de ida y vuelta |
 | R8.3 Dumps de CMS | hecho — `internal/importer/dump`, `cms ctl import-dump`; comparado con `cmsDumpImporter`, versiones 14–49 |
 | R9.1 Instalador | código — `scripts/install.sh`, `cms ctl add-admin`, `cms ctl public-urls`; sin probar en VM (fase de pruebas) |
-| R9.2 `cmsctl upgrade` | código — `internal/ctl/upgrade.go` (D46), `CMS_UPGRADE_FAIL_AT`; sin probar |
-| R9.3 Backup / restore | código — `internal/ctl/{archive,backup,restore}.go`, `db.MigrateTx` (D44), `cms-backup.timer`; sin probar |
+| R9.2 `cmsctl upgrade` | hecho — `internal/ctl/upgrade.go` (D46); prueba con falla simulada en cada paso y camino exitoso |
+| R9.3 Backup / restore | hecho — `internal/ctl/{archive,backup,restore}.go` (D44); ida y vuelta tabla por tabla, archivos dañados, esquema viejo |
 | R9.4 Compose de producción e imágenes | código — `deploy/docker-compose.yml`, `deploy/compose-init.sh`, Dockerfiles multi-arq, `.github/workflows/images.yml`; `docker compose config` válido; sin correr |
 | R9.5 GoReleaser | código — `.goreleaser.yaml`, `.github/workflows/release.yml`; sin correr |
 | R9.6 Documentación | hecha — `docs/{es,en}`: instalación, actualización y respaldos, Docker, operación, problemas frecuentes, primeros pasos |
