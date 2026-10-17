@@ -27,7 +27,7 @@ msgstr ""
 msgid "%(count)s submissions match the filter."
 msgstr ""
 
-#: ../internal/adminweb/users_teams.go:376
+#: ../internal/adminweb/users_teams.go:377
 msgid "%(created)s team(s) created, %(updated)s updated."
 msgstr ""
 
@@ -1379,7 +1379,7 @@ msgstr ""
 
 #: ../internal/adminweb/admins.go:129
 #: ../internal/adminweb/admins.go:134
-#: ../internal/adminweb/contests.go:181
+#: ../internal/adminweb/contests.go:191
 #: ../internal/adminweb/contests_groups.go:80
 #: ../internal/adminweb/contests_groups.go:170
 #: ../internal/adminweb/contests_groups.go:289
@@ -1410,17 +1410,17 @@ msgstr ""
 #: ../internal/adminweb/users_participations.go:366
 #: ../internal/adminweb/users_teams.go:168
 #: ../internal/adminweb/users_teams.go:234
-#: ../internal/adminweb/users_teams.go:328
-#: ../internal/adminweb/users_teams.go:340
-#: ../internal/adminweb/users_teams.go:345
+#: ../internal/adminweb/users_teams.go:329
+#: ../internal/adminweb/users_teams.go:341
+#: ../internal/adminweb/users_teams.go:346
 msgid "Invalid field(s)"
 msgstr ""
 
-#: ../internal/adminweb/contests.go:397
+#: ../internal/adminweb/contests.go:405
 msgid "Invalid field(s)."
 msgstr ""
 
-#: ../internal/adminweb/contests.go:111
+#: ../internal/adminweb/contests.go:121
 #: ../internal/adminweb/contests_groups.go:90
 #: ../internal/adminweb/users.go:77
 #: ../internal/adminweb/users_teams.go:78
@@ -2631,7 +2631,7 @@ msgstr ""
 msgid "Teams"
 msgstr ""
 
-#: ../internal/adminweb/users_teams.go:376
+#: ../internal/adminweb/users_teams.go:377
 msgid "Teams imported"
 msgstr ""
 
