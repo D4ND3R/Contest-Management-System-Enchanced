@@ -495,7 +495,7 @@ ORDER BY u.username, p.contest_id DESC`, ids)
 		if code != nil {
 			k := rankingweb.EncodeID(*code)
 			ru.Team = &k
-			teams[k] = rankingweb.Team{Name: deref(tname)}
+			teams[k] = rankingweb.Team{Name: derefString(tname)}
 		}
 		users[rankingweb.EncodeID(username)] = ru
 		return nil
@@ -521,7 +521,7 @@ ORDER BY u.username, p.contest_id DESC`, ids)
 	return nil
 }
 
-func deref(s *string) string {
+func derefString(s *string) string {
 	if s == nil {
 		return ""
 	}

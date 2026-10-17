@@ -77,7 +77,12 @@ func (c *Collector) add(m Message, ref string) error {
 func (c *Collector) Messages() []Message {
 	out := make([]Message, 0, len(c.msgs))
 	for _, k := range c.order {
-		out = append(out, *c.msgs[k])
+		m := *c.msgs[k]
+		// Template defines are walked in map order: sort the references
+		// (file, then line number) so the output never depends on it.
+		m.Refs = append([]string(nil), m.Refs...)
+		sort.SliceStable(m.Refs, func(i, j int) bool { return refLess(m.Refs[i], m.Refs[j]) })
+		out = append(out, m)
 	}
 	sort.SliceStable(out, func(i, j int) bool {
 		if out[i].ID != out[j].ID {
@@ -320,4 +325,26 @@ func WritePOT(w io.Writer, domain string, msgs []Message) error {
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// refLess orders "file:line" references by file, then by line number.
+func refLess(a, b string) bool {
+	fa, la := splitRef(a)
+	fb, lb := splitRef(b)
+	if fa != fb {
+		return fa < fb
+	}
+	return la < lb
+}
+
+func splitRef(r string) (string, int) {
+	i := strings.LastIndexByte(r, ':')
+	if i < 0 {
+		return r, 0
+	}
+	n, err := strconv.Atoi(r[i+1:])
+	if err != nil {
+		return r, 0
+	}
+	return r[:i], n
 }

@@ -46,8 +46,8 @@ func TestRPC(t *testing.T) {
 	if r := ro.RPC("EvaluationService", "enable_worker", map[string]any{"shard": "w"}); r.Status != http.StatusForbidden {
 		t.Errorf("enable_worker as read-only: %d", r.Status)
 	}
-	if r := admin.RPC("EvaluationService", "enable_worker", map[string]any{"shard": "w"}); r.Status != http.StatusNotImplemented {
-		t.Errorf("enable_worker (stub): %d", r.Status)
+	if r := admin.RPC("EvaluationService", "enable_worker", map[string]any{"shard": "w"}); r.Status != http.StatusOK {
+		t.Errorf("enable_worker: %d", r.Status)
 	}
 	if r := ro.RPC("LogService", "last_messages", map[string]any{}); r.Status != http.StatusNotFound {
 		t.Errorf("unknown method: %d", r.Status)
