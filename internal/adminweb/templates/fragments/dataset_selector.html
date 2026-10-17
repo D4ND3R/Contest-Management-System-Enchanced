@@ -1,0 +1,40 @@
+{{/*
+Ported from cms/server/admin/templates/fragments/dataset_selector.html of
+CMS (Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 Stefano Maggiolo and the CMS
+contributors. Included with an *adminweb.datasetSelector. Changes in this
+fork: every text goes through T.
+*/}}
+
+<h2 id="title_datasets" class="toggling_off">{{T "Dataset:"}} {{.Shown.Description}}{{dataset_attrs .Shown.Active .Shown.Autojudge}}</h2>
+<div id="datasets" style="display: none;">
+
+{{if not .Datasets}}
+    {{T "No datasets exist for this task."}}
+{{else}}
+  <p>{{T "Current dataset:"}} "<strong>{{.Shown.Description}}</strong>".<br/>
+{{if gt (len .Datasets) 1}}
+  {{T "Click on one of the following items to view the results under a different dataset."}}</p>
+  <table>
+{{$shown := .Shown.ID}}
+{{$url := .URL}}
+{{range .Datasets}}
+    <tr><td>
+{{if eq .ID $shown}}
+      <strong>
+{{else}}
+      <a href="{{$url}}/{{.ID}}">
+{{end}}
+    {{.Description}}
+{{if eq .ID $shown}}
+      </strong>
+{{else}}
+      </a>
+{{end}}
+    {{dataset_attrs .Active .Autojudge}}
+    </td></tr>
+{{end}}
+  </table>
+{{end}}
+{{end}}
+</div>

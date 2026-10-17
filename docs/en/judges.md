@@ -136,3 +136,16 @@ evaluation:
 
 The name identifies the language in submissions and contests: do not change
 it once there are submissions.
+
+## The Judges page
+
+The administration shows the registered workers on the **Judges** page
+(`/judges`): state (running, stopping, broken with the sandbox error,
+disabled), current jobs, counters and last heartbeat; the queue by
+priority; the jobs in progress and the dead letters. From there (or from
+the *Overview*, as in CMS) a worker can be disabled: it finishes what it
+is running and takes no new jobs until enabled again, even across restarts
+(its name stays in `workers:disabled` in Valkey; the worker reads it at
+every heartbeat, so the change takes a few seconds). A job stuck on a
+worker can be requeued for another one, and a dead letter (out of
+attempts) can be requeued or deleted.

@@ -22,6 +22,11 @@ msgstr ""
 msgid " and %(count)s more"
 msgstr ""
 
+#: ../internal/adminweb/templates/contest_submissions.html:24
+#: ../internal/adminweb/templates/dataset.html:26
+msgid "%(count)s submissions match the filter."
+msgstr ""
+
 #: ../internal/adminweb/users_teams.go:376
 msgid "%(created)s team(s) created, %(updated)s updated."
 msgstr ""
@@ -183,6 +188,10 @@ msgstr ""
 
 #: ../internal/adminweb/templates/audit.html:51
 #: ../internal/adminweb/templates/import_preview.html:51
+#: ../internal/adminweb/templates/judges.html:29
+#: ../internal/adminweb/templates/judges.html:113
+#: ../internal/adminweb/templates/judges.html:146
+#: ../internal/adminweb/templates/judges.html:179
 #: ../internal/adminweb/templates/overview.html:261
 msgid "Action"
 msgstr ""
@@ -265,6 +274,10 @@ msgstr ""
 msgid "Admin"
 msgstr ""
 
+#: ../internal/adminweb/templates/submission.html:237
+msgid "Admin Details"
+msgstr ""
+
 #: ../internal/adminweb/templates/add_admin.html:18
 #: ../internal/adminweb/templates/admin.html:19
 msgid "Admin information"
@@ -290,9 +303,17 @@ msgstr ""
 
 #: ../internal/adminweb/templates/audit.html:21
 #: ../internal/adminweb/templates/audit.html:31
+#: ../internal/adminweb/templates/macro/submission.html:176
+#: ../internal/adminweb/templates/macro/submission.html:189
+#: ../internal/adminweb/templates/macro/submission.html:199
+#: ../internal/adminweb/templates/macro/submission.html:207
 #: ../internal/adminweb/templates/resourceslist.html:25
 #: ../internal/adminweb/templates/resourceslist.html:27
 msgid "All"
+msgstr ""
+
+#: ../internal/adminweb/templates/contest_submissions.html:18
+msgid "All Submissions"
 msgstr ""
 
 #: ../internal/adminweb/templates/admins.html:23
@@ -302,6 +323,10 @@ msgstr ""
 
 #: ../internal/adminweb/templates/contest.html:53
 msgid "All the allowed languages must have task support, for example in managed tasks."
+msgstr ""
+
+#: ../internal/adminweb/templates/contest_user_tests.html:16
+msgid "All user tests"
 msgstr ""
 
 #: ../internal/adminweb/templates/activate_dataset.html:130
@@ -413,6 +438,11 @@ msgstr ""
 msgid "Attachments for this task. Contestant can view and download attachments from the task page."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:144
+#: ../internal/adminweb/templates/judges.html:176
+msgid "Attempt"
+msgstr ""
+
 #: ../internal/adminweb/templates/audit.html:11
 #: ../internal/adminweb/templates/base.html:119
 #: ../internal/adminweb/templates/base.html:266
@@ -431,6 +461,7 @@ msgstr ""
 msgid "Block hidden participations"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:41
 #: ../internal/adminweb/templates/resources.html:38
 msgid "Broken"
 msgstr ""
@@ -513,6 +544,10 @@ msgstr ""
 msgid "Claimed by:"
 msgstr ""
 
+#: ../internal/adminweb/templates/fragments/dataset_selector.html:17
+msgid "Click on one of the following items to view the results under a different dataset."
+msgstr ""
+
 #: ../internal/adminweb/templates/task.html:327
 msgid "Clone"
 msgstr ""
@@ -535,6 +570,8 @@ msgstr ""
 msgid "Code of the team of the contestant in this contest. Only used in the external ranking."
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/submission.html:92
+#: ../internal/adminweb/templates/submission.html:233
 #: ../internal/adminweb/templates/task.html:478
 msgid "Codename"
 msgstr ""
@@ -553,9 +590,17 @@ msgstr ""
 msgid "Comma-separated list of output only testcases"
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/submission.html:47
+#: ../internal/adminweb/templates/submission.html:193
+msgid "Comment"
+msgstr ""
+
 #: ../internal/adminweb/tasks_params.go:338
 #: ../internal/adminweb/templates/activate_dataset.html:64
+#: ../internal/adminweb/templates/macro/reevaluation_buttons.html:18
 #: ../internal/adminweb/templates/participation.html:32
+#: ../internal/adminweb/templates/submission.html:299
+#: ../internal/adminweb/templates/user_test.html:128
 msgid "Compilation"
 msgstr ""
 
@@ -565,6 +610,16 @@ msgstr ""
 
 #: ../internal/grading/steps/messages.go:108
 msgid "Compilation memory limit exceeded"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:151
+#: ../internal/adminweb/templates/user_test.html:90
+msgid "Compilation sandbox"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:147
+#: ../internal/adminweb/templates/user_test.html:86
+msgid "Compilation shard"
 msgstr ""
 
 #: ../internal/adminweb/funcs.go:190
@@ -659,11 +714,16 @@ msgid "Create dataset"
 msgstr ""
 
 #: ../internal/adminweb/templates/activate_dataset.html:43
+#: ../internal/adminweb/templates/fragments/dataset_selector.html:15
 msgid "Current dataset:"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:259
 msgid "Current job"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:25
+msgid "Current jobs"
 msgstr ""
 
 #: ../internal/adminweb/templates/task.html:343
@@ -682,6 +742,7 @@ msgstr ""
 msgid "Dataset name %s is already taken."
 msgstr ""
 
+#: ../internal/adminweb/templates/fragments/dataset_selector.html:9
 #: ../internal/adminweb/templates/macro/prepare.html:8
 #: ../internal/adminweb/templates/task.html:317
 msgid "Dataset:"
@@ -691,11 +752,16 @@ msgstr ""
 msgid "Datasets"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:169
+msgid "Dead letters"
+msgstr ""
+
 #: ../internal/adminweb/templates/participation.html:136
 msgid "Delay"
 msgstr ""
 
 #: ../internal/adminweb/templates/delete_dataset.html:20
+#: ../internal/adminweb/templates/judges.html:195
 #: ../internal/adminweb/templates/task.html:113
 #: ../internal/adminweb/templates/task.html:136
 #: ../internal/adminweb/templates/task.html:330
@@ -718,12 +784,25 @@ msgstr ""
 msgid "Delete this admin"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:112
+msgid "Deliveries"
+msgstr ""
+
 #: ../internal/adminweb/templates/add_dataset.html:40
 #: ../internal/adminweb/templates/contest.html:38
 #: ../internal/adminweb/templates/contests.html:30
 msgid "Description"
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/submission.html:29
+msgid "Diff"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/submission.html:25
+msgid "Diff submissions..."
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:61
 #: ../internal/adminweb/templates/overview.html:157
 msgid "Disable"
 msgstr ""
@@ -733,6 +812,7 @@ msgid "Disable background judging"
 msgstr ""
 
 #: ../internal/adminweb/templates/contest.html:171
+#: ../internal/adminweb/templates/judges.html:41
 #: ../internal/adminweb/templates/task.html:187
 msgid "Disabled"
 msgstr ""
@@ -741,18 +821,35 @@ msgstr ""
 msgid "Disabled admins cannot log in."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:195
+msgid "Do you really want to delete this job?"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:61
 #: ../internal/adminweb/templates/overview.html:92
 msgid "Do you really want to disable worker %(worker)s?"
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/judges.html:10
+msgid "Do you really want to drop this job? The dispatcher enqueues it again if it is still needed."
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:59
 #: ../internal/adminweb/templates/overview.html:78
 msgid "Do you really want to enable worker %(worker)s?"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/judges.html:8
+msgid "Do you really want to give this job to another worker?"
 msgstr ""
 
 #: ../internal/adminweb/funcs.go:205
 #: ../internal/adminweb/templates/activate_dataset.html:60
 #: ../internal/adminweb/templates/activate_dataset.html:65
 #: ../internal/adminweb/templates/activate_dataset.html:70
+#: ../internal/adminweb/templates/macro/reevaluation_buttons.html:14
+#: ../internal/adminweb/templates/macro/reevaluation_buttons.html:19
+#: ../internal/adminweb/templates/macro/reevaluation_buttons.html:24
 #: ../internal/adminweb/templates/participation.html:28
 #: ../internal/adminweb/templates/participation.html:33
 #: ../internal/adminweb/templates/participation.html:38
@@ -783,6 +880,10 @@ msgstr ""
 
 #: ../internal/adminweb/templates/resources.html:38
 msgid "Draining"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/judges.html:10
+msgid "Drop"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:285
@@ -822,6 +923,7 @@ msgstr ""
 msgid "Edit selected user:"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:59
 #: ../internal/adminweb/templates/overview.html:151
 msgid "Enable"
 msgstr ""
@@ -870,8 +972,22 @@ msgid "Evaluating"
 msgstr ""
 
 #: ../internal/adminweb/templates/activate_dataset.html:69
+#: ../internal/adminweb/templates/macro/reevaluation_buttons.html:23
 #: ../internal/adminweb/templates/participation.html:37
+#: ../internal/adminweb/templates/user_test.html:111
 msgid "Evaluation"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:226
+msgid "Evaluation (as seen by the admin)"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:210
+msgid "Evaluation (as seen by the user)"
+msgstr ""
+
+#: ../internal/adminweb/templates/user_test.html:99
+msgid "Evaluation sandbox"
 msgstr ""
 
 #: ../internal/adminweb/prepare.go:247
@@ -942,6 +1058,16 @@ msgstr ""
 msgid "Failed"
 msgstr ""
 
+#: ../internal/adminweb/templates/submission.html:143
+#: ../internal/adminweb/templates/user_test.html:82
+msgid "Failures during compilation"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:170
+#: ../internal/adminweb/templates/user_test.html:94
+msgid "Failures during evaluation"
+msgstr ""
+
 #: ../internal/adminweb/templates/admins.html:31
 #: ../internal/adminweb/templates/admins.html:40
 #: ../internal/adminweb/templates/admins.html:41
@@ -972,6 +1098,7 @@ msgid "Files:"
 msgstr ""
 
 #: ../internal/adminweb/templates/audit.html:41
+#: ../internal/adminweb/templates/macro/submission.html:214
 msgid "Filter"
 msgstr ""
 
@@ -1087,6 +1214,10 @@ msgstr ""
 msgid "High"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:23
+msgid "Host"
+msgstr ""
+
 #: ../internal/adminweb/templates/resources.html:20
 msgid "Host statistics (CPU, memory, disk) are measured by the monitor service and are not shown here: see its metrics. Services are supervised by systemd or Docker."
 msgstr ""
@@ -1117,7 +1248,13 @@ msgstr ""
 
 #: ../internal/adminweb/templates/audit.html:39
 #: ../internal/adminweb/templates/overview.html:239
+#: ../internal/adminweb/templates/submission.html:41
+#: ../internal/adminweb/templates/user_test.html:33
 msgid "Id"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:46
+msgid "Idle"
 msgstr ""
 
 #: ../internal/adminweb/templates/contest.html:118
@@ -1187,6 +1324,10 @@ msgstr ""
 
 #: ../internal/adminweb/templates/teams.html:47
 msgid "Import teams"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:78
+msgid "In progress"
 msgstr ""
 
 #: ../internal/adminweb/templates/contest.html:173
@@ -1311,11 +1452,23 @@ msgstr ""
 msgid "It is used only if tokens are finite."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:108
+#: ../internal/adminweb/templates/judges.html:142
+#: ../internal/adminweb/templates/judges.html:174
 #: ../internal/adminweb/templates/overview.html:240
 msgid "Job"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:26
+msgid "Jobs done (failed)"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:103
+msgid "Jobs in progress"
+msgstr ""
+
 #: ../internal/adminweb/templates/base.html:117
+#: ../internal/adminweb/templates/judges.html:11
 msgid "Judges"
 msgstr ""
 
@@ -1324,6 +1477,9 @@ msgid "Kind"
 msgstr ""
 
 #: ../internal/adminweb/templates/import_preview.html:62
+#: ../internal/adminweb/templates/macro/submission.html:204
+#: ../internal/adminweb/templates/submission.html:64
+#: ../internal/adminweb/templates/user_test.html:56
 msgid "Language"
 msgstr ""
 
@@ -1342,6 +1498,18 @@ msgstr ""
 #: ../internal/adminweb/templates/add_user.html:28
 #: ../internal/adminweb/templates/user.html:88
 msgid "Last name of the contestant."
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:27
+msgid "Last seen"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/submission.html:43
+msgid "Latency"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:135
+msgid "Latency as seen by user"
 msgstr ""
 
 #: ../internal/adminweb/templates/contest.html:258
@@ -1428,6 +1596,14 @@ msgstr ""
 msgid "Make main group"
 msgstr ""
 
+#: ../internal/adminweb/templates/submission.html:102
+msgid "Make official"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:94
+msgid "Make unofficial"
+msgstr ""
+
 #: ../internal/adminweb/datasets.go:655
 msgid "Manager storage failed"
 msgstr ""
@@ -1442,6 +1618,14 @@ msgstr ""
 
 #: ../internal/adminweb/prepare.go:227
 msgid "Managers, checker and parameters needed by the task type"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:174
+msgid "Max execution time"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:178
+msgid "Max memory used"
 msgstr ""
 
 #: ../internal/adminweb/templates/groups.html:51
@@ -1573,6 +1757,10 @@ msgstr ""
 msgid "Newest entries"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:137
+msgid "Next jobs"
+msgstr ""
+
 #: ../internal/adminweb/communication.go:52
 msgid "No Comment/Please refer to task statement"
 msgstr ""
@@ -1585,12 +1773,24 @@ msgstr ""
 msgid "No attachments."
 msgstr ""
 
+#: ../internal/adminweb/templates/fragments/dataset_selector.html:13
+msgid "No datasets exist for this task."
+msgstr ""
+
 #: ../internal/adminweb/templates/task.html:308
 msgid "No datasets have been created for this task."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:184
+msgid "No dead letters."
+msgstr ""
+
 #: ../internal/adminweb/templates/audit.html:70
 msgid "No entries."
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:118
+msgid "No jobs in progress."
 msgstr ""
 
 #: ../internal/adminweb/tasks.go:659
@@ -1622,12 +1822,17 @@ msgstr ""
 msgid "No submissions for this task yet."
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/submission.html:20
 #: ../internal/adminweb/templates/participation.html:47
 msgid "No submissions found."
 msgstr ""
 
 #: ../internal/adminweb/templates/test_submissions.html:49
 msgid "No test submissions yet."
+msgstr ""
+
+#: ../internal/adminweb/templates/fragments/user_test_rows.html:10
+msgid "No user tests found."
 msgstr ""
 
 #: ../internal/adminweb/templates/activate_dataset.html:131
@@ -1638,12 +1843,17 @@ msgstr ""
 msgid "No users found."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:34
 #: ../internal/adminweb/templates/overview.html:118
 msgid "No workers found."
 msgstr ""
 
 #: ../internal/adminweb/templates/resources.html:38
 msgid "Not running"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:41
+msgid "Not running (disabled)"
 msgstr ""
 
 #: ../internal/adminweb/templates/macro/question.html:38
@@ -1670,8 +1880,18 @@ msgstr ""
 msgid "OI Restricted"
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/submission.html:46
+#: ../internal/adminweb/templates/macro/submission.html:196
+#: ../internal/adminweb/templates/submission.html:83
+msgid "Official"
+msgstr ""
+
 #: ../internal/adminweb/templates/audit.html:77
 msgid "Older entries"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:79
+msgid "Oldest waiting"
 msgstr ""
 
 #: ../internal/adminweb/templates/test_submissions.html:25
@@ -1873,6 +2093,10 @@ msgstr ""
 msgid "Primary?"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:76
+#: ../internal/adminweb/templates/judges.html:109
+#: ../internal/adminweb/templates/judges.html:143
+#: ../internal/adminweb/templates/judges.html:175
 #: ../internal/adminweb/templates/overview.html:241
 msgid "Priority"
 msgstr ""
@@ -1902,6 +2126,11 @@ msgstr ""
 msgid "Programming languages that contestants can use to solve this task.\n                                    If none are selected, all contest languages are allowed.\n                                    Otherwise, only the selected languages are allowed."
 msgstr ""
 
+#: ../internal/adminweb/templates/submission.html:31
+#: ../internal/adminweb/templates/user_test.html:27
+msgid "Property"
+msgstr ""
+
 #: ../internal/adminweb/templates/add_testcase.html:35
 #: ../internal/adminweb/templates/add_testcases.html:23
 #: ../internal/adminweb/templates/generator.html:30
@@ -1910,10 +2139,12 @@ msgstr ""
 msgid "Public"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:151
 #: ../internal/adminweb/templates/overview.html:59
 msgid "Queue empty."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:71
 #: ../internal/adminweb/templates/overview.html:234
 msgid "Queue status"
 msgstr ""
@@ -1932,16 +2163,41 @@ msgstr ""
 msgid "Reading testcase %s failed"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:177
+msgid "Reason"
+msgstr ""
+
 #: ../internal/adminweb/templates/task_files.html:18
 msgid "Recognized as"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/submission.html:48
+#: ../internal/adminweb/templates/submission.html:183
+msgid "Reevaluate"
+msgstr ""
+
+#: ../internal/adminweb/templates/dataset.html:29
+msgid "Reevaluate all %(count)s submissions for this dataset"
 msgstr ""
 
 #: ../internal/adminweb/templates/participation.html:26
 msgid "Reevaluate all %(count)s submissions for this user in this contest (for all datasets)"
 msgstr ""
 
+#: ../internal/adminweb/templates/contest_submissions.html:27
+msgid "Reevaluate all %(count)s submissions in this contest (for all datasets)"
+msgstr ""
+
 #: ../internal/adminweb/templates/activate_dataset.html:59
 msgid "Reevaluate all submissions for the dataset \"%(description)s\":"
+msgstr ""
+
+#: ../internal/adminweb/templates/dataset.html:27
+msgid "Reevaluate all submissions for this dataset"
+msgstr ""
+
+#: ../internal/adminweb/templates/contest_submissions.html:25
+msgid "Reevaluate all submissions in this contest (for all datasets)"
 msgstr ""
 
 #: ../internal/adminweb/templates/macro/prepare.html:28
@@ -2017,10 +2273,24 @@ msgstr ""
 msgid "Reply:"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:194
+#: ../internal/adminweb/templates/macro/judges.html:8
+msgid "Requeue"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:165
+#: ../internal/adminweb/templates/submission.html:285
+msgid "Rerun and archive"
+msgstr ""
+
 #: ../internal/adminweb/templates/base.html:116
 #: ../internal/adminweb/templates/base.html:122
 #: ../internal/adminweb/templates/resources.html:17
 msgid "Resource usage"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:239
+msgid "Resources"
 msgstr ""
 
 #: ../internal/adminweb/templates/task.html:173
@@ -2031,8 +2301,13 @@ msgstr ""
 msgid "Results"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:41
 #: ../internal/adminweb/templates/resources.html:38
 msgid "Running"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:240
+msgid "Sandbox"
 msgstr ""
 
 #: ../internal/adminweb/templates/add_dataset.html:133
@@ -2043,6 +2318,10 @@ msgstr ""
 #: ../internal/adminweb/templates/add_dataset.html:119
 #: ../internal/adminweb/templates/task.html:442
 msgid "Score Type"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:127
+msgid "Score as seen by user"
 msgstr ""
 
 #: ../internal/adminweb/templates/contest.html:93
@@ -2073,12 +2352,22 @@ msgstr ""
 
 #: ../internal/adminweb/prepare_submissions.go:175
 #: ../internal/adminweb/submissions.go:65
+#: ../internal/adminweb/templates/macro/submission.html:115
 #: ../internal/adminweb/templates/overview.html:29
+#: ../internal/adminweb/templates/submission.html:119
 msgid "Scored"
 msgstr ""
 
 #: ../internal/adminweb/templates/ranking.html:17
 msgid "Secret link to the public scoreboard (whoever has it can see the scoreboard):"
+msgstr ""
+
+#: ../internal/adminweb/templates/fragments/user_test_row.html:44
+msgid "See input"
+msgstr ""
+
+#: ../internal/adminweb/templates/user_test.html:119
+msgid "See output"
 msgstr ""
 
 #: ../internal/adminweb/templates/resourceslist.html:15
@@ -2103,6 +2392,10 @@ msgstr ""
 
 #: ../internal/adminweb/templates/contest_users.html:22
 msgid "Select a new user"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/submission.html:26
+msgid "Select two submissions from the table, or enter submission IDs:"
 msgstr ""
 
 #: ../internal/adminweb/templates/macro/question.html:109
@@ -2138,7 +2431,12 @@ msgid "Severity"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:257
+#: ../internal/adminweb/templates/submission.html:238
 msgid "Shard"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/submission.html:216
+msgid "Show all"
 msgstr ""
 
 #: ../internal/adminweb/templates/task.html:494
@@ -2149,6 +2447,8 @@ msgstr ""
 msgid "Show output"
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:145
+#: ../internal/adminweb/templates/judges.html:178
 #: ../internal/adminweb/templates/overview.html:242
 #: ../internal/adminweb/templates/overview.html:260
 #: ../internal/adminweb/templates/resources.html:30
@@ -2189,12 +2489,20 @@ msgstr ""
 msgid "Start time of the contest for users in this group in the %(tz)s timezone."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:24
+msgid "State"
+msgstr ""
+
 #: ../internal/adminweb/templates/task.html:106
 msgid "Statement for language \"%(lang)s\""
 msgstr ""
 
 #: ../internal/adminweb/templates/task.html:93
 msgid "Statements"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:41
+msgid "Stopping"
 msgstr ""
 
 #: ../internal/adminweb/communication.go:126
@@ -2206,12 +2514,20 @@ msgstr ""
 msgid "Subject:"
 msgstr ""
 
+#: ../internal/adminweb/templates/submission.html:20
+msgid "Submission %(id)s"
+msgstr ""
+
 #: ../internal/adminweb/templates/task.html:146
 msgid "Submission format"
 msgstr ""
 
 #: ../internal/adminweb/templates/activate_dataset.html:88
 msgid "Submission id"
+msgstr ""
+
+#: ../internal/adminweb/templates/submission.html:37
+msgid "Submission time"
 msgstr ""
 
 #: ../internal/adminweb/tasks_params.go:340
@@ -2288,6 +2604,11 @@ msgstr ""
 msgid "Task type settings"
 msgstr ""
 
+#: ../internal/adminweb/templates/submission.html:20
+#: ../internal/adminweb/templates/user_test.html:16
+msgid "Task:"
+msgstr ""
+
 #: ../internal/adminweb/templates/base.html:162
 #: ../internal/adminweb/templates/base.html:257
 msgid "Tasks"
@@ -2341,6 +2662,7 @@ msgid "Testcase storage failed"
 msgstr ""
 
 #: ../internal/adminweb/prepare.go:193
+#: ../internal/adminweb/templates/macro/submission.html:87
 msgid "Testcases"
 msgstr ""
 
@@ -2546,6 +2868,10 @@ msgstr ""
 msgid "Then generate the outputs with:"
 msgstr ""
 
+#: ../internal/adminweb/templates/contest_user_tests.html:21
+msgid "There are %(count)s user tests in this contest"
+msgstr ""
+
 #: ../internal/adminweb/templates/contest_remove.html:21
 #: ../internal/adminweb/templates/participation_remove.html:21
 #: ../internal/adminweb/templates/task_remove.html:21
@@ -2658,6 +2984,10 @@ msgstr ""
 
 #: ../internal/contestweb/communication.go:141
 msgid "Too many questions!"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:92
+msgid "Total"
 msgstr ""
 
 #: ../internal/adminweb/templates/add_dataset.html:68
@@ -2786,12 +3116,21 @@ msgid "Used for IP-based login restrictions and/or for autologin (in this case, 
 msgstr ""
 
 #: ../internal/adminweb/templates/activate_dataset.html:87
+#: ../internal/adminweb/templates/fragments/user_test_rows.html:20
+#: ../internal/adminweb/templates/macro/submission.html:40
+#: ../internal/adminweb/templates/macro/submission.html:184
 #: ../internal/adminweb/templates/ranking.html:25
+#: ../internal/adminweb/templates/submission.html:49
+#: ../internal/adminweb/templates/user_test.html:41
 msgid "User"
 msgstr ""
 
 #: ../internal/adminweb/tasks_params.go:352
 msgid "User I/O"
+msgstr ""
+
+#: ../internal/adminweb/templates/fragments/user_test_rows.html:23
+msgid "User input"
 msgstr ""
 
 #: ../internal/adminweb/tasks_params.go:354
@@ -2800,6 +3139,14 @@ msgstr ""
 
 #: ../internal/adminweb/tasks_params.go:353
 msgid "User processes read from stdin and write to stdout"
+msgstr ""
+
+#: ../internal/adminweb/templates/user_test.html:16
+msgid "User test %(id)s"
+msgstr ""
+
+#: ../internal/adminweb/templates/user_test.html:21
+msgid "User test details"
 msgstr ""
 
 #: ../internal/adminweb/templates/base.html:254
@@ -2835,14 +3182,36 @@ msgstr ""
 msgid "Validation"
 msgstr ""
 
+#: ../internal/adminweb/templates/submission.html:32
+#: ../internal/adminweb/templates/user_test.html:28
+msgid "Value"
+msgstr ""
+
 #: ../internal/adminweb/templates/test_submissions.html:57
 msgid "Verdict"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:28
+msgid "Version"
 msgstr ""
 
 #: ../internal/adminweb/templates/activate_dataset.html:45
 #: ../internal/adminweb/templates/activate_dataset.html:50
 #: ../internal/adminweb/templates/task.html:338
 msgid "View results"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/submission.html:94
+#: ../internal/adminweb/templates/submission.html:235
+msgid "Visible"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:77
+msgid "Waiting"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:99
+msgid "Waiting for a retry: %(delayed)s. Dead letters: %(dead)s."
 msgstr ""
 
 #: ../internal/adminweb/templates/import_preview.html:37
@@ -2892,8 +3261,20 @@ msgstr ""
 msgid "With 'restricted' contestants only see limited technical information about each testcase; with 'full' they see more details, but malicious contestants might use this data to get some information about the test data."
 msgstr ""
 
+#: ../internal/adminweb/templates/judges.html:111
+msgid "Without news for"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:110
+msgid "Worker"
+msgstr ""
+
 #: ../internal/adminweb/funcs.go:187
 msgid "Worker disabled"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:17
+msgid "Workers"
 msgstr ""
 
 #: ../internal/adminweb/templates/overview.html:252
@@ -2972,6 +3353,18 @@ msgstr ""
 msgid "Zip file name"
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/submission.html:115
+#: ../internal/adminweb/templates/macro/submission.html:120
+#: ../internal/adminweb/templates/submission.html:119
+#: ../internal/adminweb/templates/submission.html:217
+msgid "[Cannot get score type - see logs]"
+msgstr ""
+
+#: ../internal/adminweb/templates/fragments/user_test_row.html:32
+#: ../internal/adminweb/templates/macro/submission.html:124
+msgid "[Unknown status]"
+msgstr ""
+
 #: ../internal/adminweb/templates/task.html:95
 #: ../internal/adminweb/templates/task.html:126
 #: ../internal/adminweb/templates/task.html:421
@@ -2988,6 +3381,10 @@ msgstr ""
 
 #: ../internal/adminweb/prepare_files.go:138
 msgid "attachment %s"
+msgstr ""
+
+#: ../internal/adminweb/templates/judges.html:49
+msgid "attempt %(n)s"
 msgstr ""
 
 #: ../internal/adminweb/templates/base.html:275
@@ -3056,12 +3453,20 @@ msgstr ""
 msgid "manager, as it is (an executable)"
 msgstr ""
 
+#: ../internal/adminweb/templates/macro/submission.html:28
+msgid "new:"
+msgstr ""
+
 #: ../internal/adminweb/datasets.go:892
 msgid "none"
 msgstr ""
 
 #: ../internal/adminweb/prepare_files.go:153
 msgid "not recognized: ignored"
+msgstr ""
+
+#: ../internal/adminweb/templates/macro/submission.html:27
+msgid "old:"
 msgstr ""
 
 #: ../internal/adminweb/templates/login.html:53

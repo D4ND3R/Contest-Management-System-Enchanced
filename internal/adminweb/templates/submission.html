@@ -1,0 +1,315 @@
+{{/*
+Ported from cms/server/admin/templates/submission.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; times in the server time
+zone; the inline handlers are data- attributes (aws_handlers.js, D10); the
+page reloads when the result shown changes (R6.9).
+*/}}
+{{/* extends "base.html" */}}
+{{define "js_init"}}
+CMS.live.on("submission", function(name, data) {
+    if (data && data.submission == {{.S.ID}} && (!data.dataset || data.dataset == {{.Selector.Shown.ID}})) { CMS.live.reload_page(); }
+});
+{{end}}
+{{define "core"}}
+{{$sid := .S.ID}}
+{{$ds := .Selector.Shown.ID}}
+{{$next := url "submission" .S.ID .Selector.Shown.ID}}
+<div class="core_title">
+  <h1>{{Format (T "Submission %(id)s") "id" .S.ID}} ({{T "Task:"}} <a href="{{url "task" .Task.ID}}">{{.Task.Name}}</a>)</h1>
+</div>
+
+{{template "fragments/dataset_selector.html" .Selector}}
+
+<h2 id="title_details" class="toggling_on">{{T "Submission details"}}</h2>
+<div id="details">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>{{T "Property"}}</th>
+        <th>{{T "Value"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{T "Submission time"}}</td>
+        <td>{{form_datetime .S.Timestamp}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Id"}}</td>
+        <td>{{.S.ID}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Task"}}</td>
+        <td><a href="{{url "task" .Task.ID}}">{{.Task.Name}}</a></td>
+      </tr>
+      <tr>
+        <td>{{T "User"}}</td>
+        <td><a href="{{url "contest" .Contest "user" .User.ID "edit"}}">{{.User.Username}}</a></td>
+      </tr>
+      <tr>
+        <td>{{T "Files"}}</td>
+        <td>
+{{range .Files}}
+          <a href="javascript:void(0);" data-show-file="{{.Name}}" data-url="{{url "submission_file" .ID}}">
+            {{.Name}}
+          </a>
+          <br/>
+{{end}}
+        </td>
+      </tr>
+      <tr>
+        <td>{{T "Language"}}</td>
+        <td>
+{{if not .S.Language}}
+          {{T "N/A"}}
+{{else}}
+          {{.S.Language}}
+{{end}}
+      </tr>
+      <tr>
+        <td>{{T "Token"}}</td>
+        <td>
+{{if not .Token}}
+          {{T "No"}}
+{{else}}
+          {{T "Yes"}}
+{{end}}
+        </td>
+      </tr>
+      <tr>
+        <td>{{T "Official"}}</td>
+        <td>
+            <form action="{{url "submission" .S.ID $ds "official"}}" name="official_status_form" method="POST">
+            {{xsrf_form_html}}
+{{if .S.Official}}
+              <input type="hidden" name="official" value="no"/>
+              {{T "Yes"}}
+              <input
+{{if not .Admin.CanAll}}
+                  disabled
+{{end}}
+               type="submit" value="{{T "Make unofficial"}}" />
+{{else}}
+              <input type="hidden" name="official" value="yes"/>
+              {{T "No"}}
+              <input
+{{if not .Admin.CanAll}}
+                  disabled
+{{end}}
+               type="submit" value="{{T "Make official"}}" />
+{{end}}
+            </form>
+        </td>
+      </tr>
+      <tr>
+        <td>{{T "Status"}}</td>
+        <td id="submission_status">
+{{if eq .Status "compiling"}}
+            {{T "Compiling..."}}
+{{else if eq .Status "compilation_failed"}}
+            {{T "Compilation failed"}}
+{{else if eq .Status "evaluating"}}
+            {{T "Evaluating..."}}
+{{else if eq .Status "scoring"}}
+            {{T "Scoring..."}}
+{{else if eq .Status "scored"}}
+            {{T "Scored"}} ({{.Score}} / {{if .HasST}}{{.MaxScore}}{{else}}{{T "[Cannot get score type - see logs]"}}{{end}})
+{{else}}
+            {{T "N/A"}}
+{{end}}
+        </td>
+      </tr>
+{{if and (eq .Status "scored") .HasST}}
+      <tr>
+        <td>{{T "Score as seen by user"}}</td>
+        <td>
+            {{.UserScore}}
+        </td>
+      </tr>
+{{end}}
+{{if .Latency}}
+      <tr>
+        <td>{{T "Latency as seen by user"}}</td>
+        <td>
+          {{format_duration .Latency}}
+        </td>
+      </tr>
+{{end}}
+{{with .R}}
+      <tr>
+        <td>{{T "Failures during compilation"}}</td>
+        <td>{{.CompilationTries}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Compilation shard"}}</td>
+        <td>{{with .CompilationShard}}{{.}}{{else}}None{{end}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Compilation sandbox"}}</td>
+        <td>
+{{if $.CompSandbox}}
+{{range $.CompSandbox}}
+              <a href="{{url "file" .Digest .Filename}}">{{.Path}}</a>
+{{end}}
+{{else if .CompilationSandboxPaths}}
+            {{join " " .CompilationSandboxPaths}}
+{{end}}
+
+          <button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{"submission_id": {{$sid}}, "dataset_id": {{$ds}}, "level": "compilation", "archive_sandbox": true}' data-rpc-next="{{$next}}"
+{{if not $.Admin.CanAll}}
+          disabled
+{{end}}>
+            {{T "Rerun and archive"}}
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td>{{T "Failures during evaluation"}}</td>
+        <td>{{.EvaluationTries}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Max execution time"}}</td>
+        <td>{{with $.MaxTime}}{{.}} s{{else}}{{T "N/A"}}{{end}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Max memory used"}}</td>
+        <td>{{with $.MaxMemoryMiB}}{{.}} MiB{{else}}{{T "N/A"}}{{end}}</td>
+      </tr>
+{{end}}
+      <tr>
+        <td>{{T "Reevaluate"}}</td>
+        <td>
+          {{template "reevaluation_buttons" (dict "allowed" .Admin.CanAll "next" $next "args" (printf "\"submission_id\": %d, \"dataset_id\": %d" $sid $ds))}}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<h2 id="title_comment" class="toggling_on">{{T "Comment"}}</h2>
+
+<div id="comment">
+  <form enctype="multipart/form-data" action="{{url "submission" .S.ID $ds "comment"}}" method="POST">
+    {{xsrf_form_html}}
+    <textarea name="comment" cols="40" rows="3">{{.S.Comment}}</textarea><br/>
+    <input
+{{if not .Admin.CanAll}}
+       disabled
+{{end}}
+       type="submit"/>
+    <input type="reset" value="{{T "Reset"}}" />
+  </form>
+</div>
+
+{{if .Scored}}
+
+<h2 id="title_evaluation_user" class="toggling_on">{{T "Evaluation (as seen by the user)"}}</h2>
+<div id="evaluation_user">
+
+  <div class="score_details" id="evaluation_{{.S.ID}}">
+{{if .HasST}}
+        {{.UserDetails}}
+{{else}}
+      {{T "[Cannot get score type - see logs]"}}
+{{end}}
+  </div>
+</div>
+
+{{end}}
+
+{{if .Evaluated}}
+
+<h2 id="title_evaluation_admin" class="toggling_on">{{T "Evaluation (as seen by the admin)"}}</h2>
+<div id="evaluation_admin">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{T "Codename"}}</th>
+        <th>{{T "Outcome"}}</th>
+        <th>{{T "Visible"}}</th>
+        <th>{{T "Details"}}</th>
+        <th>{{T "Admin Details"}}</th>
+        <th>{{T "Shard"}}</th>
+        <th>{{T "Resources"}}</th>
+        <th>{{T "Sandbox"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range $i, $ev := .Evaluations}}
+        <tr>
+          <td>{{add $i 1}}</td>
+          <td>{{$ev.Codename}}</td>
+          <td id="eval_outcome_{{$ev.Codename}}">{{with $ev.Outcome}}{{.}}{{else}}None{{end}}</td>
+          <td style="text-align: center">
+            <input type="checkbox" disabled{{if $ev.Visible}} checked{{end}}>
+          </td>
+          <td id="eval_text_{{$ev.Codename}}">{{format_status_text $ev.Text}}</td>
+          <td id="eval_admin_text_{{$ev.Codename}}">
+{{if $ev.AdminText}}
+            {{$ev.AdminText}}
+{{else}}
+            {{T "N/A"}}
+{{end}}
+          </td>
+          <td>{{with $ev.EvaluationShard}}{{.}}{{else}}None{{end}}</td>
+          <td>
+{{if $ev.Time}}
+            ({{$ev.Time}} s)
+{{end}}
+{{if $ev.WallTime}}
+            ({{$ev.WallTime}} s)
+{{end}}
+{{with $ev.MemoryMiB}}
+            ({{.}} MiB)
+{{end}}
+          </td>
+          <td>
+{{if $ev.Sandboxes}}
+{{range $ev.Sandboxes}}
+                <a href="{{url "file" .Digest .Filename}}">{{.Path}}</a>
+{{end}}
+{{else if $ev.EvaluationSandboxPaths}}
+              {{join " " $ev.EvaluationSandboxPaths}}
+{{end}}
+
+            <button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{"submission_id": {{$sid}}, "dataset_id": {{$ds}}, "testcase_id": {{$ev.TestcaseID}}, "level": "evaluation", "archive_sandbox": true}' data-rpc-next="{{$next}}"
+{{if not $.Admin.CanAll}}
+            disabled
+{{end}}>
+              {{T "Rerun and archive"}}
+            </button>
+          </td>
+        </tr>
+{{end}}
+    </tbody>
+  </table>
+
+</div>
+
+{{end}}
+
+{{if .Compiled}}
+
+<h2 id="title_compilation" class="toggling_on">{{T "Compilation"}}</h2>
+<div id="compilation">
+
+  <h3>{{T "Outcome"}}</h3>
+  <pre>{{if .R.CompilationText}}{{format_status_text .R.CompilationText}}{{end}}</pre>
+
+  <h3>{{T "Standard output"}}</h3>
+  <pre>{{with .R.CompilationStdout}}{{.}}{{end}}</pre>
+
+  <h3>{{T "Standard error"}}</h3>
+  <pre>{{with .R.CompilationStderr}}{{.}}{{end}}</pre>
+
+</div>
+
+{{end}}
+
+{{end}}

@@ -139,3 +139,16 @@ evaluation:
 
 El nombre identifica al lenguaje en envíos y concursos: no cambiarlo una vez
 que haya envíos.
+
+## Página Jueces
+
+La administración muestra los workers registrados en la página **Jueces**
+(`/judges`): estado (en marcha, deteniéndose, roto con el error del
+sandbox, desactivado), trabajos actuales, contadores y último latido; la
+cola por prioridad; los trabajos en curso y los descartados. Desde ahí (o
+desde *Resumen*, como en CMS) se desactiva un worker: termina lo que está
+corriendo y no toma trabajos nuevos hasta que se lo active de nuevo, aunque
+se reinicie (el nombre queda en `workers:disabled` en Valkey; el worker lo
+lee en cada latido, así que el cambio tarda unos segundos). Un trabajo
+trabado en un worker se puede reencolar para que lo tome otro, y uno
+descartado (agotó sus intentos) se puede reencolar o eliminar.

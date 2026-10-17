@@ -1,0 +1,37 @@
+{{/*
+Ported from cms/server/admin/templates/contest_submissions.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 Stefano Maggiolo and the CMS
+contributors.
+Changes in this fork: every text goes through T; the filter form of R6.3
+(task, user, status, official, language) above the table; the count says
+"matching" when a filter is set; the rows are a live region (R6.9) and an
+empty list reloads on the first submission.
+*/}}
+{{/* extends "base.html" */}}
+{{define "js_init"}}
+CMS.live.on("submission", function() {
+    if (document.getElementById("submissions_none") !== null) { CMS.live.reload_page(); }
+});
+{{end}}
+{{define "core"}}
+<h1>{{T "All Submissions"}}</h1>
+
+<div id="submissions">
+
+  <p>
+{{if .Filter.Active}}
+    {{Format (T "%(count)s submissions match the filter.") "count" .Count}}
+    {{T "Reevaluate all submissions in this contest (for all datasets)"}}
+{{else}}
+    {{Format (T "Reevaluate all %(count)s submissions in this contest (for all datasets)") "count" .Count}}
+{{end}}
+    {{template "reevaluation_buttons" (dict "allowed" .Admin.CanAll "next" (url "contest" .Contest.ID "submissions") "args" (printf "\"contest_id\": %d" .Contest.ID))}}
+  </p>
+
+  {{template "submission.filter" .Filter}}
+
+  {{template "submission.rows" .Table}}
+</div>
+
+{{end}}

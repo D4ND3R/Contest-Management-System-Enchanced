@@ -60,6 +60,8 @@ type userTestData struct {
 	Status    string
 	Compiled  bool
 	Evaluated bool
+	// Output is the digest of the output of the test ("" none).
+	Output string
 }
 
 // userTestPage is GET /user_test/<id>[/<dataset>] (CMS UserTestHandler).
@@ -120,6 +122,7 @@ func (s *Server) userTestPage(c *Ctx) {
 		d.Status = userTestStatus(true, r.CompilationOutcome, r.EvaluationOutcome)
 		d.Compiled = r.CompilationOutcome != nil
 		d.Evaluated = r.EvaluationOutcome != nil
+		d.Output = deref(r.Output)
 	}
 	p, err := c.Page()
 	if err != nil {

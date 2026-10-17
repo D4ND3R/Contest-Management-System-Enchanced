@@ -1,0 +1,221 @@
+{{/*
+Ported from cms/server/admin/templates/macro/submission.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 Stefano Maggiolo and the CMS
+contributors.
+"submission.rows" renders a page of submissions: {{template
+"submission.rows" .Table}} with an *adminweb.subTable
+(submissions_rows.go); "submission.row" one row; "submission.filter" the
+filter form of the lists (new, R6.3).
+Changes in this fork:
+- every text goes through T; times are shown in the server time zone;
+- the inline handlers are data- attributes (aws_handlers.js, D10):
+  data-diffchooser, data-do-diff, data-show-file, data-rpc-*;
+- the rows are a live region (tbody id="submissions_rows",
+  data-live="submission", limited to a participation or a task): they
+  refresh when a submission changes (R6.9).
+*/}}
+{{define "submission.rows"}}
+{{if eq .Pager.Pages 0}}
+<p id="submissions_none">{{T "No submissions found."}}</p>
+
+{{else}}
+
+<details id="diffchooser" data-diffchooser>
+  <summary>{{T "Diff submissions..."}}</summary>
+  {{T "Select two submissions from the table, or enter submission IDs:"}} <br>
+  {{T "old:"}} <input type="number" size="5" id="diff-old-input">
+  {{T "new:"}} <input type="number" size="5" id="diff-new-input">
+  <button data-do-diff>{{T "Diff"}}</button>
+</details>
+
+{{template "pages.selector" .Pager}}
+
+<table class="bordered" id="submissions_table">
+  <thead>
+    <tr>
+      <th class="diff-only">-</th>
+      <th class="diff-only">+</th>
+      <th>{{T "Time"}}</th>
+      <th>{{T "User"}}</th>
+      <th>{{T "Task"}}</th>
+      <th>{{T "Status"}}</th>
+      <th>{{T "Latency"}}</th>
+      <th>{{T "Files"}}</th>
+      <th>{{T "Token"}}</th>
+      <th>{{T "Official"}}</th>
+      <th>{{T "Comment"}}</th>
+      <th>{{T "Reevaluate"}}</th>
+    </tr>
+  </thead>
+  <tbody id="submissions_rows" data-live="submission"{{with .MatchParticipation}} data-live-match-participation="{{.}}"{{end}}{{with .MatchTask}} data-live-match-task="{{.}}"{{end}}>
+{{$admin := .Admin}}
+{{range .Rows}}
+      {{template "submission.row" (dict "admin" $admin "s" .)}}
+{{end}}
+  </tbody>
+</table>
+{{end}}
+{{end}}
+
+{{define "submission.row"}}
+{{$s := .s}}
+<tr>
+  <td class="diff-only"><input type=radio class="diff-radio" name="diff-radio-old" data-submission="{{$s.ID}}"></td>
+  <td class="diff-only"><input type=radio class="diff-radio" name="diff-radio-new" data-submission="{{$s.ID}}"></td>
+  <td><a href="{{url "submission" $s.ID $s.DatasetID}}">{{form_datetime $s.Timestamp}}</a></td>
+  <td><a href="{{url "contest" $s.ContestID "user" $s.UserID "edit"}}">{{$s.Username}}</a></td>
+  <td><a href="{{url "task" $s.TaskID}}">{{$s.TaskName}}</a></td>
+  <td>
+{{if eq $s.Status "compiling"}}
+    {{T "Compiling..."}}
+{{else}}
+    <div id="title_evaluation_{{$s.ID}}" class="toggling_off">
+
+{{if eq $s.Status "compilation_failed"}}
+      {{T "Compilation failed"}}
+      <div id="evaluation_{{$s.ID}}" style="display: none;">
+
+{{else if eq $s.Status "evaluating"}}
+      {{T "Evaluating..."}}
+      <div id="evaluation_{{$s.ID}}" style="display: none;">
+
+{{else if eq $s.Status "scoring"}}
+      {{T "Scoring..."}}
+      <div id="evaluation_{{$s.ID}}" style="display: none;">
+{{if $s.Evaluated}}
+        <h3>{{T "Testcases"}}</h3>
+        <table class="nested bordered">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>{{T "Codename"}}</th>
+              <th>{{T "Outcome"}}</th>
+              <th>{{T "Visible"}}</th>
+              <th>{{T "Details"}}</th>
+            </tr>
+          </thead>
+          <tbody>
+{{range $i, $ev := $s.Evaluations}}
+            <tr>
+              <td>{{add $i 1}}</td>
+              <td>{{$ev.Codename}}</td>
+              <td>{{with $ev.Outcome}}{{.}}{{else}}None{{end}}</td>
+              <td style="text-align: center">
+                <input type="checkbox" disabled{{if $ev.Visible}} checked{{end}}>
+              </td>
+              <td>{{format_status_text $ev.Text}}</td>
+            </tr>
+{{end}}
+          </tbody>
+        </table>
+{{end}}
+
+{{else if eq $s.Status "scored"}}
+      {{T "Scored"}} ({{$s.Score}} / {{if $s.HasScoreType}}{{$s.MaxScore}}{{else}}{{T "[Cannot get score type - see logs]"}}{{end}})
+      <div id="evaluation_{{$s.ID}}" class="score_details" style="display: none;">
+{{if $s.HasScoreType}}
+          {{$s.Details}}
+{{else}}
+        {{T "[Cannot get score type - see logs]"}}
+{{end}}
+
+{{else}}
+      {{T "[Unknown status]"}}
+      <div id="evaluation_{{$s.ID}}" style="display: none;">
+
+{{end}}
+        <h3>{{T "Compilation output"}}</h3>
+        <pre>{{if $s.CompilationText}}{{format_status_text $s.CompilationText}}{{end}}</pre>
+      </div>
+    </div>
+
+{{end}}
+  </td>
+  <td id="latency">
+{{if $s.Latency}}
+      {{format_duration $s.Latency}}
+{{end}}
+  </td>
+  <td>
+{{range $s.Files}}
+    <a href="javascript:void(0);" data-show-file="{{.Name}}" data-url="{{url "submission_file" .ID}}">{{.Name}}</a><br/>
+{{end}}
+  </td>
+  <td>
+{{if not $s.Token}}
+    {{T "No"}}
+{{else}}
+    {{T "Yes"}}
+{{end}}
+  </td>
+  <td>
+{{if $s.Official}}
+    {{T "Yes"}}
+{{else}}
+    {{T "No"}}
+{{end}}
+  </td>
+  <td>
+    {{$s.ShortComment}}
+  </td>
+  <td>
+    {{template "reevaluation_buttons" (dict "allowed" .admin.CanAll "next" (url "submission" $s.ID $s.DatasetID) "args" (printf "\"submission_id\": %d, \"dataset_id\": %d" $s.ID $s.DatasetID))}}
+  </td>
+</tr>
+{{end}}
+
+{{define "submission.filter"}}
+<form action="" method="GET" id="submissions_filter">
+  <table>
+    <tr>
+{{if .Tasks}}
+      <td>{{T "Task"}}</td>
+      <td>
+        <select name="task">
+          <option value="">{{T "All"}}</option>
+{{$task := .Task}}
+{{range .Tasks}}
+          <option value="{{.ID}}"{{if eq .ID $task}} selected{{end}}>{{.Name}}</option>
+{{end}}
+        </select>
+      </td>
+{{end}}
+      <td>{{T "User"}}</td>
+      <td><input type="text" name="user" value="{{.User}}" size="12"></td>
+      <td>{{T "Status"}}</td>
+      <td>
+        <select name="status">
+          <option value="">{{T "All"}}</option>
+{{$status := .Status}}
+{{range .Statuses}}
+          <option value="{{.Value}}"{{if eq .Value $status}} selected{{end}}>{{T .Label}}</option>
+{{end}}
+        </select>
+      </td>
+      <td>{{T "Official"}}</td>
+      <td>
+        <select name="official">
+          <option value="">{{T "All"}}</option>
+          <option value="yes"{{if eq .Official "yes"}} selected{{end}}>{{T "Yes"}}</option>
+          <option value="no"{{if eq .Official "no"}} selected{{end}}>{{T "No"}}</option>
+        </select>
+      </td>
+      <td>{{T "Language"}}</td>
+      <td>
+        <select name="language">
+          <option value="">{{T "All"}}</option>
+{{$lang := .Language}}
+{{range .Languages}}
+          <option value="{{.}}"{{if eq . $lang}} selected{{end}}>{{.}}</option>
+{{end}}
+        </select>
+      </td>
+      <td><input type="submit" value="{{T "Filter"}}"></td>
+{{if .Active}}
+      <td><a href="?">{{T "Show all"}}</a></td>
+{{end}}
+    </tr>
+  </table>
+</form>
+{{end}}

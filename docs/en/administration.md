@@ -206,3 +206,55 @@ Preparing problems in the browser (importing packages with a preview,
 `problem.yaml`, files one by one, testcases one by one with generated
 outputs, a generator, test submissions and the list of what is missing) is
 in [Creating a problem](creating-a-problem.md).
+
+## Submissions, user tests and reevaluation
+
+- **Contest submissions** (`/contest/<id>/submissions`): the list of the
+  original, 50 per page, newest first, with a filter form (R6.3): task,
+  user (username), status (compiling, compilation failed, evaluating,
+  scoring, scored), official and language. Filters combine and are kept
+  across pages. A page reads at most `tasks × (offset + 50)` submissions
+  through the indexes (D24) with a fixed number of queries whatever the
+  size of the contest; the status, official and language filters walk the
+  submissions of each task until the page is full.
+- **Submissions of a dataset** (`/dataset/<id>`): the same submissions with
+  their results on that dataset (dataset selector as in the original).
+- **Submission page**: files (downloadable), language, token, official
+  (*Make official / unofficial*; it also recomputes the task score and
+  tells the scoreboard), status and score, latency, compilation and
+  evaluation failures, maximum time and memory, compilation output, the
+  evaluation of each testcase with the admin text (*Admin Details*), and
+  the score details as the contestant sees them. *Rerun and archive*
+  recompiles or reevaluates one testcase asking the worker to archive the
+  sandbox.
+- **Diff submissions...**: two submissions of the table or by id; the
+  unified diff is Python's `difflib` one (files up to 1 MB and 5000
+  lines).
+- **User tests** of the contest and the page of each test (input, output,
+  compilation).
+- **Reevaluation**: the C (recompile), E (reevaluate) and S (rescore)
+  buttons of the original on a submission, a dataset, a participation and
+  the whole contest. They do what CMS's `invalidate_submission` does: drop
+  that part of the results in one transaction (`internal/judging`), record
+  the action in the audit log (`submission.recompile`,
+  `submission.reevaluate`, `submission.rescore`) and notify the
+  dispatcher. As in CMS, reevaluating needs full permissions: the problem
+  preparer does not reevaluate contestants' submissions.
+
+The submission and user test tables update by themselves (R6.9): the rows
+are live regions reloaded on the contest's `submission` and `user_test`
+events, and a submission page reloads when its result changes.
+
+## Judges
+
+The **Judges** page (main menu) shows the workers (name, host, state,
+current jobs, done and failed, last seen, version), the queue by priority
+(waiting, in progress, oldest wait, retries and dead letters), the jobs in
+progress, the next jobs and the dead letters. With full permissions an
+admin can disable or enable a worker (it takes no new jobs and finishes
+its current ones; it stays disabled across restarts), requeue a stuck job
+in progress (another worker takes it at once), drop a job from the queue
+(the dispatcher enqueues it again if it is still needed) and requeue or
+delete a dead letter. Every action is audited. The page follows the
+dispatcher's `judging` and `worker` events; see also
+[judges.md](judges.md).

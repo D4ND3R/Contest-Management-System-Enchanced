@@ -1,0 +1,27 @@
+{{/*
+Ported from cms/server/admin/templates/contest_user_tests.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 Stefano Maggiolo and the CMS
+contributors. Changes in this fork: every text goes through T; the rows
+are a live region (R6.9) and an empty list reloads on the first test.
+*/}}
+{{/* extends "base.html" */}}
+{{define "js_init"}}
+CMS.live.on("user_test", function() {
+    if (document.getElementById("user_tests_none") !== null) { CMS.live.reload_page(); }
+});
+{{end}}
+{{define "core"}}
+
+<h1>{{T "All user tests"}}</h1>
+
+<div id="user_tests">
+
+  <p>
+    {{Format (T "There are %(count)s user tests in this contest") "count" .Table.Count}}
+  </p>
+
+  {{template "fragments/user_test_rows.html" .Table}}
+</div>
+
+{{end}}

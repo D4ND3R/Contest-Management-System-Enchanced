@@ -314,6 +314,8 @@ func (s *Server) routes() []Route {
 
 		// Judges (C: judges.go, R6.7).
 		{Method: "GET", Path: "/judges", Perm: PermRead, Handler: s.judgesPage},
+		{Method: "POST", Path: "/judges/job", Perm: PermAll, Handler: s.judgesJobPost},
+		{Method: "POST", Path: "/judges/dead", Perm: PermAll, Handler: s.judgesDeadPost},
 	}
 }
 

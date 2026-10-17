@@ -66,17 +66,6 @@ FROM participations p
 JOIN users u ON u.id = p.user_id
 WHERE p.contest_id = sqlc.arg(contest_id)::integer AND u.username = sqlc.arg(username);
 
--- name: AdminContestLanguages :many
--- The languages of the submissions of a contest, for the language filter
--- (the distinct languages of each task, through ix_submissions_task_id
--- would need a skip scan: this reads the submissions of the contest once,
--- like the count of the page).
-SELECT DISTINCT s.language::text AS language
-FROM submissions s
-JOIN tasks t ON t.id = s.task_id
-WHERE t.contest_id = sqlc.arg(contest_id)::integer AND s.language IS NOT NULL
-ORDER BY 1;
-
 -- name: AdminSubmissionFile :one
 -- A file of a submission with the submission's language (its name
 -- replaces %l).

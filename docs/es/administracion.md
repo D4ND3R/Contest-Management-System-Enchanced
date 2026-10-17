@@ -216,3 +216,58 @@ La preparación desde el navegador (importar paquetes con vista previa,
 `problem.yaml`, archivos uno por uno, casos uno por uno con salidas
 generadas, generador, envíos de prueba y lista de lo que falta) está en
 [Crear un problema](crear-problema.md).
+
+## Envíos, pruebas de usuario y reevaluación
+
+- **Envíos del concurso** (`/contest/<id>/submissions`): la lista del
+  original, 50 por página y la más nueva primero, con un formulario de
+  filtros (R6.3): tarea, usuario (nombre de usuario), estado (compilando,
+  falló la compilación, evaluando, puntuando, puntuado), oficial y
+  lenguaje. Los filtros se combinan y se conservan al cambiar de página.
+  Cada página lee a lo sumo `tareas × (desplazamiento + 50)` envíos por los
+  índices (D24) y un número fijo de consultas, sin importar el tamaño del
+  concurso; los filtros de estado, oficial y lenguaje recorren los envíos
+  de cada tarea hasta llenar la página.
+- **Envíos de un dataset** (`/dataset/<id>`): los mismos envíos con sus
+  resultados en ese dataset (selector de datasets como en el original).
+- **Página del envío**: archivos (descargables), lenguaje, token, oficial
+  (botón *Hacer oficial / no oficial*; además recalcula el puntaje de la
+  tarea y avisa al scoreboard), estado y puntaje, latencia, fallos de
+  compilación y evaluación, tiempo y memoria máximos, salida de la
+  compilación, la evaluación de cada caso con el texto para el
+  administrador (*Admin Details*), y los detalles del puntaje como los ve
+  el concursante. *Repetir y archivar* vuelve a compilar o a evaluar un caso
+  pidiendo al worker que archive la caja.
+- **Comparar envíos** (*Diff submissions...*): dos envíos de la tabla o por
+  ID; el diff unificado es el de `difflib` de Python (archivos de hasta
+  1 MB y 5000 líneas).
+- **Pruebas de usuario** del concurso y página de cada prueba (entrada,
+  salida, compilación).
+- **Reevaluación**: los botones C (recompilar), E (reevaluar) y S
+  (repuntuar) del original en cada envío, en un dataset, en una
+  participación y en todo el concurso. Hacen lo mismo que
+  `invalidate_submission` de CMS: descartan esa parte de los resultados en
+  una transacción (`internal/judging`), registran la acción en la auditoría
+  (`submission.recompile`, `submission.reevaluate`, `submission.rescore`) y
+  avisan al dispatcher. Como en CMS, reevaluar requiere permiso total: el
+  preparador de problemas no reevalúa envíos de concursantes.
+
+Las tablas de envíos y de pruebas se actualizan solas (R6.9): las filas
+son regiones en vivo que se recargan con los eventos `submission` y
+`user_test` del concurso, y la página de un envío se recarga cuando su
+resultado cambia.
+
+## Jueces
+
+La página **Jueces** (menú principal) muestra los workers (nombre, host,
+estado, trabajos actuales, hechos y fallidos, cuándo se vio por última vez,
+versión), la cola por prioridad (en espera, en curso, espera más antigua,
+reintentos y trabajos descartados), los trabajos en curso, los próximos y
+los descartados. Con permiso total se puede desactivar o activar un worker
+(deja de tomar trabajos nuevos y termina los que tiene; queda desactivado
+aunque se reinicie), reencolar un trabajo en curso que está trabado (otro
+worker lo toma enseguida), quitar un trabajo de la cola (el dispatcher lo
+vuelve a encolar si todavía hace falta) y reencolar o eliminar un trabajo
+descartado. Cada acción queda en la auditoría. La página se actualiza con
+los eventos `judging` y `worker` del dispatcher; ver también
+[jueces.md](jueces.md).

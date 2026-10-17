@@ -247,8 +247,8 @@ func (s *Server) rpcWorkersStatus(c *Ctx, _ json.RawMessage) (any, error) {
 			st.StartTime = &t
 		}
 		st.Operations = ops
-		if w.Draining || w.Error != "" {
-			// Draining (or broken): it takes no new jobs.
+		if w.Draining || w.Error != "" || w.Disabled {
+			// Draining, broken or disabled: it takes no new jobs.
 			st.Operations = "disabled"
 		}
 		out[w.Name] = st

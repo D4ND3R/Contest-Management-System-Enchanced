@@ -1,0 +1,144 @@
+{{/*
+Ported from cms/server/admin/templates/user_test.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; data-show-file instead
+of onclick (D10); the page reloads when the test changes state (R6.9).
+*/}}
+{{/* extends "base.html" */}}
+{{define "js_init"}}
+CMS.live.on("user_test", function(name, data) {
+    if (data && data.user_test == {{.UT.ID}}) { CMS.live.reload_page(); }
+});
+{{end}}
+{{define "core"}}
+<div class="core_title">
+  <h1>{{Format (T "User test %(id)s") "id" .UT.ID}} ({{T "Task:"}} <a href="{{url "task" .Task.ID}}">{{.Task.Name}}</a>)</h1>
+</div>
+
+{{template "fragments/dataset_selector.html" .Selector}}
+
+<h2 id="title_details" class="toggling_on">{{T "User test details"}}</h2>
+<div id="details">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>{{T "Property"}}</th>
+        <th>{{T "Value"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{T "Id"}}</td>
+        <td>{{.UT.ID}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Task"}}</td>
+        <td><a href="{{url "task" .Task.ID}}">{{.Task.Name}}</a></td>
+      </tr>
+      <tr>
+        <td>{{T "User"}}</td>
+        <td><a href="{{url "contest" .Contest "user" .User.ID "edit"}}">{{.User.Username}}</a></td>
+      </tr>
+      <tr>
+        <td>{{T "Files"}}</td>
+        <td>
+{{range .Files}}
+          <a href="javascript:void(0);" data-show-file="{{.Name}}" data-url="{{url "user_test_file" .ID}}">
+            {{.Name}}
+          </a>
+          <br/>
+{{end}}
+        </td>
+      </tr>
+      <tr>
+        <td>{{T "Language"}}</td>
+        <td>
+{{if not .UT.Language}}
+          {{T "N/A"}}
+{{else}}
+          {{.UT.Language}}
+{{end}}
+      </tr>
+      <tr>
+        <td>{{T "Status"}}</td>
+        <td id="user_test_status">
+{{if eq .Status "compiling"}}
+          {{T "Compiling..."}}
+{{else if eq .Status "compilation_failed"}}
+          {{T "Compilation failed"}}
+{{else if eq .Status "evaluating"}}
+          {{T "Evaluating..."}}
+{{else if eq .Status "evaluated"}}
+          {{T "Evaluated"}}
+{{else}}
+          {{T "N/A"}}
+{{end}}
+        </td>
+      </tr>
+{{with .R}}
+      <tr>
+        <td>{{T "Failures during compilation"}}</td>
+        <td>{{.CompilationTries}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Compilation shard"}}</td>
+        <td>{{with .CompilationShard}}{{.}}{{else}}None{{end}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Compilation sandbox"}}</td>
+        <td>{{join " " .CompilationSandboxPaths}}</td>
+      </tr>
+      <tr>
+        <td>{{T "Failures during evaluation"}}</td>
+        <td>{{.EvaluationTries}}</td>
+      </tr>
+{{if $.Evaluated}}
+        <tr>
+          <td>{{T "Evaluation sandbox"}}</td>
+          <td>{{join " " .EvaluationSandboxPaths}}</td>
+        </tr>
+{{end}}
+{{end}}
+    </tbody>
+  </table>
+
+</div>
+
+{{if .Evaluated}}
+
+<h2 id="title_evaluation" class="toggling_on">{{T "Evaluation"}}</h2>
+<div id="evaluation">
+
+  <h3>{{T "Outcome"}}</h3>
+  <pre>{{if .R.EvaluationText}}{{format_status_text .R.EvaluationText}}{{end}}</pre>
+
+{{if .Output}}
+  <h3>{{T "Output"}}</h3>
+  <a href="javascript:void(0);" data-show-file="output" data-url="{{url "file" .Output "output"}}">{{T "See output"}}</a>
+{{end}}
+
+</div>
+
+{{end}}
+
+{{if .Compiled}}
+
+<h2 id="title_compilation" class="toggling_on">{{T "Compilation"}}</h2>
+<div id="compilation">
+
+  <h3>{{T "Outcome"}}</h3>
+  <pre>{{if .R.CompilationText}}{{format_status_text .R.CompilationText}}{{end}}</pre>
+
+  <h3>{{T "Standard output"}}</h3>
+  <pre>{{with .R.CompilationStdout}}{{.}}{{end}}</pre>
+
+  <h3>{{T "Standard error"}}</h3>
+  <pre>{{with .R.CompilationStderr}}{{.}}{{end}}</pre>
+
+</div>
+
+{{end}}
+
+{{end}}

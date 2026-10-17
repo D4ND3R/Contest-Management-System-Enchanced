@@ -2120,3 +2120,270 @@ msgid "%(n)s submission"
 msgid_plural "%(n)s submissions"
 msgstr[0] "%(n)s envío"
 msgstr[1] "%(n)s envíos"
+
+msgid "%(count)s submissions match the filter."
+msgstr "%(count)s envíos coinciden con el filtro."
+
+msgid "Admin Details"
+msgstr "Detalles para el administrador"
+
+msgid "All Submissions"
+msgstr "Todos los envíos"
+
+msgid "All user tests"
+msgstr "Todas las pruebas de usuario"
+
+msgid "Attempt"
+msgstr "Intento"
+
+msgid "Click on one of the following items to view the results under a different dataset."
+msgstr "Haga clic en uno de los siguientes elementos para ver los resultados con otro dataset."
+
+msgid "Comment"
+msgstr "Comentario"
+
+msgid "Compilation sandbox"
+msgstr "Sandbox de compilación"
+
+msgid "Compilation shard"
+msgstr "Shard de compilación"
+
+msgid "Current jobs"
+msgstr "Trabajos actuales"
+
+msgid "Dead letters"
+msgstr "Trabajos descartados"
+
+msgid "Deliveries"
+msgstr "Entregas"
+
+msgid "Diff"
+msgstr "Comparar"
+
+msgid "Diff submissions..."
+msgstr "Comparar envíos..."
+
+msgid "Do you really want to delete this job?"
+msgstr "¿Seguro que quiere eliminar este trabajo?"
+
+msgid "Do you really want to drop this job? The dispatcher enqueues it again if it is still needed."
+msgstr "¿Seguro que quiere quitar este trabajo? El dispatcher lo vuelve a encolar si todavía hace falta."
+
+msgid "Do you really want to give this job to another worker?"
+msgstr "¿Seguro que quiere darle este trabajo a otro worker?"
+
+msgid "Drop"
+msgstr "Quitar"
+
+msgid "Evaluation (as seen by the admin)"
+msgstr "Evaluación (como la ve el administrador)"
+
+msgid "Evaluation (as seen by the user)"
+msgstr "Evaluación (como la ve el usuario)"
+
+msgid "Evaluation sandbox"
+msgstr "Sandbox de evaluación"
+
+msgid "Extra high"
+msgstr "Muy alta"
+
+msgid "Extra low"
+msgstr "Muy baja"
+
+msgid "Failures during compilation"
+msgstr "Fallos durante la compilación"
+
+msgid "Failures during evaluation"
+msgstr "Fallos durante la evaluación"
+
+msgid "High"
+msgstr "Alta"
+
+msgid "Host"
+msgstr "Host"
+
+msgid "Idle"
+msgstr "Libre"
+
+msgid "In progress"
+msgstr "En curso"
+
+msgid "Jobs done (failed)"
+msgstr "Trabajos hechos (fallidos)"
+
+msgid "Jobs in progress"
+msgstr "Trabajos en curso"
+
+msgid "Last seen"
+msgstr "Visto hace"
+
+msgid "Latency"
+msgstr "Latencia"
+
+msgid "Latency as seen by user"
+msgstr "Latencia vista por el usuario"
+
+msgid "Low"
+msgstr "Baja"
+
+msgid "Make official"
+msgstr "Hacer oficial"
+
+msgid "Make unofficial"
+msgstr "Hacer no oficial"
+
+msgid "Max execution time"
+msgstr "Tiempo máximo de ejecución"
+
+msgid "Max memory used"
+msgstr "Memoria máxima usada"
+
+msgid "Medium"
+msgstr "Media"
+
+msgid "Next jobs"
+msgstr "Próximos trabajos"
+
+msgid "No datasets exist for this task."
+msgstr "No hay datasets para esta tarea."
+
+msgid "No dead letters."
+msgstr "No hay trabajos descartados."
+
+msgid "No jobs in progress."
+msgstr "No hay trabajos en curso."
+
+msgid "No user tests found."
+msgstr "No se encontraron pruebas de usuario."
+
+msgid "Not running (disabled)"
+msgstr "Detenido (desactivado)"
+
+msgid "Official"
+msgstr "Oficial"
+
+msgid "Oldest waiting"
+msgstr "Espera más antigua"
+
+msgid "Property"
+msgstr "Propiedad"
+
+msgid "Reason"
+msgstr "Motivo"
+
+msgid "Reevaluate"
+msgstr "Reevaluar"
+
+msgid "Reevaluate all %(count)s submissions for this dataset"
+msgstr "Reevaluar los %(count)s envíos de este dataset"
+
+msgid "Reevaluate all %(count)s submissions in this contest (for all datasets)"
+msgstr "Reevaluar los %(count)s envíos de este concurso (en todos los datasets)"
+
+msgid "Reevaluate all submissions for this dataset"
+msgstr "Reevaluar todos los envíos de este dataset"
+
+msgid "Reevaluate all submissions in this contest (for all datasets)"
+msgstr "Reevaluar todos los envíos de este concurso (en todos los datasets)"
+
+msgid "Requeue"
+msgstr "Reencolar"
+
+msgid "Rerun and archive"
+msgstr "Repetir y archivar"
+
+msgid "Resources"
+msgstr "Recursos"
+
+msgid "Sandbox"
+msgstr "Sandbox"
+
+msgid "Score as seen by user"
+msgstr "Puntaje visto por el usuario"
+
+msgid "See input"
+msgstr "Ver entrada"
+
+msgid "See output"
+msgstr "Ver salida"
+
+msgid "Select two submissions from the table, or enter submission IDs:"
+msgstr "Elija dos envíos de la tabla o escriba sus IDs:"
+
+msgid "Show all"
+msgstr "Mostrar todos"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Stopping"
+msgstr "Deteniéndose"
+
+msgid "Submission %(id)s"
+msgstr "Envío %(id)s"
+
+msgid "Submission time"
+msgstr "Hora del envío"
+
+msgid "Task:"
+msgstr "Tarea:"
+
+msgid "The job is not in the queue any more."
+msgstr "El trabajo ya no está en la cola."
+
+msgid "The queues and the workers cannot be read: Valkey is not reachable."
+msgstr "No se pueden leer las colas ni los workers: no se puede conectar con Valkey."
+
+msgid "There are %(count)s user tests in this contest"
+msgstr "Hay %(count)s pruebas de usuario en este concurso"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "User input"
+msgstr "Entrada del usuario"
+
+msgid "User test %(id)s"
+msgstr "Prueba de usuario %(id)s"
+
+msgid "User test details"
+msgstr "Detalles de la prueba de usuario"
+
+msgid "Value"
+msgstr "Valor"
+
+msgid "Version"
+msgstr "Versión"
+
+msgid "Visible"
+msgstr "Visible"
+
+msgid "Waiting"
+msgstr "En espera"
+
+msgid "Waiting for a retry: %(delayed)s. Dead letters: %(dead)s."
+msgstr "Esperando un reintento: %(delayed)s. Trabajos descartados: %(dead)s."
+
+msgid "Without news for"
+msgstr "Sin novedades desde hace"
+
+msgid "Worker"
+msgstr "Worker"
+
+msgid "Workers"
+msgstr "Workers"
+
+msgid "[Cannot get score type - see logs]"
+msgstr "[No se puede obtener el tipo de puntaje: vea los registros]"
+
+msgid "[Unknown status]"
+msgstr "[Estado desconocido]"
+
+msgid "attempt %(n)s"
+msgstr "intento %(n)s"
+
+msgid "new:"
+msgstr "nuevo:"
+
+msgid "old:"
+msgstr "viejo:"

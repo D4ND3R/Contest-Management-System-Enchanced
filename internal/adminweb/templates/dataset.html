@@ -1,0 +1,43 @@
+{{/*
+Ported from cms/server/admin/templates/dataset.html of CMS (Contest
+Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
+Copyright © 2018 Stefano Maggiolo and the CMS contributors.
+Changes in this fork: every text goes through T; the filter form of R6.3
+(user, status, official, language); the rows are a live region (R6.9).
+*/}}
+{{/* extends "base.html" */}}
+{{define "js_init"}}
+CMS.live.on("submission", function(name, data) {
+    if (document.getElementById("submissions_none") !== null && data && data.task == {{.Task.ID}}) { CMS.live.reload_page(); }
+});
+{{end}}
+{{define "core"}}
+
+<div class="core_title">
+  <h1>{{.Task.Title}} (<a href="{{url "task" .Task.ID}}">{{.Task.Name}}</a>)</h1>
+</div>
+
+{{template "fragments/dataset_selector.html" .Selector}}
+
+<h2 id="title_submissions" class="toggling_on">{{T "Submissions"}}</h2>
+<div id="submissions">
+  <p>
+{{if .Filter.Active}}
+    {{Format (T "%(count)s submissions match the filter.") "count" .Count}}
+    {{T "Reevaluate all submissions for this dataset"}}
+{{else}}
+    {{Format (T "Reevaluate all %(count)s submissions for this dataset") "count" .Count}}
+{{end}}
+    {{template "reevaluation_buttons" (dict "allowed" .Admin.CanAll "next" (url "dataset" .Selector.Shown.ID) "args" (printf "\"dataset_id\": %d" .Selector.Shown.ID))}}
+  </p>
+
+{{if .Task.ContestID}}
+  {{template "submission.filter" .Filter}}
+{{end}}
+
+  {{template "submission.rows" .Table}}
+
+  <div class="hr"></div>
+</div>
+
+{{end}}

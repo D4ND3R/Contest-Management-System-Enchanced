@@ -1,0 +1,205 @@
+{{/*
+The judges page (R6.7; new in this fork, built with the components of the
+overview of CMS: toggling sections, sub_table tables, POST forms):
+workers, the job queue by priority, the next jobs, the jobs in progress and
+the dead letters, with their actions (permission_all). Every section is a
+live region refreshed by the "judging" and "worker" events (R6.9).
+*/}}
+{{/* extends "base.html" */}}
+{{define "core"}}
+
+<h1>{{T "Judges"}}</h1>
+
+{{if .Unavailable}}
+<p>{{.Unavailable}}</p>
+{{else}}
+
+<h2 id="title_judges_workers" class="toggling_on">{{T "Workers"}}</h2>
+<div id="judges_workers" data-live="judging worker">
+  <table class="sub_table">
+    <thead>
+      <tr>
+        <th>{{T "Name"}}</th>
+        <th>{{T "Host"}}</th>
+        <th>{{T "State"}}</th>
+        <th>{{T "Current jobs"}}</th>
+        <th>{{T "Jobs done (failed)"}}</th>
+        <th>{{T "Last seen"}}</th>
+        <th>{{T "Version"}}</th>
+        <th>{{T "Action"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{if not .Workers}}
+      <tr><td colspan="8">{{T "No workers found."}}</td></tr>
+{{end}}
+{{range .Workers}}
+      <tr>
+        <td>{{.Name}}</td>
+        <td>{{if .InRegistry}}{{.Host}} ({{.PID}}){{end}}</td>
+        <td>
+{{if eq .State "running"}}{{T "Running"}}{{else if eq .State "draining"}}{{T "Stopping"}}{{else if eq .State "broken"}}{{T "Broken"}}: {{.Error}}{{else if eq .State "disabled"}}{{T "Disabled"}}{{else}}{{T "Not running (disabled)"}}{{end}}
+        </td>
+        <td>
+{{if .InRegistry}}
+{{if not .Current}}
+          {{T "Idle"}} (0 / {{.Concurrency}})
+{{else}}
+{{range .Current}}
+          {{.HTML}} ({{Format (T "attempt %(n)s") "n" .Attempt}}, {{.AgeText}})<br/>
+{{end}}
+{{end}}
+{{end}}
+        </td>
+        <td>{{if .InRegistry}}{{.Done}} ({{.Failed}}){{end}}</td>
+        <td>{{if .InRegistry}}{{.LastSeenText}}{{end}}</td>
+        <td>{{.Version}}</td>
+        <td>
+{{if or .Disabled (eq .State "disabled") (eq .State "stopped")}}
+          <button data-rpc-service="EvaluationService" data-rpc-method="enable_worker" data-rpc-args='{"shard": "{{.Name}}"}' data-confirm="{{Format (T "Do you really want to enable worker %(worker)s?") "worker" .Name}}"{{if not $.Admin.CanAll}} disabled{{end}}>{{T "Enable"}}</button>
+{{else if .InRegistry}}
+          <button data-rpc-service="EvaluationService" data-rpc-method="disable_worker" data-rpc-args='{"shard": "{{.Name}}"}' data-confirm="{{Format (T "Do you really want to disable worker %(worker)s?") "worker" .Name}}"{{if not $.Admin.CanAll}} disabled{{end}}>{{T "Disable"}}</button>
+{{end}}
+        </td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_judges_queue" class="toggling_on">{{T "Queue status"}}</h2>
+<div id="judges_queue" data-live="judging worker">
+  <table class="sub_table">
+    <thead>
+      <tr>
+        <th>{{T "Priority"}}</th>
+        <th>{{T "Waiting"}}</th>
+        <th>{{T "In progress"}}</th>
+        <th>{{T "Oldest waiting"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{range .Priorities}}
+      <tr>
+        <td>{{.Name}} ({{.Priority}})</td>
+        <td>{{.Ready}}</td>
+        <td>{{.Active}}</td>
+        <td>{{.OldestText}}</td>
+      </tr>
+{{end}}
+      <tr>
+        <td><strong>{{T "Total"}}</strong></td>
+        <td><strong>{{.Stats.Ready}}</strong></td>
+        <td><strong>{{.Stats.Pending}}</strong></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>{{Format (T "Waiting for a retry: %(delayed)s. Dead letters: %(dead)s.") "delayed" .Stats.Delayed "dead" .Stats.Dead}}</p>
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_judges_inflight" class="toggling_on">{{T "Jobs in progress"}}</h2>
+<div id="judges_inflight" data-live="judging worker">
+  <table class="sub_table">
+    <thead>
+      <tr>
+        <th>{{T "Job"}}</th>
+        <th>{{T "Priority"}}</th>
+        <th>{{T "Worker"}}</th>
+        <th>{{T "Without news for"}}</th>
+        <th>{{T "Deliveries"}}</th>
+        <th>{{T "Action"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{if not .InFlight}}
+      <tr><td colspan="6">{{T "No jobs in progress."}}</td></tr>
+{{end}}
+{{range .InFlight}}
+      <tr>
+        <td>{{if .HTML}}{{.HTML}}{{else}}{{.ID}}{{end}}</td>
+        <td>{{.Priority}}</td>
+        <td>{{.Consumer}}</td>
+        <td>{{.AgeText}}</td>
+        <td>{{.Deliveries}}</td>
+        <td>
+          {{template "judges.job_actions" (dict "j" . "admin" $.Admin)}}
+        </td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_judges_next" class="toggling_on">{{T "Next jobs"}}</h2>
+<div id="judges_next" data-live="judging worker">
+  <table class="sub_table">
+    <thead>
+      <tr>
+        <th>{{T "Job"}}</th>
+        <th>{{T "Priority"}}</th>
+        <th>{{T "Attempt"}}</th>
+        <th>{{T "Since"}}</th>
+        <th>{{T "Action"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{if not .Next}}
+      <tr><td colspan="5">{{T "Queue empty."}}</td></tr>
+{{end}}
+{{range .Next}}
+      <tr>
+        <td>{{.HTML}}</td>
+        <td>{{.Priority}}</td>
+        <td>{{.Attempt}}</td>
+        <td>{{.AgeText}}</td>
+        <td>
+          {{template "judges.job_actions" (dict "j" . "admin" $.Admin "waiting" true)}}
+        </td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_judges_dead" class="toggling_on">{{T "Dead letters"}}</h2>
+<div id="judges_dead" data-live="judging worker">
+  <table class="sub_table">
+    <thead>
+      <tr>
+        <th>{{T "Job"}}</th>
+        <th>{{T "Priority"}}</th>
+        <th>{{T "Attempt"}}</th>
+        <th>{{T "Reason"}}</th>
+        <th>{{T "Since"}}</th>
+        <th>{{T "Action"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+{{if not .Dead}}
+      <tr><td colspan="6">{{T "No dead letters."}}</td></tr>
+{{end}}
+{{range .Dead}}
+      <tr>
+        <td>{{.HTML}}</td>
+        <td>{{.Priority}}</td>
+        <td>{{.Attempt}}</td>
+        <td>{{.Reason}}</td>
+        <td>{{.AgeText}}</td>
+        <td>
+          <form class="inline" action="{{url "judges" "dead"}}" method="POST">{{xsrf_form_html}}<input type="hidden" name="id" value="{{.ID}}"><input type="hidden" name="action" value="requeue"><input type="submit" value="{{T "Requeue"}}"{{if not $.Admin.CanAll}} disabled{{end}}></form>
+          <form class="inline" action="{{url "judges" "dead"}}" method="POST">{{xsrf_form_html}}<input type="hidden" name="id" value="{{.ID}}"><input type="hidden" name="action" value="delete"><input type="submit" value="{{T "Delete"}}" data-confirm="{{T "Do you really want to delete this job?"}}"{{if not $.Admin.CanAll}} disabled{{end}}></form>
+        </td>
+      </tr>
+{{end}}
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+
+{{end}}
+{{end}}

@@ -13,38 +13,6 @@ import (
 	"encoding/json"
 )
 
-const adminContestLanguages = `-- name: AdminContestLanguages :many
-SELECT DISTINCT s.language::text AS language
-FROM submissions s
-JOIN tasks t ON t.id = s.task_id
-WHERE t.contest_id = $1::integer AND s.language IS NOT NULL
-ORDER BY 1
-`
-
-// The languages of the submissions of a contest, for the language filter
-// (the distinct languages of each task, through ix_submissions_task_id
-// would need a skip scan: this reads the submissions of the contest once,
-// like the count of the page).
-func (q *Queries) AdminContestLanguages(ctx context.Context, contestID int32) ([]string, error) {
-	rows, err := q.db.Query(ctx, adminContestLanguages, contestID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []string{}
-	for rows.Next() {
-		var language string
-		if err := rows.Scan(&language); err != nil {
-			return nil, err
-		}
-		items = append(items, language)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const adminCountUserTests = `-- name: AdminCountUserTests :one
 SELECT count(*)
 FROM user_tests ut

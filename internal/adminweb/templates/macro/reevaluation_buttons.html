@@ -1,0 +1,29 @@
+{{/*
+Ported from cms/server/admin/templates/macro/reevaluation_buttons.html of
+CMS (Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 Stefano Maggiolo and the CMS
+contributors.
+The C, E and S buttons: {{template "reevaluation_buttons" (dict "allowed"
+.Admin.CanAll "next" URL "args" `"submission_id": 3, "dataset_id": 4`)}};
+"args" are the ids of invalidate_submission as JSON members (submission
+and dataset, dataset, participation or contest).
+Changes in this fork: every text goes through T; the onclick handlers are
+data-rpc-* attributes (aws_handlers.js, D10).
+*/}}
+{{define "reevaluation_buttons"}}
+<button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{ {{- .args}}, "level": "compilation"}' data-rpc-next="{{.next}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .allowed}}
+        disabled
+{{end}}
+        title="{{T "Compilation"}}" >C</button>
+<button data-rpc-service="EvaluationService" data-rpc-method="invalidate_submission" data-rpc-args='{ {{- .args}}, "level": "evaluation"}' data-rpc-next="{{.next}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .allowed}}
+        disabled
+{{end}}
+        title="{{T "Evaluation"}}" >E</button>
+<button data-rpc-service="ScoringService" data-rpc-method="invalidate_submission" data-rpc-args='{ {{- .args -}} }' data-rpc-next="{{.next}}" data-confirm="{{T "Do you really want to reevaluate?"}}"
+{{if not .allowed}}
+        disabled
+{{end}}
+        title="{{T "Score"}}" >S</button>
+{{end}}

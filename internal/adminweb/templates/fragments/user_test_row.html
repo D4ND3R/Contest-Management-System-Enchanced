@@ -1,0 +1,51 @@
+{{/*
+Ported from cms/server/admin/templates/fragments/user_test_row.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 Stefano Maggiolo and the CMS
+contributors. Included with an *adminweb.utRow (the result on the active
+dataset). Changes in this fork: every text goes through T; times in the
+server time zone; data-show-file instead of onclick (D10).
+*/}}
+<tr>
+  <td><a href="{{url "user_test" .ID}}">{{form_datetime .Timestamp}}</a></td>
+  <td><a href="{{url "contest" .ContestID "user" .UserID "edit"}}">{{.Username}}</a></td>
+  <td><a href="{{url "task" .TaskID}}">{{.TaskName}}</a></td>
+  <td>
+{{if eq .Status "compiling"}}
+    {{T "Compiling..."}}
+{{else}}
+    <div id="title_evaluation_{{.ID}}" class="toggling_off">
+
+{{if eq .Status "compilation_failed"}}
+      {{T "Compilation failed"}}
+      <div id="evaluation_{{.ID}}" style="display: none;">
+
+{{else if eq .Status "evaluating"}}
+      {{T "Evaluating..."}}
+      <div id="evaluation_{{.ID}}" style="display: none;">
+
+{{else if eq .Status "evaluated"}}
+      {{T "Evaluated"}}
+      <div id="evaluation_{{.ID}}" style="display: none;">
+
+{{else}}
+      {{T "[Unknown status]"}}
+      <div id="evaluation_{{.ID}}" style="display: none;">
+
+{{end}}
+        <h3>{{T "Compilation output"}}</h3>
+        <pre>{{if .CompilationText}}{{format_status_text .CompilationText}}{{end}}</pre>
+      </div>
+    </div>
+
+{{end}}
+  </td>
+  <td>
+    <a href="javascript:void(0);" data-show-file="input" data-url="{{url "file" .Input "input"}}">{{T "See input"}}</a>
+  </td>
+  <td>
+{{range .Files}}
+    <a href="javascript:void(0);" data-show-file="{{.Name}}" data-url="{{url "user_test_file" .ID}}">{{.Name}}</a><br/>
+{{end}}
+  </td>
+</tr>

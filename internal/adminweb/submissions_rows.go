@@ -21,7 +21,6 @@ package adminweb
 
 import (
 	"context"
-	"encoding/json"
 	"html/template"
 	"slices"
 	"time"
@@ -376,12 +375,4 @@ func (s *Server) userTestTable(c *Ctx, contestID int32, taskID, participationID 
 		tab.Rows = append(tab.Rows, row)
 	}
 	return tab, nil
-}
-
-// rawJSON returns raw as json.RawMessage, nil for SQL NULL.
-func rawJSON(raw []byte) json.RawMessage {
-	if raw == nil {
-		return nil
-	}
-	return json.RawMessage(raw)
 }

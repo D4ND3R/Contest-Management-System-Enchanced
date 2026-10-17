@@ -1,0 +1,11 @@
+{{/*
+The actions on a job of the judges page (judges.html): requeue (a job in
+progress goes back to the queue for another worker) and drop.
+{{template "judges.job_actions" (dict "j" job "admin" admin "waiting" bool)}}
+*/}}
+{{define "judges.job_actions"}}
+{{if not .waiting}}
+<form class="inline" action="{{url "judges" "job"}}" method="POST">{{xsrf_form_html}}<input type="hidden" name="id" value="{{.j.ID}}"><input type="hidden" name="priority" value="{{.j.Priority}}"><input type="hidden" name="action" value="requeue"><input type="submit" value="{{T "Requeue"}}" data-confirm="{{T "Do you really want to give this job to another worker?"}}"{{if not .admin.CanAll}} disabled{{end}}></form>
+{{end}}
+<form class="inline" action="{{url "judges" "job"}}" method="POST">{{xsrf_form_html}}<input type="hidden" name="id" value="{{.j.ID}}"><input type="hidden" name="priority" value="{{.j.Priority}}"><input type="hidden" name="action" value="drop"><input type="submit" value="{{T "Drop"}}" data-confirm="{{T "Do you really want to drop this job? The dispatcher enqueues it again if it is still needed."}}"{{if not .admin.CanAll}} disabled{{end}}></form>
+{{end}}

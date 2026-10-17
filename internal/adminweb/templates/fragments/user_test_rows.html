@@ -1,0 +1,33 @@
+{{/*
+Ported from cms/server/admin/templates/fragments/user_test_rows.html of CMS
+(Contest Management System, https://github.com/cms-dev/cms),
+AGPL-3.0-or-later: Copyright © 2018 Stefano Maggiolo and the CMS
+contributors. Included with an *adminweb.utTable. Changes in this fork:
+every text goes through T; the rows are a live region (data-live
+"user_test", R6.9).
+*/}}
+{{if eq .Count 0}}
+<p id="user_tests_none">{{T "No user tests found."}}</p>
+
+{{else}}
+
+{{template "pages.selector" .Pager}}
+
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>{{T "Time"}}</th>
+      <th>{{T "User"}}</th>
+      <th>{{T "Task"}}</th>
+      <th>{{T "Status"}}</th>
+      <th>{{T "User input"}}</th>
+      <th>{{T "Files"}}</th>
+    </tr>
+  </thead>
+  <tbody id="user_tests_rows" data-live="user_test">
+{{range .Rows}}
+      {{template "fragments/user_test_row.html" .}}
+{{end}}
+  </tbody>
+</table>
+{{end}}

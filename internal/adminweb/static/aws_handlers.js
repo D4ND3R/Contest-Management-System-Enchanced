@@ -19,6 +19,7 @@
  *   onclick="utils.question_reply_toggle(event, this);"  data-question-reply-toggle
  *   onchange="utils.update_additional_answer(event, this);"  data-additional-answer
  *   onclick="utils.do_diff()"                      data-do-diff
+ *   ontoggle="utils.update_diffchooser()"          data-diffchooser (on <details>)
  *   onclick="confirm('Q') && cmsrpc_request('S', 0, 'M', ARGS,
  *            function(response) { utils.redirect_if_ok('NEXT', response); });"
  *       data-rpc-service="S" data-rpc-method="M" data-rpc-args='ARGS as JSON'
@@ -96,4 +97,17 @@ $(document).on("click", "a[data-confirm]:not([data-rpc-service]), button[data-co
         event.preventDefault();
         event.stopImmediatePropagation();
     }
+});
+
+// "toggle" does not bubble: listen in the capture phase.
+document.addEventListener("toggle", function (event) {
+    if (event.target && event.target.hasAttribute && event.target.hasAttribute("data-diffchooser")) {
+        utils.update_diffchooser();
+    }
+}, true);
+
+// The diff radio buttons of submission rows a live region brought in
+// (base.html binds those of the page when it loads).
+document.addEventListener("cms:live-refreshed", function () {
+    $(".diff-radio").off("change", utils.update_diff_ids).on("change", utils.update_diff_ids);
 });
