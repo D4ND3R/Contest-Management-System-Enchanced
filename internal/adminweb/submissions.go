@@ -281,13 +281,13 @@ type subEval struct {
 // submissionData is the data of submission.html.
 type submissionData struct {
 	*Page
-	S        q.Submission
-	User     q.User
-	Contest  int32
-	Task     q.Task
-	Selector *datasetSelector
-	Files    []subFile
-	Token    bool
+	S         q.Submission
+	User      q.User
+	ContestID int32
+	Task      q.Task
+	Selector  *datasetSelector
+	Files     []subFile
+	Token     bool
 	// R is the result on the dataset shown (nil: none, compiling).
 	R      *q.SubmissionResult
 	Status string
@@ -347,7 +347,7 @@ func (s *Server) submissionPage(c *Ctx) {
 		c.NotFound()
 		return
 	}
-	d := submissionData{S: det.Submission, User: det.User, Contest: det.Participation.ContestID, Task: t,
+	d := submissionData{S: det.Submission, User: det.User, ContestID: det.Participation.ContestID, Task: t,
 		Selector: sel, Token: det.TokenTimestamp != nil, Status: string(store.StatusCompiling)}
 	files, err := s.st.Q.ListFilesBySubmission(ctx, id)
 	if err != nil {

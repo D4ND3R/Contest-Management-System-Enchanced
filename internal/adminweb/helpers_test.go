@@ -38,6 +38,7 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -194,6 +195,10 @@ func newTestSite(t testing.TB, o testOptions) *testSite {
 	}
 	ts.Config = cfg
 	log := slog.New(slog.DiscardHandler)
+	if os.Getenv("CMS_TEST_LOG") != "" {
+		// Debugging: the errors of the site on stderr.
+		log = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
+	}
 	if o.Hub {
 		ts.Hub = live.NewHub(ts.KV, log, prometheus.NewRegistry(), live.HubOptions{})
 		hctx, cancel := context.WithCancel(ctx)

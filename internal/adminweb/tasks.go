@@ -313,7 +313,7 @@ func newTaskFormView(t *q.Task) taskFormView {
 		Allowed:               map[string]bool{},
 		TokenMaxNumber:        taskOptInt(t.TokenMaxNumber),
 		TokenMinInterval:      optSeconds(&t.TokenMinInterval),
-		TokenGenInterval:      strconv.FormatInt(int64(t.TokenGenInterval.Seconds())/60, 10),
+		TokenGenInterval:      mins(t.TokenGenInterval),
 		TokenGenMax:           taskOptInt(t.TokenGenMax),
 		MaxSubmissionNumber:   taskOptInt(t.MaxSubmissionNumber),
 		MaxUserTestNumber:     taskOptInt(t.MaxUserTestNumber),

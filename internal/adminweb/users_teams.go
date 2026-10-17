@@ -271,7 +271,6 @@ func parseTeamsCSV(r io.Reader) ([]teamRow, []string) {
 		if err == io.EOF {
 			break
 		}
-		line, _ := cr.FieldPos(0)
 		if err != nil {
 			var pe *csv.ParseError
 			if errors.As(err, &pe) {
@@ -281,6 +280,8 @@ func parseTeamsCSV(r io.Reader) ([]teamRow, []string) {
 			problems = append(problems, err.Error())
 			break
 		}
+		// FieldPos panics after an error: only on a record read.
+		line, _ := cr.FieldPos(0)
 		if len(rec) == 1 && strings.TrimSpace(rec[0]) == "" {
 			continue
 		}

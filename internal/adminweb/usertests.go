@@ -49,12 +49,12 @@ func (s *Server) contestUserTestsPage(c *Ctx) {
 // userTestData is the data of user_test.html.
 type userTestData struct {
 	*Page
-	UT       q.UserTest
-	User     q.User
-	Contest  int32
-	Task     q.Task
-	Selector *datasetSelector
-	Files    []subFile
+	UT        q.UserTest
+	User      q.User
+	ContestID int32
+	Task      q.Task
+	Selector  *datasetSelector
+	Files     []subFile
 	// R is the result on the dataset shown (nil: compiling).
 	R         *q.UserTestResult
 	Status    string
@@ -96,7 +96,7 @@ func (s *Server) userTestPage(c *Ctx) {
 		c.NotFound()
 		return
 	}
-	d := userTestData{UT: det.UserTest, User: det.User, Contest: det.Participation.ContestID, Task: t, Selector: sel,
+	d := userTestData{UT: det.UserTest, User: det.User, ContestID: det.Participation.ContestID, Task: t, Selector: sel,
 		Status: "compiling"}
 	files, err := s.st.Q.AdminUserTestFiles(ctx, id)
 	if err != nil {

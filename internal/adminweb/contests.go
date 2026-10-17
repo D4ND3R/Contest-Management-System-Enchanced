@@ -58,6 +58,16 @@ func contestSettingsEvents(contestID int32) []live.Event {
 // secs is a duration as CMS's forms show total_seconds()|int.
 func secs(d time.Duration) string { return strconv.FormatInt(int64(d/time.Second), 10) }
 
+// mins is a duration in minutes as the forms show it: CMS's integer
+// division for whole minutes, the fraction otherwise (an imported
+// interval of 30 seconds would show as 0 and the form would not save).
+func mins(d time.Duration) string {
+	if d%time.Minute == 0 {
+		return strconv.FormatInt(int64(d/time.Minute), 10)
+	}
+	return strconv.FormatFloat(d.Minutes(), 'f', -1, 64)
+}
+
 // optSecs is secs of a nullable duration, "" for nil.
 func optSecs(d *time.Duration) string {
 	if d == nil {
@@ -220,9 +230,7 @@ func (v contestView) HasLanguage(name string) bool { return slices.Contains(v.La
 func (v contestView) TokenMinIntervalSec() string { return secs(v.TokenMinInterval) }
 
 // TokenGenIntervalMin is token_gen_interval in minutes.
-func (v contestView) TokenGenIntervalMin() string {
-	return strconv.FormatInt(int64(v.TokenGenInterval/time.Second)/60, 10)
-}
+func (v contestView) TokenGenIntervalMin() string { return mins(v.TokenGenInterval) }
 
 // TokenMaxNumberStr is token_max_number ("" for none).
 func (v contestView) TokenMaxNumberStr() string { return optInt(v.TokenMaxNumber) }
