@@ -413,11 +413,12 @@ func TestBoxPoolConcurrency(t *testing.T) {
 }
 
 // TestSeccompLauncherCost: the launcher costs the program nothing it could
-// notice. Its peak memory is the program's (the kernel and the cgroup keep
-// the peak across execve, so a launcher with a runtime would raise it), it
-// runs under memory limits the program alone fits in, and it adds well
-// under a millisecond of CPU time (the cms binary as launcher added about
-// 8 ms and 14 MiB).
+// notice. Its peak memory stays within 1 MiB of the program's (the kernel
+// and the cgroup keep the peak across execve, so a launcher with a runtime
+// would raise it; the cgroup's accounting varies by a few hundred KiB
+// between runs on the same machine), it runs under memory limits the
+// program alone fits in, and it adds well under a millisecond of CPU time
+// (the cms binary as launcher added about 8 ms and 14 MiB).
 func TestSeccompLauncherCost(t *testing.T) {
 	s := newTestSandbox(t, nil)
 	b := newTestBox(t, s)
@@ -443,7 +444,7 @@ func TestSeccompLauncherCost(t *testing.T) {
 	memSeccomp, cpuSeccomp := measure(true, 64<<10)
 	t.Logf("static C program (best of %d): %d KiB, %.3f s; under the launcher: %d KiB, %.3f s",
 		runs, memPlain, cpuPlain, memSeccomp, cpuSeccomp)
-	if memSeccomp > memPlain+256 {
+	if memSeccomp > memPlain+1024 {
 		t.Errorf("the launcher raises the peak memory from %d to %d KiB", memPlain, memSeccomp)
 	}
 	if cpuSeccomp > cpuPlain+0.002 {

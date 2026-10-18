@@ -155,10 +155,14 @@ int main(void) { for (;;) fork(); }`
 		for _, seccomp := range []bool{false, true} {
 			_, res := battery(t, s, src, RunSpec{Processes: procs, Seccomp: seccomp, WallTime: 3})
 			// The process limit stops the bomb; the CPU limit stops
-			// the processes spinning on fork. Without cgroups isolate
+			// the processes spinning on fork. With cgroups the memory
+			// of all the forked processes is charged to the box, so the
+			// memory limit may stop them first. Without cgroups isolate
 			// only watches the CPU time of the main process while it
 			// runs, so the wall clock limit may stop them first.
-			if s.cfg.Cgroups || procs <= 1 {
+			if s.cfg.Cgroups {
+				wantStatus(t, res, StatusTimedOut, StatusMemoryLimit)
+			} else if procs <= 1 {
 				wantStatus(t, res, StatusTimedOut)
 			} else {
 				wantStatus(t, res, StatusTimedOut, StatusWallTimedOut)
