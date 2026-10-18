@@ -34,6 +34,10 @@ make build            # writes the program to bin/cms
 
 (On an ARM server use `go1.27.1.linux-arm64.tar.gz`.)
 
+If the repository is private, `git clone` asks for your GitHub username and,
+as the password, a *personal access token* (or use an SSH key and the
+address `git@github.com:D4ND3R/Contest-Management-System-Enchanced.git`).
+
 ## 3. Install
 
 From the `cms` folder, with a domain:
