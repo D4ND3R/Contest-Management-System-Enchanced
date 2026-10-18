@@ -27,7 +27,7 @@ msgstr ""
 msgid "%(count)s submissions match the filter."
 msgstr ""
 
-#: ../internal/adminweb/users_teams.go:377
+#: ../internal/adminweb/users_teams.go:390
 msgid "%(created)s team(s) created, %(updated)s updated."
 msgstr ""
 
@@ -1429,11 +1429,11 @@ msgstr ""
 #: ../internal/adminweb/users_participations.go:110
 #: ../internal/adminweb/users_participations.go:129
 #: ../internal/adminweb/users_participations.go:366
-#: ../internal/adminweb/users_teams.go:168
-#: ../internal/adminweb/users_teams.go:234
-#: ../internal/adminweb/users_teams.go:329
-#: ../internal/adminweb/users_teams.go:341
-#: ../internal/adminweb/users_teams.go:346
+#: ../internal/adminweb/users_teams.go:170
+#: ../internal/adminweb/users_teams.go:236
+#: ../internal/adminweb/users_teams.go:342
+#: ../internal/adminweb/users_teams.go:354
+#: ../internal/adminweb/users_teams.go:359
 msgid "Invalid field(s)"
 msgstr ""
 
@@ -1444,7 +1444,7 @@ msgstr ""
 #: ../internal/adminweb/contests.go:121
 #: ../internal/adminweb/contests_groups.go:90
 #: ../internal/adminweb/users.go:86
-#: ../internal/adminweb/users_teams.go:78
+#: ../internal/adminweb/users_teams.go:80
 msgid "Invalid operation"
 msgstr ""
 
@@ -2652,7 +2652,7 @@ msgstr ""
 msgid "Teams"
 msgstr ""
 
-#: ../internal/adminweb/users_teams.go:377
+#: ../internal/adminweb/users_teams.go:390
 msgid "Teams imported"
 msgstr ""
 
