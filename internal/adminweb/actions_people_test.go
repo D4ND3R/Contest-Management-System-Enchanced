@@ -255,6 +255,12 @@ func TestUsersImport(t *testing.T) {
 	if d := ts.LastAudit().Details; d["created"] != float64(0) || d["updated"] != float64(1) {
 		t.Fatalf("audit details: %v", d)
 	}
+	// Excel's "CSV UTF-8" starts with a byte order mark: the header is
+	// still recognised.
+	imp("\xef\xbb\xbfusername,password,first_name,last_name\nimp3,pw3,Eva,Tres\n", "")
+	if ts.QueryInt(`SELECT count(*) FROM users WHERE username = 'imp3'`) != 1 {
+		t.Fatalf("a CSV with a byte order mark was not imported: %s", c.notices())
+	}
 	for _, bad := range []string{
 		"zed,pw,Z,Z\nb@d,pw,B,B\n",       // invalid username
 		"zed,pw,Z,Z\nzed,pw,Z,Z\n",       // repeated username

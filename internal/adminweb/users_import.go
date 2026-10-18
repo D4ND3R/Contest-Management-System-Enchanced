@@ -36,7 +36,7 @@ type userRow struct {
 // parseUsersCSV reads the users of a CSV file (see the top of this file):
 // the rows, or the problems found (each with its line), never both.
 func parseUsersCSV(r io.Reader) ([]userRow, []string) {
-	cr := csv.NewReader(r)
+	cr := csv.NewReader(skipBOM(r))
 	cr.FieldsPerRecord = -1
 	cr.TrimLeadingSpace = true
 	var rows []userRow

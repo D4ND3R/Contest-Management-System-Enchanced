@@ -22,6 +22,8 @@ package adminweb
 // number and nothing is written.
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -257,7 +259,7 @@ type teamRow struct {
 // parseTeamsCSV reads the teams of a CSV file (see the top of this file):
 // the rows, or the problems found (each with its line), never both.
 func parseTeamsCSV(r io.Reader) ([]teamRow, []string) {
-	cr := csv.NewReader(r)
+	cr := csv.NewReader(skipBOM(r))
 	cr.FieldsPerRecord = -1
 	cr.TrimLeadingSpace = true
 	var rows []teamRow
@@ -318,6 +320,17 @@ func parseTeamsCSV(r io.Reader) ([]teamRow, []string) {
 		return nil, problems
 	}
 	return rows, nil
+}
+
+// skipBOM drops the UTF-8 byte order mark that spreadsheets write at the
+// start of a "CSV UTF-8" file (Excel does), which would otherwise be part
+// of the first field.
+func skipBOM(r io.Reader) io.Reader {
+	br := bufio.NewReader(r)
+	if b, err := br.Peek(3); err == nil && bytes.Equal(b, []byte("\xef\xbb\xbf")) {
+		_, _ = br.Discard(3)
+	}
+	return br
 }
 
 // importTeamsPost is POST /teams/import (new, R6.1): creates or renames
