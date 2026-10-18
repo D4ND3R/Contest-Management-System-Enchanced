@@ -357,6 +357,13 @@ random_page_cost = 1.1
 EOF
         systemctl restart postgresql
     fi
+    # A database "cms" made by something else (the original CMS, another
+    # application) is never reused or touched, nor is its role.
+    if runuser -u postgres -- psql -tAq -c "SELECT 1 FROM pg_database WHERE datname = 'cms'" | grep -q 1 &&
+        runuser -u postgres -- psql -d cms -tAq -c "SELECT 1 FROM pg_tables WHERE schemaname = 'public'" | grep -q 1 &&
+        ! runuser -u postgres -- psql -d cms -tAq -c "SELECT 1 FROM information_schema.columns WHERE table_name = 'schema_migrations' AND column_name = 'checksum'" | grep -q 1; then
+        die "a PostgreSQL database named \"cms\" already exists and was not made by this installer (another application or the original CMS). Back it up and remove it (sudo -u postgres pg_dump cms > cms-old.sql; sudo -u postgres dropdb cms), then run the installer again"
+    fi
     local pw collate=C.UTF-8
     pw="$(secret db_password)"
     if locale -a 2>/dev/null | grep -qix 'en_US.utf8'; then collate=en_US.UTF-8; fi
@@ -390,6 +397,16 @@ install_valkey() {
     fi
     log "installing $pkg"
     apt_install "$pkg"
+    local holder
+    holder="$(ss -Hltnp 'sport = :6379' 2>/dev/null | grep -o 'users:(("[^"]*"' | head -n1 | cut -d'"' -f2)"
+    if [[ -n "$holder" && "$holder" != "$pkg" ]] && ! systemctl -q is-active "$svc"; then
+        die "port 6379 is already used by \"$holder\" (another Redis or Valkey). Stop it (for redis-server: sudo systemctl disable --now redis-server) and run the installer again"
+    fi
+    # Valkey/Redis warn and may fail background saves without it.
+    if [[ "$(sysctl -n vm.overcommit_memory 2>/dev/null)" != 1 ]]; then
+        echo 'vm.overcommit_memory = 1' >/etc/sysctl.d/60-cms-valkey.conf
+        sysctl -q -p /etc/sysctl.d/60-cms-valkey.conf || warn "could not set vm.overcommit_memory=1"
+    fi
     local pw bind="127.0.0.1 -::1"
     pw="$(secret valkey_password)"
     [[ -n "$ALLOW_JUDGES" ]] && bind="* -::*"
@@ -784,7 +801,7 @@ EOF
 enable_units() {
     local units=(cms-worker.service)
     [[ "$WORKER_ONLY" == 0 ]] && units+=(cms-contest-web.service cms-admin-web.service cms-ranking-web.service cms-dispatcher.service cms-monitor.service)
-    systemctl enable cms.target "${units[@]}" >/dev/null 2>&1
+    systemctl enable cms.target "${units[@]}" >/dev/null || die "could not enable the services (systemctl enable failed, see above)"
     if [[ "$WORKER_ONLY" == 0 && "$BACKUP_KEEP" -gt 0 ]]; then
         systemctl enable --now cms-backup.timer >/dev/null 2>&1
     elif [[ -f "$UNITDIR/cms-backup.timer" ]]; then
