@@ -17,40 +17,25 @@ A short guide to a working contest on a server with **Ubuntu 26.04 LTS**
   - **just the IP address**: the three sites use plain HTTP on ports 8000
     (contestants), 8001 (administration) and 8002 (scoreboard).
 
-## 2. Build the program
+## 2. Install
 
-Until a release is published on GitHub, build the binary on the server
-itself (it takes a couple of minutes):
-
-```sh
-sudo apt-get update && sudo apt-get install -y git make curl
-curl -fsSL https://go.dev/dl/go1.27.1.linux-amd64.tar.gz | sudo tar -C /usr/local -xz
-export PATH=/usr/local/go/bin:$PATH
-
-git clone https://github.com/D4ND3R/Contest-Management-System-Enchanced.git cms
-cd cms
-make build            # writes the program to bin/cms
-```
-
-(On an ARM server use `go1.27.1.linux-arm64.tar.gz`.)
-
-If the repository is private, `git clone` asks for your GitHub username and,
-as the password, a *personal access token* (or use an SSH key and the
-address `git@github.com:D4ND3R/Contest-Management-System-Enchanced.git`).
-
-## 3. Install
-
-From the `cms` folder, with a domain:
+One command downloads the latest published release and installs
+everything. With a domain:
 
 ```sh
-sudo bash scripts/install.sh --binary bin/cms --domain contest.example.org --email you@example.org
+curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-Enchanced/main/scripts/install.sh \
+  | sudo bash -s -- --domain contest.example.org --email you@example.org
 ```
 
 or with just the IP address:
 
 ```sh
-sudo bash scripts/install.sh --binary bin/cms --http-ports 8000,8001,8002
+curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-Enchanced/main/scripts/install.sh \
+  | sudo bash -s -- --http-ports 8000,8001,8002
 ```
+
+The binary is checked against the release's `checksums.txt`. To pin a
+version: `--version v0.1.0`.
 
 The installer sets up PostgreSQL, Valkey, the `isolate` sandbox, the
 compilers, the `systemd` services, the firewall and daily backups. At the
@@ -63,9 +48,9 @@ end it prints:
 If anything fails, running the same command again is safe. Useful options:
 `--admin-allow 10.0.0.0/8` (only that network may open the administration)
 and `--compilers basic` (only C, C++, Python 3 and Java; installs faster).
-All of them: `sudo bash scripts/install.sh --help`.
+All of them: `curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-Enchanced/main/scripts/install.sh | bash -s -- --help`.
 
-## 4. Check that everything works
+## 3. Check that everything works
 
 ```sh
 sudo cmsctl verify-host                    # the judge can run programs
@@ -74,9 +59,9 @@ systemctl status cms.target 'cms-*'        # every service "active"
 
 If `verify-host` reports a problem, see [troubleshooting](troubleshooting.md).
 
-## 5. Prepare a contest
+## 4. Prepare a contest
 
-Log in to the **administration** as `admin` with the password from step 3.
+Log in to the **administration** as `admin` with the password from step 2.
 
 1. **Create the contest**: *Contests* menu → *(create new contest...)*. On
    the contest page set the name, the description, the **start and end
@@ -107,7 +92,7 @@ Log in to the **administration** as `admin` with the password from step 3.
 A whole contest (tasks and users) can also be imported from the command
 line: `sudo -u cms cmsctl import-contest FOLDER` ([importing](importing.md)).
 
-## 6. During the contest
+## 5. During the contest
 
 - Contestants open the **contestant site**, log in with their username and
   password, read the statements, submit solutions and see the results live
@@ -118,19 +103,18 @@ line: `sudo -u cms cmsctl import-contest FOLDER` ([importing](importing.md)).
   - *Announcements*: notices for everybody;
   - *Ranking*: the full standings;
   - *Judges* and *Resource usage*: state of the judge and the server.
-- The public **scoreboard** is the third address from step 3; it can be
+- The public **scoreboard** is the third address from step 2; it can be
   made secret or frozen at the end ([scoreboard](scoreboard.md)).
 
-## 7. Backups and upgrades
+## 6. Backups and upgrades
 
 - A **daily backup** is written to `/var/lib/cms/backups`. For one right
   now (for example before the contest):
   `sudo systemctl start cms-backup.service`.
-- **Upgrade** to a new version of the code:
+- **Upgrade** to the latest published release:
 
   ```sh
-  cd cms && git pull && make build
-  sudo cmsctl upgrade --binary bin/cms
+  sudo cmsctl upgrade
   ```
 
   It backs up, migrates the database and rolls back by itself if anything

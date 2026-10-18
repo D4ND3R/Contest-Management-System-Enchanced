@@ -17,40 +17,25 @@ detalles de cada paso están en las guías enlazadas.
   - **solo la IP**: los tres sitios quedan en HTTP en los puertos 8000
     (concursantes), 8001 (administración) y 8002 (scoreboard).
 
-## 2. Compilar el programa
+## 2. Instalar
 
-Mientras no haya una versión publicada en GitHub, el binario se compila en
-el mismo servidor (tarda un par de minutos):
-
-```sh
-sudo apt-get update && sudo apt-get install -y git make curl
-curl -fsSL https://go.dev/dl/go1.27.1.linux-amd64.tar.gz | sudo tar -C /usr/local -xz
-export PATH=/usr/local/go/bin:$PATH
-
-git clone https://github.com/D4ND3R/Contest-Management-System-Enchanced.git cms
-cd cms
-make build            # deja el programa en bin/cms
-```
-
-(En un servidor ARM usa `go1.27.1.linux-arm64.tar.gz`.)
-
-Si el repositorio es privado, `git clone` pide tu usuario de GitHub y, como
-contraseña, un *personal access token* (o usa una clave SSH y la dirección
-`git@github.com:D4ND3R/Contest-Management-System-Enchanced.git`).
-
-## 3. Instalar
-
-Desde la carpeta `cms`, con dominio:
+Un solo comando descarga la última versión publicada y lo instala todo. Con
+dominio:
 
 ```sh
-sudo bash scripts/install.sh --binary bin/cms --domain concurso.ejemplo.org --email tu@correo.org
+curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-Enchanced/main/scripts/install.sh \
+  | sudo bash -s -- --domain concurso.ejemplo.org --email tu@correo.org
 ```
 
 o solo con la IP:
 
 ```sh
-sudo bash scripts/install.sh --binary bin/cms --http-ports 8000,8001,8002
+curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-Enchanced/main/scripts/install.sh \
+  | sudo bash -s -- --http-ports 8000,8001,8002
 ```
+
+El binario se verifica con el `checksums.txt` del release. Para fijar una
+versión: `--version v0.1.0`.
 
 El instalador pone PostgreSQL, Valkey, el sandbox `isolate`, los
 compiladores, los servicios de `systemd`, el cortafuegos y los respaldos
@@ -63,9 +48,9 @@ diarios. Al final muestra:
 Si algo falla, se puede volver a correr el mismo comando sin perder nada.
 Opciones útiles: `--admin-allow 10.0.0.0/8` (solo esa red abre la
 administración) y `--compilers basic` (solo C, C++, Python 3 y Java;
-instala más rápido). Todas: `sudo bash scripts/install.sh --help`.
+instala más rápido). Todas: `curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-Enchanced/main/scripts/install.sh | bash -s -- --help`.
 
-## 4. Comprobar que todo funciona
+## 3. Comprobar que todo funciona
 
 ```sh
 sudo cmsctl verify-host                    # el juez puede correr programas
@@ -75,9 +60,9 @@ systemctl status cms.target 'cms-*'        # todos los servicios "active"
 Si `verify-host` reporta un problema, mira
 [problemas frecuentes](problemas-frecuentes.md).
 
-## 5. Preparar un concurso
+## 4. Preparar un concurso
 
-Entra a la **administración** con `admin` y la contraseña del paso 3.
+Entra a la **administración** con `admin` y la contraseña del paso 2.
 
 1. **Crear el concurso**: menú *Contests* → *(create new contest...)*. En la
    página del concurso pon el nombre, la descripción, los **horarios de
@@ -108,7 +93,7 @@ Entra a la **administración** con `admin` y la contraseña del paso 3.
 También se puede importar un concurso completo (problemas y usuarios) por
 consola: `sudo -u cms cmsctl import-contest CARPETA` ([importar](importar.md)).
 
-## 6. Durante el concurso
+## 5. Durante el concurso
 
 - Los concursantes abren el **sitio del concursante**, entran con su
   usuario y contraseña, leen los enunciados, envían soluciones y ven los
@@ -119,19 +104,18 @@ consola: `sudo -u cms cmsctl import-contest CARPETA` ([importar](importar.md)).
   - *Announcements*: avisos para todos;
   - *Ranking*: la tabla de posiciones completa;
   - *Judges* y *Resource usage*: estado del juez y del servidor.
-- El **scoreboard** público se ve en la tercera dirección del paso 3; se
+- El **scoreboard** público se ve en la tercera dirección del paso 2; se
   puede hacer secreto o congelar al final ([scoreboard](scoreboard.md)).
 
-## 7. Respaldos y actualizaciones
+## 6. Respaldos y actualizaciones
 
 - Hay un **respaldo diario** automático en `/var/lib/cms/backups`. Para uno
   ahora (por ejemplo antes del concurso):
   `sudo systemctl start cms-backup.service`.
-- **Actualizar** a una versión nueva del código:
+- **Actualizar** a la última versión publicada:
 
   ```sh
-  cd cms && git pull && make build
-  sudo cmsctl upgrade --binary bin/cms
+  sudo cmsctl upgrade
   ```
 
   Respalda, migra la base y, si algo falla, vuelve atrás solo
