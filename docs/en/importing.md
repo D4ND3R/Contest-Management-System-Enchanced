@@ -2,7 +2,7 @@
 
 *Español: [../es/importar.md](../es/importar.md).*
 
-The `cms ctl import-*` commands replace CMS's `cmsImportContest`,
+The `sudo cmsctl import-*` commands replace CMS's `cmsImportContest`,
 `cmsImportTask`, `cmsImportUser`, `cmsImportTeam`, `cmsImportDataset` and
 `cmsDumpImporter`, with the same options. They need the database and blob
 store settings (the same `cms.yaml` as the services).
@@ -28,7 +28,9 @@ Every import:
 | TPS | `tps` (`tps_task`) | task (`problem.json`) |
 | Own format | `problem_yaml` (`package`) | task (`problem.yaml`), directory or zip; see [Package format](package-format.md) |
 
-Without `-L` the format is detected; if more than one recognizes the
+The path may be a directory or a `.zip`, `.tar.gz`/`.tgz` or `.tar` file
+(extracted to a temporary directory; if it holds a single directory, that
+one is used). Without `-L` the format is detected; if more than one recognizes the
 directory, choose it with `-L`.
 
 Checkers and managers given as C++ source (Polygon, TPS, own format) **are
@@ -41,33 +43,33 @@ run.
 
 ```sh
 # check a task without a database
-cms ctl validate-task path/to/task
-cms ctl validate-contest path/to/contest
+sudo cmsctl validate-task path/to/task
+sudo cmsctl validate-contest path/to/contest
 
 # import a contest with its tasks (-i) and its users
-cms ctl import-contest -i --users path/to/contest
+sudo cmsctl import-contest -i --users path/to/contest
 
 # update the tasks of an existing contest keeping the submissions
-cms ctl import-contest -U path/to/contest
+sudo cmsctl import-contest -U path/to/contest
 
 # import a task and append it to a contest
-cms ctl import-task -c mycontest path/to/task
+sudo cmsctl import-task -c mycontest path/to/task
 
 # update a task (submissions are kept)
-cms ctl import-task -u path/to/task
+sudo cmsctl import-task -u path/to/task
 
 # add the judging data as a new, inactive dataset
-cms ctl import-dataset -d "fixed tests" path/to/task
+sudo cmsctl import-dataset -d "fixed tests" path/to/task
 
 # users and teams
-cms ctl import-users -c mycontest path/to/contest
-cms ctl import-team path/to/contest
+sudo cmsctl import-users -c mycontest path/to/contest
+sudo cmsctl import-team path/to/contest
 
 # export a task in the own format
-cms ctl export-task sum sum.zip
+sudo cmsctl export-task sum sum.zip
 ```
 
-`cms ctl help <command>` explains every option.
+`sudo cmsctl help <command>` explains every option.
 
 ### Updating a task
 
@@ -78,7 +80,7 @@ and the submissions are kept. If the judging data of the active dataset
 changed, reevaluate it:
 
 ```sh
-cms ctl reevaluate --dataset DATASET_ID --level evaluation
+sudo cmsctl reevaluate --dataset DATASET_ID --level evaluation
 ```
 
 CMS uses `.itime` files inside the package to know what changed; here the
@@ -95,8 +97,8 @@ cmsDumpExporter -c CONTEST_ID contest.tar.gz
 On this one:
 
 ```sh
-cms ctl import-dump --dry-run contest.tar.gz   # check
-cms ctl import-dump contest.tar.gz
+sudo cmsctl import-dump --dry-run contest.tar.gz   # check
+sudo cmsctl import-dump contest.tar.gz
 ```
 
 - Directories, zip and tar (`.tar`, `.tar.gz`, `.tar.bz2`) of data model

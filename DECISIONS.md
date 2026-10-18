@@ -665,3 +665,47 @@ la versión en el nombre (`cms_linux_amd64.tar.gz`) para que
 **Por qué.** Las migraciones son solo hacia adelante (D3): volver atrás es
 restaurar. Lo escrito entre el arranque de la versión nueva y la vuelta
 atrás se pierde; es preferible a dejar una instalación rota en un concurso.
+
+## D47 — El instalador explica cada falla y puede empezar de cero
+
+**Contexto.** En el primer servidor real el instalador falló por causas del
+entorno (un Redis en el puerto 6379, una base `cms` de otro programa) con
+mensajes genéricos, y una corrida se cortó sin decir nada.
+
+**Decisión.** Antes de cambiar nada, una revisión previa con PASS/WARN/FAIL
+y la solución de cada falla (`--check` la corre sola). Después, cualquier
+falla (trap ERR, `die`, señales) imprime un informe con el paso, el
+comando, la salida y un diagnóstico de causas conocidas; todo va a
+`/var/log/cms-install.log`, nunca la contraseña generada. `--clean`
+respalda (`pg_dump` y `/etc/cms` en `/var/backups/cms`) y borra todo rastro
+de cms, sin desinstalar paquetes ni tocar otros programas; `--purge`
+comparte ese código. ufw sólo se toca si ya estaba activo.
+
+**Consecuencias.** Volver a correr el comando sigue siendo seguro; los
+errores del entorno dicen qué hacer en vez de dejar el sistema a medias.
+
+## D48 — `cms ctl doctor`
+
+**Contexto.** Los organizadores no son administradores de sistemas: «los
+envíos no se evalúan» puede ser el juez, Valkey, cgroups, permisos…
+
+**Decisión.** Un comando de sólo lectura, acotado a 25 s, que revisa la
+configuración, la base y sus migraciones, los administradores, Valkey, los
+jueces y la cola, los servicios de systemd y sus `/healthz`, los sitios, el
+scoreboard, el almacén (dueños), el disco, la hora, isolate, los concursos
+(horario, problemas sin casos, lenguajes sin grader, sin participantes) y
+ufw; cada problema con su solución. El instalador lo corre al final.
+
+## D49 — El scoreboard refleja la base (prune)
+
+**Contexto.** Como CMS, el dispatcher nunca borraba nada de ranking-web: un
+concurso de prueba borrado seguía en el scoreboard público.
+
+**Decisión.** En cada actualización (`ranking_refresh`) el dispatcher lista
+lo que tiene cada ranking y borra los concursos, problemas, equipos y
+usuarios que ya no enviaría. Una opción por ranking, `prune` (por defecto
+`true`), lo desactiva para rankings que alimentan varias instalaciones.
+
+**Consecuencias.** Diferencia deliberada con CMS; un ranking compartido
+debe poner `prune: false`.
+

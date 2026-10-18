@@ -1,5 +1,7 @@
 # Getting started: install and use CMS
 
+> This is the short guide. The **[step-by-step manual](manual/README.md)** explains everything in detail.
+
 *Español: [../es/primeros-pasos.md](../es/primeros-pasos.md).*
 
 A short guide to a working contest on a server with **Ubuntu 26.04 LTS**
@@ -37,13 +39,20 @@ curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-En
 The binary is checked against the release's `checksums.txt`. To pin a
 version: `--version v0.1.0`.
 
+Before changing anything it checks the server (busy ports, a database of
+another program, disk, network) and stops with the fix if something is
+wrong; `--check` runs only those checks. If a step fails later, it shows
+which step, why and how to fix it (everything goes to
+`/var/log/cms-install.log`). `--clean` removes any previous installation
+(backing it up first) and starts from zero.
+
 The installer sets up PostgreSQL, Valkey, the `isolate` sandbox, the
-compilers, the `systemd` services, the firewall and daily backups. At the
-end it prints:
+compilers, the `systemd` services and daily backups (the firewall only if
+it was already active). At the end it prints:
 
 - the addresses of the **three sites**;
 - the `admin` user and its **password**, shown **only once**: write it
-  down somewhere safe.
+  down somewhere safe (if lost: `sudo cmsctl admin-password admin`).
 
 If anything fails, running the same command again is safe. Useful options:
 `--admin-allow 10.0.0.0/8` (only that network may open the administration)
@@ -53,11 +62,11 @@ All of them: `curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Manage
 ## 3. Check that everything works
 
 ```sh
-sudo cmsctl verify-host                    # the judge can run programs
-systemctl status cms.target 'cms-*'        # every service "active"
+sudo cmsctl doctor                         # checks everything and says how to fix what fails
+sudo cmsctl verify-host                    # checks the judging machine in depth
 ```
 
-If `verify-host` reports a problem, see [troubleshooting](troubleshooting.md).
+See [troubleshooting](manual/14-troubleshooting.md).
 
 ## 4. Prepare a contest
 

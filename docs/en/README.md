@@ -2,8 +2,14 @@
 
 *Español: [../es/README.md](../es/README.md).*
 
+**First time?** Start with the **[step-by-step manual](manual/README.md)**
+(install, prepare a contest, run it and close it) or the
+[short guide](getting-started.md). The guides below are the technical
+reference.
+
 | Guide | Status |
 |---|---|
+| [**Step-by-step manual**](manual/README.md) | available |
 | [Configuration](configuration.md) | available |
 | [Development](development.md) | available |
 | [Judges (workers)](judges.md) | available |

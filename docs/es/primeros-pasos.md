@@ -1,5 +1,7 @@
 # Primeros pasos: instalar y usar CMS
 
+> Esta es la guía corta. El **[manual paso a paso](manual/README.md)** explica todo en detalle.
+
 *English: [../en/getting-started.md](../en/getting-started.md).*
 
 Guía corta para tener un concurso funcionando en un servidor con
@@ -37,13 +39,20 @@ curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-En
 El binario se verifica con el `checksums.txt` del release. Para fijar una
 versión: `--version v0.1.0`.
 
+Antes de cambiar nada revisa el servidor (puertos ocupados, base de datos
+de otro programa, disco, red) y se detiene con la solución si algo falla;
+`--check` hace sólo esa revisión. Si un paso falla después, muestra qué
+paso, por qué y cómo arreglarlo (todo queda en `/var/log/cms-install.log`).
+`--clean` borra cualquier instalación anterior (respaldándola antes) y
+empieza de cero.
+
 El instalador pone PostgreSQL, Valkey, el sandbox `isolate`, los
-compiladores, los servicios de `systemd`, el cortafuegos y los respaldos
-diarios. Al final muestra:
+compiladores, los servicios de `systemd` y los respaldos diarios (el
+cortafuegos sólo si ya estaba activo). Al final muestra:
 
 - las direcciones de los **tres sitios**;
 - el usuario `admin` y su **contraseña**, que se muestra **una sola vez**:
-  anótala en un lugar seguro.
+  anótala en un lugar seguro (si se pierde: `sudo cmsctl admin-password admin`).
 
 Si algo falla, se puede volver a correr el mismo comando sin perder nada.
 Opciones útiles: `--admin-allow 10.0.0.0/8` (solo esa red abre la
@@ -53,12 +62,11 @@ instala más rápido). Todas: `curl -fsSL https://raw.githubusercontent.com/D4ND
 ## 3. Comprobar que todo funciona
 
 ```sh
-sudo cmsctl verify-host                    # el juez puede correr programas
-systemctl status cms.target 'cms-*'        # todos los servicios "active"
+sudo cmsctl doctor                         # revisa todo y dice cómo arreglar lo que falle
+sudo cmsctl verify-host                    # revisa a fondo la máquina del juez
 ```
 
-Si `verify-host` reporta un problema, mira
-[problemas frecuentes](problemas-frecuentes.md).
+Ver [solución de problemas](manual/14-solucion-de-problemas.md).
 
 ## 4. Preparar un concurso
 

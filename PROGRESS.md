@@ -411,3 +411,34 @@ pruebas se hacen al final.
   compilación de isolate y la suite completa con PostgreSQL 18 y Valkey 9
   de Ubuntu 26.04. No verificado aquí: la instalación completa con systemd
   sobre 26.04 (esta VM usa cgroups v1).
+
+## Errores del primer servidor real (v0.1.0) y v0.2.0
+
+Instalando v0.1.0 en un servidor Ubuntu 26.04 con otros programas
+aparecieron: Valkey no arrancaba por un redis-server en el puerto 6379; una
+base `cms` de otro programa rompía las migraciones (y se le cambiaba la
+contraseña al rol `cms`); una corrida se cortó en silencio dejando los
+servicios sin habilitar; la contraseña del administrador no se podía
+recuperar; `cms ctl` sin `sudo` usaba la configuración de fábrica; la
+importación no aceptaba zip y avisaba de graders con ruido; un concurso
+borrado quedaba en el scoreboard; el instalador activaba ufw.
+
+Arreglos:
+
+- Instalador (D47): revisión previa (`--check`) con la solución de cada
+  falla, informe de falla con diagnóstico, log en
+  `/var/log/cms-install.log` sin secretos, `--clean` (respalda y borra todo
+  rastro anterior), ufw sólo si ya estaba activo (`--firewall` para
+  forzarlo), errores de systemd visibles, repositorio de isolate por https.
+- `cms ctl doctor` (D48): diagnóstico de la instalación en marcha con la
+  solución de cada problema; el instalador lo corre al final.
+- `cms ctl admin-password`; configuración ilegible → error con «usa sudo»;
+  los archivos que crea `sudo cmsctl` quedan del usuario de los servicios
+  (`internal/fsowner`); importaciones desde `.zip`/`.tar.gz`/`.tar`;
+  avisos de graders breves y con la solución.
+- Scoreboard: el dispatcher borra lo que ya no envía (opción `prune`, D49).
+- CSV de usuarios y equipos: se acepta la marca BOM de «CSV UTF-8» de Excel.
+- Manual paso a paso en `docs/es/manual` y `docs/en/manual`.
+- Verificado: `make lint`, pruebas de los paquetes tocados, instalación y
+  `--clean` en un contenedor Ubuntu 24.04 con systemd.
+

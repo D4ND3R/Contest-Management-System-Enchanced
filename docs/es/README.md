@@ -2,8 +2,14 @@
 
 *English: [../en/README.md](../en/README.md).*
 
+**¿Primera vez?** Empieza por el **[manual paso a paso](manual/README.md)**
+(instalar, preparar un concurso, correrlo y cerrarlo) o por la
+[guía corta](primeros-pasos.md). Las guías de abajo son la referencia
+técnica.
+
 | Guía | Estado |
 |---|---|
+| [**Manual paso a paso**](manual/README.md) | disponible |
 | [Configuración](configuracion.md) | disponible |
 | [Desarrollo](desarrollo.md) | disponible |
 | [Jueces (workers)](jueces.md) | disponible |

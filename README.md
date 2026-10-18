@@ -11,8 +11,10 @@ installation, durable job queues, live updates everywhere.
 > scoreboard, judge, importers, installer). See [PROGRESS.md](PROGRESS.md)
 > and [AUDIT.md](AUDIT.md).
 
-**Install and run a contest:** [docs/en/getting-started.md](docs/en/getting-started.md)
-· *Instalar y usar: [docs/es/primeros-pasos.md](docs/es/primeros-pasos.md)*.
+**Install and run a contest:** [docs/en/getting-started.md](docs/en/getting-started.md),
+then the [step-by-step manual](docs/en/manual/README.md)
+· *Instalar y usar: [docs/es/primeros-pasos.md](docs/es/primeros-pasos.md) y el
+[manual paso a paso](docs/es/manual/README.md)*.
 
 *Documentación en español: [docs/es](docs/es/README.md).*
 

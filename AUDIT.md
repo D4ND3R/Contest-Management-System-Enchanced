@@ -52,12 +52,12 @@ Actualizada al cerrar la fase final de pruebas.
 | R8.1 Loaders italy_yaml, Polygon, TPS | hecho — `internal/importer/{italy,polygon,tps}`, comparados con los loaders del original en pruebas |
 | R8.2 Formato propio con validación y exportación | hecho — `internal/importer/pkg`, `cms ctl validate-task`/`export-task`; pruebas de ida y vuelta |
 | R8.3 Dumps de CMS | hecho — `internal/importer/dump`, `cms ctl import-dump`; comparado con `cmsDumpImporter`, versiones 14–49 |
-| R9.1 Instalador | código — `scripts/install.sh`, `cms ctl add-admin`, `cms ctl public-urls`; sin probar en VM (fase de pruebas) |
+| R9.1 Instalador | hecho — `scripts/install.sh` (D47): revisión previa (`--check`), informe de falla con diagnóstico y log, instalación limpia (`--clean`), ufw sólo si ya estaba activo, `doctor` al final; probado en contenedor Ubuntu 24.04 con systemd (instalación, falla de red real, `--clean` sobre una instalación con datos); usado en un servidor real Ubuntu 26.04 |
 | R9.2 `cmsctl upgrade` | hecho — `internal/ctl/upgrade.go` (D46); prueba con falla simulada en cada paso y camino exitoso |
 | R9.3 Backup / restore | hecho — `internal/ctl/{archive,backup,restore}.go` (D44); ida y vuelta tabla por tabla, archivos dañados, esquema viejo |
 | R9.4 Compose de producción e imágenes | código — `deploy/docker-compose.yml`, `deploy/compose-init.sh`, Dockerfiles multi-arq, `.github/workflows/images.yml`; `docker compose config` válido; sin correr |
 | R9.5 GoReleaser | código — `.goreleaser.yaml`, `.github/workflows/release.yml`; sin correr |
-| R9.6 Documentación | hecha — `docs/{es,en}`: instalación, actualización y respaldos, Docker, operación, problemas frecuentes, primeros pasos |
+| R9.6 Documentación | hecha — `docs/{es,en}`: manual paso a paso (`docs/*/manual`, 14 capítulos), instalación, actualización y respaldos, Docker, operación, problemas frecuentes, primeros pasos |
 
 ## No funcionales
 
@@ -72,4 +72,4 @@ Actualizada al cerrar la fase final de pruebas.
 | N7 Traducible | parcial: sitio del concursante con los msgids de CMS y los textos nuevos en español; admin en F6 |
 | N8 AGPL | parcial: `/source` en las tres webs; enlace en el pie del sitio del concursante; admin y ranking en F6–F7 |
 | N9 Misma interfaz | parcial: sitio del concursante comparado lado a lado (D43); admin y ranking en F6–F7 |
-| N10 Operación | código (F9): instalador, upgrade con vuelta atrás, respaldos; falta probarlo en una VM limpia |
+| N10 Operación | hecho: instalador con diagnóstico, upgrade con vuelta atrás, respaldos, `cms ctl doctor` (D48); la instalación completa en 26.04 la probó el dueño en su servidor |

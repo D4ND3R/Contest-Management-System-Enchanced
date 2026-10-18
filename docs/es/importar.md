@@ -2,7 +2,7 @@
 
 *English: [../en/importing.md](../en/importing.md).*
 
-Los comandos `cms ctl import-*` reemplazan a `cmsImportContest`,
+Los comandos `sudo cmsctl import-*` reemplazan a `cmsImportContest`,
 `cmsImportTask`, `cmsImportUser`, `cmsImportTeam`, `cmsImportDataset` y
 `cmsDumpImporter` de CMS, con las mismas opciones. Necesitan la
 configuración de la base y del almacén de blobs (el mismo `cms.yaml` que
@@ -28,7 +28,9 @@ Todas las importaciones:
 | TPS | `tps` (`tps_task`) | tarea (`problem.json`) |
 | Formato propio | `problem_yaml` (`package`) | tarea (`problem.yaml`), directorio o zip; ver [Formato de paquete](formato-de-paquete.md) |
 
-Sin `-L` el formato se detecta solo; si más de uno reconoce el directorio,
+La ruta puede ser una carpeta o un archivo `.zip`, `.tar.gz`/`.tgz` o `.tar`
+(se extrae en una carpeta temporal; si adentro hay una sola carpeta, se usa
+ésa). Sin `-L` el formato se detecta solo; si más de uno reconoce el directorio,
 hay que elegirlo con `-L`.
 
 Los checkers y managers que vienen como fuente C++ (Polygon, TPS, formato
@@ -41,33 +43,33 @@ literales de Python y nunca se ejecuta.
 
 ```sh
 # revisar un problema sin base de datos
-cms ctl validate-task ruta/al/problema
-cms ctl validate-contest ruta/al/concurso
+sudo cmsctl validate-task ruta/al/problema
+sudo cmsctl validate-contest ruta/al/concurso
 
 # importar un concurso con sus tareas (-i) y sus usuarios
-cms ctl import-contest -i --users ruta/al/concurso
+sudo cmsctl import-contest -i --users ruta/al/concurso
 
 # actualizar las tareas de un concurso existente sin perder envíos
-cms ctl import-contest -U ruta/al/concurso
+sudo cmsctl import-contest -U ruta/al/concurso
 
 # importar una tarea y agregarla al final de un concurso
-cms ctl import-task -c miconcurso ruta/al/problema
+sudo cmsctl import-task -c miconcurso ruta/al/problema
 
 # actualizar una tarea (los envíos se conservan)
-cms ctl import-task -u ruta/al/problema
+sudo cmsctl import-task -u ruta/al/problema
 
 # agregar los datos de juzgamiento como un dataset nuevo, inactivo
-cms ctl import-dataset -d "casos corregidos" ruta/al/problema
+sudo cmsctl import-dataset -d "casos corregidos" ruta/al/problema
 
 # usuarios y equipos
-cms ctl import-users -c miconcurso ruta/al/concurso
-cms ctl import-team ruta/al/concurso
+sudo cmsctl import-users -c miconcurso ruta/al/concurso
+sudo cmsctl import-team ruta/al/concurso
 
 # exportar una tarea al formato propio
-cms ctl export-task suma suma.zip
+sudo cmsctl export-task suma suma.zip
 ```
 
-`cms ctl help <comando>` explica cada opción.
+`sudo cmsctl help <comando>` explica cada opción.
 
 ### Actualizar una tarea
 
@@ -78,7 +80,7 @@ El dataset activo y los envíos se conservan. Si cambiaron los datos de
 juzgamiento del dataset activo, reevaluarlo:
 
 ```sh
-cms ctl reevaluate --dataset ID_DEL_DATASET --level evaluation
+sudo cmsctl reevaluate --dataset ID_DEL_DATASET --level evaluation
 ```
 
 CMS usa archivos `.itime` dentro del paquete para saber qué cambió; aquí se
@@ -95,8 +97,8 @@ cmsDumpExporter -c ID_DEL_CONCURSO concurso.tar.gz
 En esta:
 
 ```sh
-cms ctl import-dump --dry-run concurso.tar.gz   # revisar
-cms ctl import-dump concurso.tar.gz
+sudo cmsctl import-dump --dry-run concurso.tar.gz   # revisar
+sudo cmsctl import-dump concurso.tar.gz
 ```
 
 - Se aceptan directorios, zip y tar (`.tar`, `.tar.gz`, `.tar.bz2`) de las
