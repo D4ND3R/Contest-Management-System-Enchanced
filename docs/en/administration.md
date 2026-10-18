@@ -157,7 +157,14 @@ documented as they are completed.
 - **Users**: paginated list (100 per page), creation, edition (the
   password in plain text or hashed with bcrypt; with a hashed password,
   leaving the field empty keeps it), removal (with their participations
-  and submissions) and their participations.
+  and submissions) and their participations. **CSV import** at the bottom
+  of the list: one row per user `username,password,first_name,last_name[,email]`
+  (a first row starting with `username` is skipped); the password is
+  stored in plain text, as CMS's importers do. An existing user gets the
+  new values. Optionally all of them are added to a contest, in its main
+  group (users already taking part stay as they are). If any row is wrong
+  (bad or repeated username, empty password, too many or too few columns)
+  nothing is imported and the notification lists the failing lines.
 - **Teams**: list, creation, edition, removal (participations stay
   without a team) and **CSV import** on the teams page: one row per team
   `code,name` (a first row `code,name` is skipped; an empty name takes the

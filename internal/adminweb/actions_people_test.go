@@ -217,6 +217,72 @@ func TestTeamsImport(t *testing.T) {
 	}
 }
 
+// TestUsersImport checks the CSV import of users: a good file creates and
+// updates users and adds them to the contest, a file with any bad row
+// changes nothing.
+func TestUsersImport(t *testing.T) {
+	ts, _ := newFixtureSite(t, testOptions{})
+	c := ts.Client()
+	c.Login("admin")
+	cid := itoa(ts.Contest)
+	imp := func(data, contest string) {
+		t.Helper()
+		r := c.PostFiles("/users/import", url.Values{"contest_id": {contest}}, upload{"users_file", "users.csv", []byte(data)})
+		if !wantRedirect(r, "users") {
+			t.Fatalf("import: %d %q", r.Status, r.Location())
+		}
+	}
+	n := ts.AuditCount()
+	imp("username,password,first_name,last_name,email\nimp1,pw1,Ana,Uno,ana@example.com\nimp2, pw2 ,Bea,Dos\n\n", cid)
+	if ts.QueryInt(`SELECT count(*) FROM users WHERE username IN ('imp1', 'imp2')`) != 2 {
+		t.Fatal("the users were not created")
+	}
+	if ts.QueryInt(`SELECT count(*) FROM users WHERE (username, password, first_name, last_name, email) = ('imp1', 'plaintext:pw1', 'Ana', 'Uno', 'ana@example.com')`) != 1 ||
+		ts.QueryInt(`SELECT count(*) FROM users WHERE username = 'imp2' AND password = 'plaintext:pw2' AND email IS NULL`) != 1 {
+		t.Fatal("wrong user values")
+	}
+	if ts.QueryInt(`SELECT count(*) FROM participations p JOIN users u ON u.id = p.user_id
+		JOIN contests c ON c.id = p.contest_id AND c.main_group_id = p.group_id
+		WHERE u.username IN ('imp1', 'imp2') AND p.contest_id = `+cid) != 2 {
+		t.Fatal("the users were not added to the contest")
+	}
+	audited(t, ts, n, "user.import", 0)
+	// Again, without a contest: updates, adds nothing.
+	imp("imp1,new,Ana,Nueva\n", "")
+	if ts.QueryInt(`SELECT count(*) FROM users WHERE username = 'imp1' AND password = 'plaintext:new' AND last_name = 'Nueva' AND email IS NULL`) != 1 {
+		t.Fatal("the user was not updated")
+	}
+	if d := ts.LastAudit().Details; d["created"] != float64(0) || d["updated"] != float64(1) {
+		t.Fatalf("audit details: %v", d)
+	}
+	for _, bad := range []string{
+		"zed,pw,Z,Z\nb@d,pw,B,B\n",       // invalid username
+		"zed,pw,Z,Z\nzed,pw,Z,Z\n",       // repeated username
+		"zed,pw,Z,Z\nyo,,Y,Y\n",          // empty password
+		"zed,pw,Z,Z\nyo,pw,Y\n",          // too few columns
+		"zed,pw,Z,Z\nyo,pw,Y,Y,e,x\n",    // too many columns
+		"zed,pw,Z,Z\n\"unterminated,x\n", // CSV syntax
+		"",                               // no users
+	} {
+		n := ts.AuditCount()
+		imp(bad, cid)
+		if ts.QueryInt(`SELECT count(*) FROM users WHERE username = 'zed'`) != 0 || ts.AuditCount() != n {
+			t.Fatalf("a bad file changed the users: %q", bad)
+		}
+		if body := c.notices(); !strings.Contains(body, "Invalid field") {
+			t.Fatalf("no error for %q: %s", bad, body)
+		}
+	}
+	if r := c.PostFiles("/users/import", url.Values{"contest_id": {"x"}}, upload{"users_file", "u.csv", []byte("zed,pw,Z,Z\n")}); r.Status != http.StatusBadRequest {
+		t.Fatalf("bad contest id: %d", r.Status)
+	}
+	o := ts.Client()
+	o.Login("prep")
+	if r := o.PostFiles("/users/import", nil, upload{"users_file", "u.csv", []byte("zed,pw,Z,Z\n")}); r.Status != http.StatusForbidden {
+		t.Fatalf("import as prep: %d", r.Status)
+	}
+}
+
 // TestCommunicationForms checks announcements, questions and messages,
 // and that the messaging role may use them while prep and ro may not.
 func TestCommunicationForms(t *testing.T) {

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright © 2026 D4ND3R and the Contest-Management-System-Enchanced contributors
 #
-# Installer of CMS (Go rewrite) for Ubuntu 22.04/24.04 and Debian 12 (R9.1).
+# Installer of CMS (Go rewrite) for Ubuntu 22.04/24.04/26.04 and Debian 12 (R9.1).
 #
 #   curl -fsSL https://raw.githubusercontent.com/D4ND3R/Contest-Management-System-Enchanced/main/scripts/install.sh \
 #     | sudo bash -s -- --domain example.org
@@ -48,7 +48,7 @@ UNINSTALL=0 PURGE=0 YES=0 FORCE_OS=0
 
 usage() {
     cat <<'EOF'
-CMS installer (Ubuntu 22.04/24.04, Debian 12). Run as root.
+CMS installer (Ubuntu 22.04/24.04/26.04, Debian 12). Run as root.
 
 Modes (one of):
   --domain NAME            HTTPS with Caddy: contest site at NAME, admin at
@@ -165,14 +165,17 @@ write_if_changed() { # path mode content-on-stdin
 }
 
 read_os() {
+    # Read os-release in a subshell: it defines VERSION, NAME, ID... and
+    # must not overwrite the installer's own variables (--version).
+    local os
     # shellcheck disable=SC1091
-    . /etc/os-release
-    OS_ID="$ID" OS_VERSION="${VERSION_ID:-}" CODENAME="${VERSION_CODENAME:-}"
+    os="$(. /etc/os-release && printf '%s\n%s\n%s\n' "${ID:-}" "${VERSION_ID:-}" "${VERSION_CODENAME:-}")"
+    { read -r OS_ID; read -r OS_VERSION; read -r CODENAME; } <<<"$os"
     ARCH="$(dpkg --print-architecture)"
     case "$OS_ID:$OS_VERSION" in
-    ubuntu:22.04 | ubuntu:24.04 | debian:12) ;;
+    ubuntu:22.04 | ubuntu:24.04 | ubuntu:26.04 | debian:12) ;;
     *)
-        [[ "$FORCE_OS" == 1 ]] || die "unsupported system $OS_ID $OS_VERSION (Ubuntu 22.04/24.04 or Debian 12; --force-os to try)"
+        [[ "$FORCE_OS" == 1 ]] || die "unsupported system $OS_ID $OS_VERSION (Ubuntu 22.04/24.04/26.04 or Debian 12; --force-os to try)"
         warn "unsupported system $OS_ID $OS_VERSION: continuing because of --force-os"
         ;;
     esac
@@ -284,10 +287,9 @@ install_base() {
 install_isolate() {
     if command -v isolate >/dev/null; then
         log "isolate already installed"
-    elif [[ "$ARCH" == amd64 ]]; then
+    elif [[ "$ARCH" == amd64 && "$CODENAME" =~ ^(jammy|noble|bookworm)$ ]]; then
         log "installing isolate from its authors' repository"
-        local suite
-        case "$CODENAME" in jammy | noble | bookworm) suite="$CODENAME-isolate" ;; *) suite="noble-isolate" ;; esac
+        local suite="$CODENAME-isolate"
         install -d -m 0755 /etc/apt/keyrings
         curl -fsSL https://www.ucw.cz/isolate/debian/signing-key.asc -o /etc/apt/keyrings/isolate.asc
         echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ $suite main" \
@@ -295,12 +297,13 @@ install_isolate() {
         apt-get update -q
         apt_install isolate
     else
-        # The repository only has amd64 packages: build the same release.
+        # The repository only has amd64 packages for jammy, noble and
+        # bookworm: elsewhere (arm64, Ubuntu 26.04...) build the same release.
         log "building isolate $ISOLATE_SRC_TAG from source ($ARCH)"
         apt_install build-essential git pkg-config libcap-dev libseccomp-dev libsystemd-dev
         local src
         src="$(mktemp -d)"
-        git clone -q --depth 1 --branch "$ISOLATE_SRC_TAG" https://github.com/ioi/isolate "$src/isolate"
+        git -c advice.detachedHead=false clone -q --depth 1 --branch "$ISOLATE_SRC_TAG" https://github.com/ioi/isolate "$src/isolate"
         make -C "$src/isolate" -s PREFIX=/usr VARPREFIX=/var CONFIGDIR=/etc isolate isolate-cg-keeper isolate-check-environment
         make -C "$src/isolate" -s PREFIX=/usr VARPREFIX=/var CONFIGDIR=/etc install
         rm -rf "$src"
@@ -536,7 +539,7 @@ write_config() {
     kvpw="$(secret valkey_password)"
     (umask 027; cat >"$ETC/cms.yaml" <<EOF
 # Written ONCE by the cms installer on $(date -u +%Y-%m-%dT%H:%M:%SZ); it is never overwritten.
-# Every option: /usr/share/doc/cms/cms.sample.yaml or `cmsctl config show`.
+# Every option: /usr/share/doc/cms/cms.sample.yaml or "cmsctl config show".
 # Listen addresses and proxies come from $ETC/cms.env (rewritten by the
 # installer); the judge's storage settings from $ETC/worker.env.
 secret_key: "$key"
@@ -627,6 +630,8 @@ EOF
     chmod 0600 "$SECRETS/blob_token"
     write_if_changed "$ETC/worker.env" 0644 <<EOF || true
 # Written by the cms installer on every run: storage of the local judge.
+# The blob server is the dispatcher's (cms.env); the judge only reads it.
+CMS_DISPATCHER_BLOB_LISTEN=
 CMS_STORAGE_BACKEND=remote
 CMS_STORAGE_REMOTE_URL=http://127.0.0.1:$BLOB_PORT
 CMS_STORAGE_REMOTE_TOKEN_FILE=$SECRETS/blob_token

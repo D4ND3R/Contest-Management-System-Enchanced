@@ -2387,3 +2387,18 @@ msgstr "nuevo:"
 
 msgid "old:"
 msgstr "viejo:"
+
+msgid "%(created)s user(s) created, %(updated)s updated, %(added)s added to the contest."
+msgstr "%(created)s usuario(s) creados, %(updated)s actualizados, %(added)s agregados al concurso."
+
+msgid "A CSV file with one user per row: username,password,first_name,last_name and optionally email (a first row starting with username is skipped). Existing usernames get the new values. If any row is wrong nothing is imported."
+msgstr "Un archivo CSV con un usuario por fila: username,password,first_name,last_name y opcionalmente email (se omite una primera fila que empiece con username). Los usuarios que ya existen reciben los nuevos valores. Si alguna fila está mal no se importa nada."
+
+msgid "Also add them to contest"
+msgstr "Agregarlos también al concurso"
+
+msgid "Import users"
+msgstr "Importar usuarios"
+
+msgid "Users imported"
+msgstr "Usuarios importados"

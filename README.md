@@ -7,9 +7,12 @@ interface** of CMS (same pages, CSS, JavaScript and translations), and
 removes what makes CMS hard to install and operate: one binary, one-command
 installation, durable job queues, live updates everywhere.
 
-> **Status: phase F0 (foundations).** The services start, connect and report
-> their health, but the sites have no pages yet. See [PROGRESS.md](PROGRESS.md)
-> and the roadmap in [SPEC.md](SPEC.md).
+> **Status: phases F0–F9 complete** (contestant site, administration,
+> scoreboard, judge, importers, installer). See [PROGRESS.md](PROGRESS.md)
+> and [AUDIT.md](AUDIT.md).
+
+**Install and run a contest:** [docs/en/getting-started.md](docs/en/getting-started.md)
+· *Instalar y usar: [docs/es/primeros-pasos.md](docs/es/primeros-pasos.md)*.
 
 *Documentación en español: [docs/es](docs/es/README.md).*
 

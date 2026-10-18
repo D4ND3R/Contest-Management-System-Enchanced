@@ -165,7 +165,15 @@ problemas) se documentan a medida que se completan.
 - **Usuarios**: lista paginada (100 por página), alta, edición (la
   contraseña en texto plano o cifrada con bcrypt; con una contraseña
   cifrada, dejar el campo vacío la conserva), baja (con sus
-  participaciones y envíos) y sus participaciones.
+  participaciones y envíos) y sus participaciones. **Importación desde
+  CSV** al final de la lista: una fila por usuario
+  `username,password,first_name,last_name[,email]` (una primera fila que
+  empieza con `username` se ignora); la contraseña queda en texto plano,
+  como en los importadores de CMS. Un usuario existente recibe los nuevos
+  valores. Opcionalmente todos se agregan a un concurso, en su grupo
+  principal (los que ya participan quedan igual). Si alguna fila está mal
+  (usuario inválido o repetido, contraseña vacía, columnas de más o de
+  menos) no se importa nada y el aviso dice qué líneas fallaron.
 - **Equipos**: lista, alta, edición, baja (las participaciones quedan sin
   equipo) e **importación desde CSV** en la página de equipos: una fila
   por equipo `código,nombre` (una primera fila `code,name` se ignora; un

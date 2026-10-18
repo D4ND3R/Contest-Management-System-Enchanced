@@ -31,6 +31,10 @@ msgstr ""
 msgid "%(created)s team(s) created, %(updated)s updated."
 msgstr ""
 
+#: ../internal/adminweb/users_import.go:191
+msgid "%(created)s user(s) created, %(updated)s updated, %(added)s added to the contest."
+msgstr ""
+
 #: ../internal/adminweb/funcs.go:188
 #: ../internal/adminweb/judges.go:58
 msgid "%(job)s the <a href=\"%(result_url)s\">result</a> of <a href=\"%(submission_url)s\">submission %(submission)s</a> on <a href=\"%(dataset_url)s\">dataset %(dataset)s</a>"
@@ -146,6 +150,10 @@ msgstr ""
 
 #: ../internal/adminweb/templates/teams.html:53
 msgid "A CSV file with one team per row: code,name (a first row code,name is skipped). Existing codes get the new name. If any row is wrong nothing is imported."
+msgstr ""
+
+#: ../internal/adminweb/templates/users.html:61
+msgid "A CSV file with one user per row: username,password,first_name,last_name and optionally email (a first row starting with username is skipped). Existing usernames get the new values. If any row is wrong nothing is imported."
 msgstr ""
 
 #: ../internal/adminweb/templates/participation.html:118
@@ -366,6 +374,10 @@ msgstr ""
 msgid "Allowed programming languages"
 msgstr ""
 
+#: ../internal/adminweb/templates/users.html:67
+msgid "Also add them to contest"
+msgstr ""
+
 #: ../internal/adminweb/templates/macro/question.html:106
 msgid "Alternative answer:"
 msgstr ""
@@ -480,6 +492,7 @@ msgid "CMS"
 msgstr ""
 
 #: ../internal/adminweb/templates/teams.html:54
+#: ../internal/adminweb/templates/users.html:62
 msgid "CSV file"
 msgstr ""
 
@@ -919,7 +932,7 @@ msgid "Edit selected team:"
 msgstr ""
 
 #: ../internal/adminweb/templates/contest_users.html:45
-#: ../internal/adminweb/templates/users.html:18
+#: ../internal/adminweb/templates/users.html:19
 msgid "Edit selected user:"
 msgstr ""
 
@@ -1310,6 +1323,7 @@ msgid "Ignored by:"
 msgstr ""
 
 #: ../internal/adminweb/templates/teams.html:59
+#: ../internal/adminweb/templates/users.html:78
 msgid "Import"
 msgstr ""
 
@@ -1324,6 +1338,10 @@ msgstr ""
 
 #: ../internal/adminweb/templates/teams.html:47
 msgid "Import teams"
+msgstr ""
+
+#: ../internal/adminweb/templates/users.html:55
+msgid "Import users"
 msgstr ""
 
 #: ../internal/adminweb/templates/judges.html:78
@@ -1401,10 +1419,13 @@ msgstr ""
 #: ../internal/adminweb/tasks.go:217
 #: ../internal/adminweb/tasks.go:526
 #: ../internal/adminweb/tasks.go:536
-#: ../internal/adminweb/users.go:179
-#: ../internal/adminweb/users.go:274
-#: ../internal/adminweb/users.go:290
-#: ../internal/adminweb/users.go:363
+#: ../internal/adminweb/users.go:188
+#: ../internal/adminweb/users.go:283
+#: ../internal/adminweb/users.go:299
+#: ../internal/adminweb/users.go:372
+#: ../internal/adminweb/users_import.go:122
+#: ../internal/adminweb/users_import.go:134
+#: ../internal/adminweb/users_import.go:139
 #: ../internal/adminweb/users_participations.go:110
 #: ../internal/adminweb/users_participations.go:129
 #: ../internal/adminweb/users_participations.go:366
@@ -1422,7 +1443,7 @@ msgstr ""
 
 #: ../internal/adminweb/contests.go:121
 #: ../internal/adminweb/contests_groups.go:90
-#: ../internal/adminweb/users.go:77
+#: ../internal/adminweb/users.go:86
 #: ../internal/adminweb/users_teams.go:78
 msgid "Invalid operation"
 msgstr ""
@@ -2214,7 +2235,7 @@ msgstr ""
 #: ../internal/adminweb/templates/teams.html:20
 #: ../internal/adminweb/templates/user.html:38
 #: ../internal/adminweb/templates/user.html:141
-#: ../internal/adminweb/templates/users.html:21
+#: ../internal/adminweb/templates/users.html:22
 msgid "Remove"
 msgstr ""
 
@@ -3164,8 +3185,12 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
+#: ../internal/adminweb/users_import.go:191
+msgid "Users imported"
+msgstr ""
+
 #: ../internal/adminweb/templates/contest_users.html:12
-#: ../internal/adminweb/templates/users.html:13
+#: ../internal/adminweb/templates/users.html:14
 msgid "Users list"
 msgstr ""
 

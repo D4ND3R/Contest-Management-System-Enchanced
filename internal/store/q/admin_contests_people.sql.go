@@ -12,6 +12,29 @@ import (
 	"context"
 )
 
+const adminAddMainGroupParticipations = `-- name: AdminAddMainGroupParticipations :execrows
+INSERT INTO participations (contest_id, user_id, group_id)
+SELECT c.id, u, c.main_group_id
+FROM contests c, unnest($1::integer[]) AS u
+WHERE c.id = $2 AND c.main_group_id IS NOT NULL
+ON CONFLICT (contest_id, user_id) DO NOTHING
+`
+
+type AdminAddMainGroupParticipationsParams struct {
+	UserIds   []int32
+	ContestID int32
+}
+
+// Gives each user a participation in the main group of a contest, unless
+// the user already has one there.
+func (q *Queries) AdminAddMainGroupParticipations(ctx context.Context, arg AdminAddMainGroupParticipationsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, adminAddMainGroupParticipations, arg.UserIds, arg.ContestID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const adminContestParticipationsCount = `-- name: AdminContestParticipationsCount :one
 SELECT count(*)::bigint FROM participations WHERE contest_id = $1
 `
@@ -161,6 +184,64 @@ func (q *Queries) AdminImportTeams(ctx context.Context, arg AdminImportTeamsPara
 			&i.Name,
 			&i.Created,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const adminImportUsers = `-- name: AdminImportUsers :many
+WITH up AS (
+    INSERT INTO users (username, password, first_name, last_name, email)
+    SELECT t.u, t.p, t.f, t.l, NULLIF(t.e, '')
+    FROM (SELECT unnest($1::text[]) AS u, unnest($2::text[]) AS p,
+                 unnest($3::text[]) AS f, unnest($4::text[]) AS l,
+                 unnest($5::text[]) AS e) t
+    ON CONFLICT (username) DO UPDATE
+        SET password = excluded.password, first_name = excluded.first_name,
+            last_name = excluded.last_name, email = excluded.email
+    RETURNING id, username, (xmax = 0)::boolean AS created
+)
+SELECT id, username, created FROM up ORDER BY username
+`
+
+type AdminImportUsersParams struct {
+	Usernames  []string
+	Passwords  []string
+	FirstNames []string
+	LastNames  []string
+	Emails     []string
+}
+
+type AdminImportUsersRow struct {
+	ID       int32
+	Username string
+	Created  bool
+}
+
+// Creates or updates the users of a CSV import, (usernames[i],
+// passwords[i], first_names[i], last_names[i], emails[i]); an existing
+// username keeps its id and gets the new values (” email = none).
+func (q *Queries) AdminImportUsers(ctx context.Context, arg AdminImportUsersParams) ([]AdminImportUsersRow, error) {
+	rows, err := q.db.Query(ctx, adminImportUsers,
+		arg.Usernames,
+		arg.Passwords,
+		arg.FirstNames,
+		arg.LastNames,
+		arg.Emails,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AdminImportUsersRow{}
+	for rows.Next() {
+		var i AdminImportUsersRow
+		if err := rows.Scan(&i.ID, &i.Username, &i.Created); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

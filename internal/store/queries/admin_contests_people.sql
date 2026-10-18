@@ -102,3 +102,29 @@ WITH up AS (
     RETURNING id, code, name, (xmax = 0)::boolean AS created
 )
 SELECT id, code, name, created FROM up ORDER BY code;
+
+-- name: AdminImportUsers :many
+-- Creates or updates the users of a CSV import, (usernames[i],
+-- passwords[i], first_names[i], last_names[i], emails[i]); an existing
+-- username keeps its id and gets the new values ('' email = none).
+WITH up AS (
+    INSERT INTO users (username, password, first_name, last_name, email)
+    SELECT t.u, t.p, t.f, t.l, NULLIF(t.e, '')
+    FROM (SELECT unnest(sqlc.arg(usernames)::text[]) AS u, unnest(sqlc.arg(passwords)::text[]) AS p,
+                 unnest(sqlc.arg(first_names)::text[]) AS f, unnest(sqlc.arg(last_names)::text[]) AS l,
+                 unnest(sqlc.arg(emails)::text[]) AS e) t
+    ON CONFLICT (username) DO UPDATE
+        SET password = excluded.password, first_name = excluded.first_name,
+            last_name = excluded.last_name, email = excluded.email
+    RETURNING id, username, (xmax = 0)::boolean AS created
+)
+SELECT id, username, created FROM up ORDER BY username;
+
+-- name: AdminAddMainGroupParticipations :execrows
+-- Gives each user a participation in the main group of a contest, unless
+-- the user already has one there.
+INSERT INTO participations (contest_id, user_id, group_id)
+SELECT c.id, u, c.main_group_id
+FROM contests c, unnest(sqlc.arg(user_ids)::integer[]) AS u
+WHERE c.id = sqlc.arg(contest_id) AND c.main_group_id IS NOT NULL
+ON CONFLICT (contest_id, user_id) DO NOTHING;

@@ -13,7 +13,7 @@
 | [API JSON del sitio del concursante (scripts, suplantación)](api.md) | disponible |
 | [Administración (permisos, auditoría, página Servidor, tiempo real)](administracion.md) | disponible (las páginas de concursos, problemas y envíos, con F6) |
 | [Scoreboard público (configuración, visibilidad, enlace secreto, congelamiento, proxies)](scoreboard.md) | disponible |
-| [Primeros pasos](primeros-pasos.md) | disponible |
+| [Primeros pasos: instalar y usar CMS en Ubuntu](primeros-pasos.md) | disponible |
 | [Instalación, requisitos y dimensionamiento (dominio, puertos, jueces adicionales, desinstalar)](instalacion.md) | disponible |
 | [Docker (Compose de producción, imágenes)](docker.md) | disponible |
 | [Actualización, vuelta atrás, respaldos y restauración](actualizacion-y-respaldos.md) | disponible |

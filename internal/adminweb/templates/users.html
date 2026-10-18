@@ -3,7 +3,8 @@ Ported from cms/server/admin/templates/users.html of CMS (Contest
 Management System, https://github.com/cms-dev/cms), AGPL-3.0-or-later:
 Copyright © 2010-2018 Stefano Maggiolo and the CMS contributors.
 Changes in this fork: every text goes through T; the list is paginated
-(D24: the page selector of CMS appears with more than one page).
+(D24: the page selector of CMS appears with more than one page); the form
+to import users from a CSV file (R6.1, new; like the import of teams).
 */}}
 {{/* extends "base.html" */}}
 
@@ -47,5 +48,35 @@ Changes in this fork: every text goes through T; the list is paginated
     </tbody>
   </table>
 </form>
+
+{{if .Admin.CanAll}}
+<div class="hr"></div>
+
+<h2>{{T "Import users"}}</h2>
+<form enctype="multipart/form-data" action="{{url "users" "import"}}" method="POST">
+  {{xsrf_form_html}}
+  <table>
+    <tr>
+      <td>
+        <span class="info" title="{{T "A CSV file with one user per row: username,password,first_name,last_name and optionally email (a first row starting with username is skipped). Existing usernames get the new values. If any row is wrong nothing is imported."}}"></span>
+        {{T "CSV file"}}
+      </td>
+      <td><input type="file" name="users_file" accept=".csv,text/csv"/></td>
+    </tr>
+    <tr>
+      <td>{{T "Also add them to contest"}}</td>
+      <td>
+        <select name="contest_id">
+          <option value="">{{T "None"}}</option>
+{{range .Contests}}
+          <option value="{{.ID}}">{{.Name}}</option>
+{{end}}
+        </select>
+      </td>
+    </tr>
+  </table>
+  <input type="submit" value="{{T "Import"}}"/>
+</form>
+{{end}}
 
 {{end}}

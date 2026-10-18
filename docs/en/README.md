@@ -13,7 +13,7 @@
 | [JSON API of the contestant site (scripts, impersonation)](api.md) | available |
 | [Administration (permissions, audit log, Server page, live updates)](administration.md) | available (the contest, task and submission pages, with F6) |
 | [Public scoreboard (configuration, visibility, secret link, freeze, proxies)](scoreboard.md) | available |
-| [Getting started](getting-started.md) | available |
+| [Getting started: install and use CMS on Ubuntu](getting-started.md) | available |
 | [Installation, requirements and sizing (domain, ports, extra judges, uninstall)](installation.md) | available |
 | [Docker (production Compose, images)](docker.md) | available |
 | [Upgrades, rollback, backups and restore](upgrades-and-backups.md) | available |

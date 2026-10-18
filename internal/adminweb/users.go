@@ -39,6 +39,8 @@ type usersData struct {
 	*Page
 	Users []q.AdminUsersPageRow
 	Pager *Pager
+	// Contests are offered by the import form (admins with PermAll).
+	Contests []q.AdminContestsListRow
 }
 
 // usersPage is GET /users (CMS UserListHandler).
@@ -59,7 +61,14 @@ func (s *Server) usersPage(c *Ctx) {
 		c.Fail(err)
 		return
 	}
-	c.Render("users.html", usersData{Page: p, Users: rows, Pager: pg})
+	d := usersData{Page: p, Users: rows, Pager: pg}
+	if c.Admin.CanAll() {
+		if d.Contests, err = s.st.Q.AdminContestsList(c.Context()); err != nil {
+			c.Fail(err)
+			return
+		}
+	}
+	c.Render("users.html", d)
 }
 
 // usersPost is POST /users: the Remove button opens the confirmation.

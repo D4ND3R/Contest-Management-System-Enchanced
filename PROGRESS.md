@@ -394,3 +394,20 @@ pruebas se hacen al final.
 - Pendiente: instalador en VMs limpias, imágenes multi-arquitectura y
   GoReleaser (requieren infraestructura que esta VM no tiene); k6 sobre
   hardware real de 2 vCPU.
+
+## Listo para usar en un servidor
+
+- Importación de usuarios desde CSV en la administración (criterio del
+  MVP: usuarios por CSV), opcionalmente agregándolos a un concurso.
+- Instalador: Ubuntu 26.04 (isolate compilado desde el código fuente;
+  C# no existe en 26.04 y se omite), y tres errores encontrados al
+  probarlo en un contenedor Ubuntu 24.04 con systemd (sustitución de
+  comandos en un comentario del heredoc, almacenamiento del juez local,
+  `VERSION` de os-release pisando variables).
+- Guía corta de instalación y uso (`docs/es/primeros-pasos.md`,
+  `docs/en/getting-started.md`): compilar en el servidor mientras no haya
+  una versión publicada.
+- Verificado: instalador completo en Ubuntu 24.04 (contenedor); paquetes,
+  compilación de isolate y la suite completa con PostgreSQL 18 y Valkey 9
+  de Ubuntu 26.04. No verificado aquí: la instalación completa con systemd
+  sobre 26.04 (esta VM usa cgroups v1).
