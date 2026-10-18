@@ -44,6 +44,7 @@ judges never need the secret_key itself.`,
 				Run: blobToken,
 			},
 			verifyHostCommand(),
+			doctorCommand(),
 			{
 				Name:  "gen-secret",
 				Short: "print a new random secret_key",
