@@ -26,10 +26,11 @@ import (
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/web"
 )
 
-// AdminCommands returns `add-admin` (CMS cmsAddAdmin) and `public-urls`
-// (the addresses of the Server page, set by the installer).
+// AdminCommands returns `add-admin` (CMS cmsAddAdmin), `admin-password`
+// (a new password for an existing administrator) and `public-urls` (the
+// addresses of the Server page, set by the installer).
 func AdminCommands() []*cli.Command {
-	return []*cli.Command{addAdminCommand(), publicURLsCommand()}
+	return []*cli.Command{addAdminCommand(), adminPasswordCommand(), publicURLsCommand()}
 }
 
 var adminUsername = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
@@ -125,10 +126,10 @@ ON CONFLICT (username) DO NOTHING
 RETURNING id`, name, username, auth, perms[0], perms[1], perms[2]).Scan(&id)
 			if errors.Is(err, pgx.ErrNoRows) {
 				if ifNotExists {
-					fmt.Fprintf(env.Stdout, "exists: admin %q already exists; nothing changed\n", username)
+					fmt.Fprintf(env.Stdout, "exists: admin %q already exists; nothing changed (to set a new password run cmsctl admin-password %s)\n", username, username)
 					return nil
 				}
-				return fmt.Errorf("admin %q already exists", username)
+				return fmt.Errorf("admin %q already exists (to set a new password: admin-password %s)", username, username)
 			}
 			if err != nil {
 				return err
@@ -144,6 +145,99 @@ VALUES ('admin.create', 'admin', $1, jsonb_build_object('username', $2::text, 'r
 			return nil
 		},
 	}
+}
+
+func adminPasswordCommand() *cli.Command {
+	var passwordFile string
+	var enable bool
+	return &cli.Command{
+		Name:  "admin-password",
+		Args:  "[flags] USERNAME",
+		Short: "set a new password for an administrator (the first admin's included)",
+		Long: `Sets a new bcrypt password for the existing administrator USERNAME, as
+add-admin would. Use it when the password of an administrator was lost,
+for example the one the installer printed for the first administrator.
+
+The password is read from --password-file (first line; "-" is stdin) or, by
+default, generated and printed ONCE on stdout. It never goes on the command
+line, where other users of the machine could see it.
+
+With --enable a disabled administrator is enabled again. The permissions do
+not change. The sessions open in other browsers stay open until they expire.
+
+Like every command that uses the database, run it as a user that can read
+the configuration: sudo cmsctl admin-password admin`,
+		Flags: func(fs *flag.FlagSet) {
+			fs.StringVar(&passwordFile, "password-file", "", `file with the password ("-": stdin); default: generate one`)
+			fs.BoolVar(&enable, "enable", false, "also enable the administrator if it is disabled")
+		},
+		Run: func(ctx context.Context, env *cli.Env, args []string) error {
+			if len(args) != 1 {
+				return cli.UsageError("expected one USERNAME")
+			}
+			username := args[0]
+			generated := passwordFile == ""
+			var password string
+			if generated {
+				password = GeneratePassword(20)
+			} else {
+				var err error
+				if password, err = readPasswordFile(passwordFile); err != nil {
+					return err
+				}
+			}
+			auth, err := web.HashPassword(password, "bcrypt")
+			if err != nil {
+				return err
+			}
+			pool, err := openMigratedDB(ctx, env)
+			if err != nil {
+				return err
+			}
+			defer pool.Close()
+			var id int32
+			var enabled bool
+			err = pool.QueryRow(ctx, `
+UPDATE admins SET authentication = $2, enabled = enabled OR $3
+WHERE username = $1
+RETURNING id, enabled`, username, auth, enable).Scan(&id, &enabled)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return unknownAdmin(ctx, pool, username)
+			}
+			if err != nil {
+				return err
+			}
+			_, _ = pool.Exec(ctx, `INSERT INTO audit_log (action, target_type, target_id, details)
+VALUES ('admin.password', 'admin', $1, jsonb_build_object('username', $2::text, 'enable', $3::boolean, 'via', 'cms ctl admin-password'))`,
+				id, username, enable)
+			fmt.Fprintf(env.Stdout, "new password set for admin %q (id %d)\n", username, id)
+			if !enabled {
+				fmt.Fprintf(env.Stderr, "admin %q is disabled and cannot log in: run the command again with --enable\n", username)
+			}
+			if generated {
+				fmt.Fprintf(env.Stdout, "password: %s\n", password)
+				fmt.Fprintln(env.Stderr, "The password is shown only now: store it safely.")
+			}
+			return nil
+		},
+	}
+}
+
+// unknownAdmin is the error of a username that is not an administrator:
+// it lists the usernames that are.
+func unknownAdmin(ctx context.Context, pool *pgxpool.Pool, username string) error {
+	rows, err := pool.Query(ctx, `SELECT username FROM admins ORDER BY username`)
+	if err != nil {
+		return err
+	}
+	names, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		return err
+	}
+	if len(names) == 0 {
+		return fmt.Errorf("there is no admin %q: there are no administrators; create one with add-admin", username)
+	}
+	return fmt.Errorf("there is no admin %q (administrators: %s)", username, strings.Join(names, ", "))
 }
 
 func readPasswordFile(path string) (string, error) {
@@ -168,11 +262,11 @@ func readPasswordFile(path string) (string, error) {
 // openMigratedDB opens the database and checks that its schema matches
 // this binary.
 func openMigratedDB(ctx context.Context, env *cli.Env) (*pgxpool.Pool, error) {
-	cfg, _, err := config.Load(env.ConfigPath)
+	cfg, cfgPath, err := config.Load(env.ConfigPath)
 	if err != nil {
 		return nil, err
 	}
-	pool, err := db.Open(ctx, cfg.Database)
+	pool, err := openDB(ctx, cfg, cfgPath)
 	if err != nil {
 		return nil, err
 	}

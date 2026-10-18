@@ -81,11 +81,11 @@ The configuration of the archive is only written with --config-to PATH.`,
 			if len(args) != 1 {
 				return cli.UsageError("expected one ARCHIVE")
 			}
-			cfg, _, err := config.Load(env.ConfigPath)
+			cfg, cfgPath, err := config.Load(env.ConfigPath)
 			if err != nil {
 				return err
 			}
-			return Restore(ctx, cfg, args[0], opts, env.Stdout)
+			return withConfigHint(Restore(ctx, cfg, args[0], opts, env.Stdout), cfgPath)
 		},
 	}
 }
@@ -182,7 +182,6 @@ WHERE datname = current_database() AND pid <> pg_backend_pid() AND backend_type 
 			if got != want {
 				return fmt.Errorf("blob %s: stored as %s", want, got)
 			}
-			fixBlobOwnership(cfg.Storage, got)
 			blobs++
 		case e.Name == configEntryName && opts.ConfigTo != "":
 			data, err := readAllLimited(e.R, 16<<20)

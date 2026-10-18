@@ -173,7 +173,7 @@ func installedLanguages(env *cli.Env) (*language.Registry, error) {
 // messages name files by their full path).
 func packageDir(args []string, extra string) (string, []string, error) {
 	if len(args) == 0 {
-		return "", nil, cli.UsageError("missing the directory of the package")
+		return "", nil, cli.UsageError("missing the package (a directory or a .zip, .tar.gz or .tar archive)")
 	}
 	if extra == "" && len(args) > 1 {
 		return "", nil, cli.UsageError("unexpected arguments %q", args[1:])
@@ -299,10 +299,13 @@ The dispatcher is notified to judge what is new.` + loadersHelp(),
 			if err != nil {
 				return err
 			}
-			l, err := importer.Default.ChooseContest(f.loader, dir)
+			src, err := importer.Default.Open(importer.KindContest, f.loader, dir)
 			if err != nil {
 				return err
 			}
+			defer src.Close()
+			dir = src.Path
+			l := src.Loader.(importer.ContestLoader)
 			ie, err := openImport(ctx, env, &f)
 			if err != nil {
 				return err
@@ -351,10 +354,13 @@ judging data changed are kept too: reevaluate them (reevaluate --dataset).` + lo
 			if err != nil {
 				return err
 			}
-			l, err := importer.Default.ChooseTask(f.loader, dir)
+			src, err := importer.Default.Open(importer.KindTask, f.loader, dir)
 			if err != nil {
 				return err
 			}
+			defer src.Close()
+			dir = src.Path
+			l := src.Loader.(importer.TaskLoader)
 			ie, err := openImport(ctx, env, &f)
 			if err != nil {
 				return err
@@ -401,10 +407,13 @@ participation in that contest gets one in its main group.` + loadersHelp(),
 			if err != nil {
 				return err
 			}
-			l, err := importer.Default.ChooseUsers(f.loader, dir)
+			src, err := importer.Default.Open(importer.KindUsers, f.loader, dir)
 			if err != nil {
 				return err
 			}
+			defer src.Close()
+			dir = src.Path
+			l := src.Loader.(importer.UserLoader)
 			ie, err := openImport(ctx, env, &f)
 			if err != nil {
 				return err
@@ -453,10 +462,13 @@ transaction. Existing teams are left alone, or renamed with -u.` + loadersHelp()
 			if err != nil {
 				return err
 			}
-			l, err := importer.Default.ChooseTeams(f.loader, dir)
+			src, err := importer.Default.Open(importer.KindTeams, f.loader, dir)
 			if err != nil {
 				return err
 			}
+			defer src.Close()
+			dir = src.Path
+			l := src.Loader.(importer.TeamLoader)
 			ie, err := openImport(ctx, env, &f)
 			if err != nil {
 				return err
@@ -530,10 +542,13 @@ administration.` + loadersHelp(),
 			if strings.TrimSpace(description) == "" {
 				return cli.UsageError("-d DESCRIPTION is required")
 			}
-			l, err := importer.Default.ChooseTask(f.loader, dir)
+			src, err := importer.Default.Open(importer.KindTask, f.loader, dir)
 			if err != nil {
 				return err
 			}
+			defer src.Close()
+			dir = src.Path
+			l := src.Loader.(importer.TaskLoader)
 			ie, err := openImport(ctx, env, &f)
 			if err != nil {
 				return err
@@ -645,10 +660,13 @@ imported) and warnings, and fails if there are errors.` + loadersHelp(),
 			if err != nil {
 				return err
 			}
-			l, err := importer.Default.ChooseTask(f.loader, dir)
+			src, err := importer.Default.Open(importer.KindTask, f.loader, dir)
 			if err != nil {
 				return err
 			}
+			defer src.Close()
+			dir = src.Path
+			l := src.Loader.(importer.TaskLoader)
 			langs, err := installedLanguages(env)
 			if err != nil {
 				return err
@@ -693,10 +711,13 @@ and warnings, and fails if there are errors.` + loadersHelp(),
 			if err != nil {
 				return err
 			}
-			l, err := importer.Default.ChooseContest(f.loader, dir)
+			src, err := importer.Default.Open(importer.KindContest, f.loader, dir)
 			if err != nil {
 				return err
 			}
+			defer src.Close()
+			dir = src.Path
+			l := src.Loader.(importer.ContestLoader)
 			langs, err := installedLanguages(env)
 			if err != nil {
 				return err

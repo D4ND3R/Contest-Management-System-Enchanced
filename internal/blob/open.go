@@ -6,12 +6,12 @@ package blob
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/config"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/fsowner"
 )
 
 // Open returns the store described by cfg (storage.backend local, s3 or
@@ -77,7 +77,7 @@ func spoolDir(cfg config.Storage, name string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("blob: storage.cache_dir: %w", err)
 	}
-	if err := os.MkdirAll(dir, dirPerm); err != nil {
+	if err := fsowner.MkdirAll(dir, dirPerm); err != nil {
 		return "", fmt.Errorf("blob: storage.cache_dir: %w", err)
 	}
 	return dir, nil

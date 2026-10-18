@@ -15,6 +15,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"net/url"
 	"os"
@@ -400,9 +401,17 @@ func Default() *Config {
 // $CMS_CONFIG and then DefaultPaths are tried, and with no file at all the
 // defaults plus the environment are used (handy for containers).
 // The environment always wins over the file.
+//
+// A file that exists but cannot be read (/etc/cms/cms.yaml is readable
+// only by root and the cms group) is an error, never a reason to fall
+// back to the defaults: a command would otherwise fail later, connecting
+// to the database with the default credentials.
 func Load(path string) (*Config, string, error) {
 	return load(path, os.LookupEnv, os.ReadFile)
 }
+
+// statFile is os.Stat; tests replace it.
+var statFile = os.Stat
 
 func load(path string, lookup func(string) (string, bool), readFile func(string) ([]byte, error)) (*Config, string, error) {
 	cfg := Default()
@@ -414,16 +423,21 @@ func load(path string, lookup func(string) (string, bool), readFile func(string)
 	}
 	if !explicit {
 		for _, p := range DefaultPaths {
-			if _, err := os.Stat(p); err == nil {
+			_, err := statFile(p)
+			if err == nil {
 				path = p
 				break
+			}
+			if !errors.Is(err, fs.ErrNotExist) {
+				// Typically a directory the user cannot enter.
+				return nil, "", unreadable(p, err)
 			}
 		}
 	}
 	if path != "" {
 		data, err := readFile(path)
 		if err != nil {
-			return nil, "", fmt.Errorf("reading config: %w", err)
+			return nil, "", unreadable(path, err)
 		}
 		if err := decodeYAML(data, cfg); err != nil {
 			return nil, "", fmt.Errorf("parsing %s: %w", path, err)
@@ -436,6 +450,15 @@ func load(path string, lookup func(string) (string, bool), readFile func(string)
 		return nil, "", err
 	}
 	return cfg, path, nil
+}
+
+// unreadable is the error of a configuration file that cannot be read.
+func unreadable(path string, err error) error {
+	if errors.Is(err, fs.ErrPermission) {
+		return fmt.Errorf("cannot read %s: permission denied: run the command with sudo (sudo cmsctl ...) "+
+			"or as a user of its group: %w", path, err)
+	}
+	return fmt.Errorf("reading config: %w", err)
 }
 
 func decodeYAML(data []byte, cfg *Config) error {

@@ -31,11 +31,11 @@ func migrateUp(ctx context.Context, env *cli.Env, args []string) error {
 	if err := noArgs(args); err != nil {
 		return err
 	}
-	cfg, _, err := config.Load(env.ConfigPath)
+	cfg, cfgPath, err := config.Load(env.ConfigPath)
 	if err != nil {
 		return err
 	}
-	pool, err := db.Open(ctx, cfg.Database)
+	pool, err := openDB(ctx, cfg, cfgPath)
 	if err != nil {
 		return err
 	}
@@ -54,11 +54,11 @@ func migrateStatus(ctx context.Context, env *cli.Env, args []string) error {
 	if err := noArgs(args); err != nil {
 		return err
 	}
-	cfg, _, err := config.Load(env.ConfigPath)
+	cfg, cfgPath, err := config.Load(env.ConfigPath)
 	if err != nil {
 		return err
 	}
-	pool, err := db.Open(ctx, cfg.Database)
+	pool, err := openDB(ctx, cfg, cfgPath)
 	if err != nil {
 		return err
 	}

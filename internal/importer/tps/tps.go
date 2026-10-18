@@ -78,6 +78,14 @@ func (Loader) Detect(dir string, kind importer.Kind) bool {
 	return kind == importer.KindTask && exists(filepath.Join(dir, "problem.json"))
 }
 
+// Expects says what Detect looks for (importer.Expecter).
+func (Loader) Expects(kind importer.Kind) string {
+	if kind == importer.KindTask {
+		return "problem.json"
+	}
+	return ""
+}
+
 func exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil

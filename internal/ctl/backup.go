@@ -23,6 +23,7 @@ import (
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/cli"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/config"
 	"github.com/d4nd3r/contest-management-system-enchanced/internal/db"
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/fsowner"
 )
 
 // derivedTables are computed from the other tables: backups leave them out
@@ -93,7 +94,9 @@ func Backup(ctx context.Context, cfg *config.Config, cfgPath string, opts Backup
 		return "", err
 	}
 	dir := filepath.Dir(dest)
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	// Run with sudo, the archive (and a new backups directory) go to the
+	// owner of the directory, like those of the backup timer.
+	if err := fsowner.MkdirAll(dir, 0o700); err != nil {
 		return "", err
 	}
 	tmp, err := os.CreateTemp(dir, ".cms-backup-*.partial")
@@ -118,6 +121,9 @@ func Backup(ctx context.Context, cfg *config.Config, cfgPath string, opts Backup
 		return "", err
 	}
 	if err := tmp.Close(); err != nil {
+		return "", err
+	}
+	if err := fsowner.Of(dir).Apply(tmp.Name()); err != nil {
 		return "", err
 	}
 	if err := os.Rename(tmp.Name(), dest); err != nil {
@@ -160,7 +166,7 @@ func backupPath(cfg *config.Config, opts BackupOptions) (string, error) {
 }
 
 func writeBackup(ctx context.Context, cfg *config.Config, cfgPath string, opts BackupOptions, w io.Writer, spoolDir string, out io.Writer) error {
-	pool, err := db.Open(ctx, cfg.Database)
+	pool, err := openDB(ctx, cfg, cfgPath)
 	if err != nil {
 		return err
 	}

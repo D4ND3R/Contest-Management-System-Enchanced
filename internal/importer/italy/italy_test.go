@@ -135,7 +135,7 @@ func TestTaskGradersHeadersAndChecker(t *testing.T) {
 	if string(d.ScoreTypeParameters) != "50.0" || d.ScoreType != "Sum" {
 		t.Errorf("score %s %s", d.ScoreType, d.ScoreTypeParameters)
 	}
-	if !hasIssue(rep, importer.SeverityWarning, "grader not found for: ") || !hasIssue(rep, importer.SeverityWarning, "Java / JDK") {
+	if !hasIssue(rep, importer.SeverityWarning, "grader only for C++11 / g++") || !hasIssue(rep, importer.SeverityWarning, "other languages cannot be judged") {
 		t.Errorf("no warning about the missing graders:\n%s", issues(rep))
 	}
 }

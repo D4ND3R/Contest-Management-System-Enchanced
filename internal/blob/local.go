@@ -14,6 +14,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/d4nd3r/contest-management-system-enchanced/internal/fsowner"
 )
 
 // Permissions of the tree: only the cms user may read blobs (test data is
@@ -28,9 +30,14 @@ const (
 // FSBackend). Writes go to root/tmp, are fsynced and renamed into place,
 // so a blob is either complete or absent, also after a crash, and
 // concurrent writers of the same content are harmless.
+//
+// A store opened by root (`sudo cmsctl import-contest`) whose root
+// directory belongs to another user (the services' cms) gives that user
+// every directory and file it creates, so the services can read them.
 type Local struct {
-	root string
-	tmp  string
+	root  string
+	tmp   string
+	owner *fsowner.Owner // nil: files keep the owner of the process
 }
 
 // NewLocal opens (creating it if needed) a store rooted at root, which is
@@ -45,9 +52,10 @@ func NewLocal(root string) (*Local, error) {
 		return nil, fmt.Errorf("blob: local store: %w", err)
 	}
 	s := &Local{root: abs, tmp: filepath.Join(abs, tmpName)}
-	if err := os.MkdirAll(s.tmp, dirPerm); err != nil {
+	if err := fsowner.MkdirAll(s.tmp, dirPerm); err != nil {
 		return nil, fmt.Errorf("blob: local store: %w", err)
 	}
+	s.owner = fsowner.Of(abs)
 	removeStaleTemps(s.tmp, staleTmp)
 	return s, nil
 }
@@ -144,8 +152,11 @@ func (s *Local) commit(f *os.File, d string) error {
 	if err := f.Close(); err != nil {
 		return fmt.Errorf("blob: %w", err)
 	}
-	if err := makeShardDirs(s.root, d, true); err != nil {
+	if err := makeShardDirs(s.root, d, true, s.owner); err != nil {
 		return err
+	}
+	if err := s.owner.Apply(f.Name()); err != nil {
+		return fmt.Errorf("blob: %w", err)
 	}
 	// rename is atomic: readers see the old state or the whole file, and
 	// concurrent writers of the same digest replace identical content.
@@ -230,10 +241,11 @@ func (s *Local) Check(context.Context) error {
 	return nil
 }
 
-// makeShardDirs creates root/ab and root/ab/cd if missing. With durable
-// set, the parent of every directory it creates is fsynced so the new
-// entries survive a crash.
-func makeShardDirs(root, d string, durable bool) error {
+// makeShardDirs creates root/ab and root/ab/cd if missing, giving them to
+// owner (nil: the owner of the process). With durable set, the parent of
+// every directory it creates is fsynced so the new entries survive a
+// crash.
+func makeShardDirs(root, d string, durable bool, owner *fsowner.Owner) error {
 	d1 := filepath.Join(root, d[:2])
 	d2 := filepath.Join(d1, d[2:4])
 	for _, dir := range [2]string{d1, d2} {
@@ -242,6 +254,9 @@ func makeShardDirs(root, d string, durable bool) error {
 			continue
 		}
 		if err != nil {
+			return fmt.Errorf("blob: %w", err)
+		}
+		if err := owner.Apply(dir); err != nil {
 			return fmt.Errorf("blob: %w", err)
 		}
 		if durable {

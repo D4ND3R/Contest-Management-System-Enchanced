@@ -447,7 +447,7 @@ func (c *Cache) download(ctx context.Context, d string) (err error) {
 	if err := f.Close(); err != nil {
 		return fmt.Errorf("blob: cache: %w", err)
 	}
-	if err := makeShardDirs(c.dir, d, false); err != nil {
+	if err := makeShardDirs(c.dir, d, false, nil); err != nil {
 		return err
 	}
 	if err := os.Rename(f.Name(), c.path(d)); err != nil {

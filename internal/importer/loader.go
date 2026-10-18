@@ -47,6 +47,15 @@ type Loader interface {
 	Detect(dir string, kind Kind) bool
 }
 
+// Expecter is implemented by the loaders that can say what Detect looks
+// for, for the message of a failed autodetection.
+type Expecter interface {
+	// Expects describes the files that make a directory a package of
+	// that kind ("contest.yaml"), or "" for a kind the loader does not
+	// detect.
+	Expects(kind Kind) string
+}
+
 // ContestLoader reads contests (upstream ContestLoader).
 type ContestLoader interface {
 	Loader
@@ -231,13 +240,38 @@ func (r *Registry) Choose(kind Kind, name, dir string) (Loader, error) {
 	case 1:
 		return found[0], nil
 	case 0:
-		return nil, fmt.Errorf("%w: no loader of %ss accepted %s (loaders of %ss: %s)", ErrDetect, kind, dir, kind, r.names(kind))
+		return nil, fmt.Errorf("%w: no loader of %ss accepted %s (%s)", ErrDetect, kind, dir, r.expected(kind))
 	}
 	names := make([]string, len(found))
 	for i, l := range found {
 		names[i] = l.Name()
 	}
 	return nil, fmt.Errorf("%w: more than one loader accepted %s (%s)", ErrDetect, dir, strings.Join(names, ", "))
+}
+
+// expected says what each loader of kind looks for: "loaders of
+// contests: italy_yaml wants contest.yaml; polygon wants contest.xml and
+// problems/".
+func (r *Registry) expected(kind Kind) string {
+	var out []string
+	for _, l := range r.Loaders() {
+		if !Supports(l, kind) {
+			continue
+		}
+		what := ""
+		if e, ok := l.(Expecter); ok {
+			what = e.Expects(kind)
+		}
+		if what == "" {
+			out = append(out, l.Name())
+		} else {
+			out = append(out, l.Name()+" wants "+what)
+		}
+	}
+	if len(out) == 0 {
+		return fmt.Sprintf("loaders of %ss: none", kind)
+	}
+	return fmt.Sprintf("loaders of %ss: %s", kind, strings.Join(out, "; "))
 }
 
 // names lists the loaders supporting kind ("" = all).

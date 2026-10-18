@@ -227,11 +227,11 @@ func printStatus(w io.Writer, r *judging.StatusReport) error {
 // openJudgingDB loads the configuration and opens the database, refusing
 // a schema that does not match this binary.
 func openJudgingDB(ctx context.Context, env *cli.Env) (*config.Config, *pgxpool.Pool, error) {
-	cfg, _, err := config.Load(env.ConfigPath)
+	cfg, cfgPath, err := config.Load(env.ConfigPath)
 	if err != nil {
 		return nil, nil, err
 	}
-	pool, err := db.Open(ctx, cfg.Database)
+	pool, err := openDB(ctx, cfg, cfgPath)
 	if err != nil {
 		return nil, nil, err
 	}

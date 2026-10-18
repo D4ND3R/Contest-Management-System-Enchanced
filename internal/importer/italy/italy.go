@@ -90,6 +90,17 @@ func (Loader) Detect(dir string, kind importer.Kind) bool {
 	return false
 }
 
+// Expects says what Detect looks for (importer.Expecter).
+func (Loader) Expects(kind importer.Kind) string {
+	switch kind {
+	case importer.KindContest, importer.KindUsers, importer.KindTeams:
+		return "contest.yaml"
+	case importer.KindTask:
+		return "task.yaml (or <task>.yaml next to the task directory)"
+	}
+	return ""
+}
+
 // TaskLoader implements importer.ContestLoader: the tasks are the
 // subdirectories of the contest named after them (upstream
 // get_task_loader).

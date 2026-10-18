@@ -99,6 +99,19 @@ func (Loader) Detect(dir string, kind importer.Kind) bool {
 	return false
 }
 
+// Expects says what Detect looks for (importer.Expecter).
+func (Loader) Expects(kind importer.Kind) string {
+	switch kind {
+	case importer.KindTask:
+		return "problem.xml"
+	case importer.KindContest:
+		return "contest.xml and problems/"
+	case importer.KindUsers:
+		return contestantsFile
+	}
+	return ""
+}
+
 func exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil

@@ -347,8 +347,9 @@ func (v *validator) taskInContest(c *Contest, t *Task) {
 				}
 			}
 			if len(missing) > 0 {
-				v.rep.Warnf(datasetWhere(t.Name, d.Description), "no %s for %s: submissions in these languages cannot be judged",
-					m, strings.Join(missing, ", "))
+				v.rep.Warnf(datasetWhere(t.Name, d.Description), "no %s for %s: submissions in these languages cannot be judged; "+
+					"allow only the languages the task supports (the contest's languages in the admin site, or \"languages:\" in contest.yaml) or add the missing %s files",
+					m, strings.Join(missing, ", "), base)
 			}
 		}
 	}

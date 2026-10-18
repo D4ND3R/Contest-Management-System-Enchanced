@@ -5,8 +5,4 @@
 
 package ctl
 
-import "github.com/d4nd3r/contest-management-system-enchanced/internal/config"
-
-func fixBlobOwnership(config.Storage, string) {}
-
 func tryLockFile(string) (func(), error) { return func() {}, nil }

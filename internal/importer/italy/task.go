@@ -294,17 +294,21 @@ func (l *taskLoader) dataset() bool {
 		if len(stubs) > 0 {
 			found, kind = stubs, "stub"
 		}
-		var missing []string
+		var missing, present []string
 		for _, ext := range exts {
 			if p, ok := found[ext]; ok {
 				d.Managers = append(d.Managers, importer.Manager{Filename: "grader" + ext, File: importer.FileFromPath(p)})
+				present = append(present, extLangs[ext]...)
 			} else {
 				missing = append(missing, extLangs[ext]...)
 			}
 		}
 		if len(missing) > 0 {
-			sort.Strings(missing)
-			rep.Warnf(l.path("sol"), "%s not found for: %s", kind, strings.Join(missing, ", "))
+			// One short line (upstream logs one per language): the
+			// languages that can be judged; the contest's languages are
+			// checked against them when it is imported.
+			sort.Strings(present)
+			rep.Warnf(l.path("sol"), "%s only for %s: submissions in other languages cannot be judged", kind, strings.Join(present, ", "))
 		}
 		compilation = "grader"
 		// Headers (any file of sol/ ending with a header extension).

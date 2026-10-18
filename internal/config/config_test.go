@@ -147,6 +147,61 @@ func TestExplicitMissingFileFails(t *testing.T) {
 	}
 }
 
+// fakeFiles replaces DefaultPaths and the stat of load by files that
+// exist (readable or not) or fail to stat with an error.
+func fakeFiles(t *testing.T, paths []string, stat map[string]error) {
+	t.Helper()
+	oldPaths, oldStat := DefaultPaths, statFile
+	t.Cleanup(func() { DefaultPaths, statFile = oldPaths, oldStat })
+	DefaultPaths = paths
+	statFile = func(p string) (os.FileInfo, error) {
+		if err, ok := stat[p]; ok {
+			return nil, err
+		}
+		return nil, &os.PathError{Op: "stat", Path: p, Err: os.ErrNotExist}
+	}
+}
+
+func denied(p string) error { return &os.PathError{Op: "open", Path: p, Err: os.ErrPermission} }
+
+func TestUnreadableConfig(t *testing.T) {
+	readDenied := func(p string) ([]byte, error) { return nil, denied(p) }
+
+	// No file anywhere: the defaults, as before.
+	fakeFiles(t, []string{"cms.yaml", "/etc/cms/cms.yaml"}, nil)
+	cfg, used, err := load("", env(nil), readDenied)
+	if err != nil || used != "" || cfg.Database.URL != Default().Database.URL {
+		t.Fatalf("no file: used=%q err=%v", used, err)
+	}
+
+	// A default path that cannot even be looked at (/etc/cms is not
+	// readable) is an error, not the defaults.
+	fakeFiles(t, []string{"cms.yaml", "/etc/cms/cms.yaml"}, map[string]error{"/etc/cms/cms.yaml": denied("/etc/cms/cms.yaml")})
+	_, _, err = load("", env(nil), readDenied)
+	if !errors.Is(err, os.ErrPermission) || !strings.Contains(err.Error(), "cannot read /etc/cms/cms.yaml") ||
+		!strings.Contains(err.Error(), "sudo cmsctl") {
+		t.Errorf("unreadable default directory: %v", err)
+	}
+
+	// A default file that exists but cannot be read.
+	fakeFiles(t, []string{"/etc/cms/cms.yaml"}, map[string]error{"/etc/cms/cms.yaml": nil})
+	_, _, err = load("", env(nil), readDenied)
+	if !errors.Is(err, os.ErrPermission) || !strings.Contains(err.Error(), "sudo cmsctl") {
+		t.Errorf("unreadable default file: %v", err)
+	}
+
+	// An explicit file ($CMS_CONFIG or --config) that cannot be read.
+	for _, tc := range []struct {
+		path string
+		env  map[string]string
+	}{{"/srv/cms.yaml", nil}, {"", map[string]string{EnvConfigPath: "/srv/cms.yaml"}}} {
+		_, _, err = load(tc.path, env(tc.env), readDenied)
+		if !errors.Is(err, os.ErrPermission) || !strings.Contains(err.Error(), "cannot read /srv/cms.yaml: permission denied: run the command with sudo") {
+			t.Errorf("unreadable explicit file %+v: %v", tc, err)
+		}
+	}
+}
+
 func TestUnknownKeyIsAnError(t *testing.T) {
 	_, _, err := load(writeFile(t, "databse:\n  url: x\n"), env(nil), os.ReadFile)
 	if err == nil || !strings.Contains(err.Error(), "databse") {

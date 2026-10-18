@@ -61,6 +61,14 @@ func (Loader) Detect(p string, kind importer.Kind) bool {
 	return kind == importer.KindTask && Detect(p)
 }
 
+// Expects says what Detect looks for (importer.Expecter).
+func (Loader) Expects(kind importer.Kind) string {
+	if kind == importer.KindTask {
+		return "problem.yaml (a directory or a zip)"
+	}
+	return ""
+}
+
 // Detect reports whether p is a package of this format. An unsafe zip
 // is one (no other format reads zip files): Load says what is wrong.
 func Detect(p string) bool {
