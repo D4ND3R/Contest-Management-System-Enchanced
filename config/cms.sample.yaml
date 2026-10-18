@@ -146,6 +146,8 @@ dispatcher:
   #       password: ""      # empty: derived from secret_key
   #       contests: []      # contest names; empty: every contest
   #       freeze: 1h        # hide the scores of the last hour; 0: no freeze
+  #       prune: true       # delete what is no longer sent (removed contests,
+  #                         # tasks, users, teams); false for a shared ranking
   rankings: []
   # How often contests, tasks, teams and users are read again and what
   # changed is sent to the rankings (scores are sent at once).

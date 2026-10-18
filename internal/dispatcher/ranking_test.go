@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -84,6 +85,7 @@ func (rs *rankingServer) serve(w http.ResponseWriter, r *http.Request) {
 		rs.ranking.ServeHTTP(rw, r)
 		rec.status = rw.Code
 		w.WriteHeader(rw.Code)
+		_, _ = w.Write(rw.Body.Bytes())
 	}
 	rs.mu.Lock()
 	rs.reqs = append(rs.reqs, rec)
@@ -132,8 +134,85 @@ func rankingConfig(url string) *config.Config {
 	cfg := config.Default()
 	cfg.SecretKey = rankingTestKey
 	cfg.Dispatcher.RankingRefresh = config.Duration(time.Hour)
-	cfg.Dispatcher.Rankings = []config.RankingTarget{{URL: url, Freeze: config.Duration(time.Hour)}}
+	// Pruning has its own test: here the requests are exactly the sends.
+	noPrune := false
+	cfg.Dispatcher.Rankings = []config.RankingTarget{{URL: url, Freeze: config.Duration(time.Hour), Prune: &noPrune}}
 	return cfg
+}
+
+// TestRankingPrune: what the ranking holds and the database no longer
+// sends (a removed contest and its task, a user with only a hidden
+// participation, a team nobody uses) is deleted; with prune false it is
+// kept.
+func TestRankingPrune(t *testing.T) {
+	for _, prune := range []bool{true, false} {
+		t.Run(fmt.Sprintf("prune=%v", prune), func(t *testing.T) {
+			e := newEnv(t)
+			e.task(1)
+			e.participant("alice")
+			e.exec(`UPDATE participations SET hidden = true WHERE id = $1`, e.participant("ghost"))
+			ranking := newRankingWeb(t)
+			rs := newRankingServer(t, ranking)
+			cfg := rankingConfig(rs.srv.URL + "/")
+			cfg.Dispatcher.Rankings[0].Prune = &prune
+			user, pass := cfg.Dispatcher.Rankings[0].Credentials(cfg)
+			put := func(path, body string) {
+				t.Helper()
+				req := httptest.NewRequest(http.MethodPut, path, strings.NewReader(body))
+				req.SetBasicAuth(user, pass)
+				req.Header.Set("Content-Type", "application/json")
+				rw := httptest.NewRecorder()
+				ranking.ServeHTTP(rw, req)
+				if rw.Code >= 300 {
+					t.Fatalf("PUT %s: %d %s", path, rw.Code, rw.Body)
+				}
+			}
+			// Left on the ranking by an earlier state of the database.
+			put("/contests/", `{"old":{"name":"Old","begin":0,"end":1,"score_precision":0}}`)
+			put("/teams/", `{"gone":{"name":"Gone"}}`)
+			put("/users/", `{"ghost":{"f_name":"g","l_name":"g","team":null},"removed":{"f_name":"r","l_name":"r","team":"gone"}}`)
+			put("/tasks/", `{"oldtask":{"name":"T","short_name":"oldtask","contest":"old","max_score":100.0,`+
+				`"score_precision":0,"extra_headers":[],"order":0,"score_mode":"max"}}`)
+
+			sink, err := NewRankingSink(cfg, e.pool, e.log, prometheus.NewRegistry())
+			if err != nil {
+				t.Fatal(err)
+			}
+			sink.SetLeading(func() bool { return true })
+			ctx, cancel := context.WithCancel(context.Background())
+			done := make(chan struct{})
+			go func() { _ = sink.Run(ctx); close(done) }()
+			defer func() { cancel(); <-done }()
+
+			keys := func(path string) []string {
+				req := httptest.NewRequest(http.MethodGet, path, nil)
+				req.SetBasicAuth(user, pass)
+				rw := httptest.NewRecorder()
+				ranking.ServeHTTP(rw, req)
+				var m map[string]json.RawMessage
+				_ = json.Unmarshal(rw.Body.Bytes(), &m)
+				var out []string
+				for k := range m {
+					out = append(out, k)
+				}
+				slices.Sort(out)
+				return out
+			}
+			e.eventually(10*time.Second, "the send", func() bool { return slices.Contains(keys("/users/"), "alice") })
+			time.Sleep(200 * time.Millisecond)
+			got := strings.Join([]string{
+				strings.Join(keys("/contests/"), ","), strings.Join(keys("/tasks/"), ","),
+				strings.Join(keys("/users/"), ","), strings.Join(keys("/teams/"), ","),
+			}, " | ")
+			want := "ioi | task1 | alice | "
+			if !prune {
+				want = "ioi,old | oldtask,task1 | alice,ghost,removed | gone"
+			}
+			if got != want {
+				t.Errorf("ranking holds %q, want %q", got, want)
+			}
+		})
+	}
 }
 
 func TestRankingSink(t *testing.T) {

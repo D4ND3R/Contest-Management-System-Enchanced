@@ -248,7 +248,15 @@ type RankingTarget struct {
 	// shows them to administrators, and reveals them when the freeze is
 	// removed (set 0 and restart the dispatchers). 0: no freeze.
 	Freeze Duration `yaml:"freeze"`
+	// Prune deletes from the ranking the contests, tasks, teams and users
+	// that this installation no longer sends (removed, or only hidden
+	// participations), so the scoreboard mirrors the database. Nil means
+	// true; set false for a ranking that several installations feed.
+	Prune *bool `yaml:"prune"`
 }
+
+// PruneEnabled reports whether the ranking is pruned (Prune, default true).
+func (t RankingTarget) PruneEnabled() bool { return t.Prune == nil || *t.Prune }
 
 // Worker configures a judging host. Workers never connect to PostgreSQL:
 // each job carries what it needs and files are fetched by digest.

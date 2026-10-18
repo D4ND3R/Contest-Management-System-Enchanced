@@ -38,6 +38,7 @@ dispatcher:
       username: ""                  # empty: cms
       password: ""                  # empty: derived from secret_key
       contests: [ioi2026_day1]      # empty: every contest
+      prune: true                   # delete what is no longer sent; false: shared ranking
       freeze: 1h                    # 0: no freeze
   ranking_refresh: 30s
 ```
@@ -64,8 +65,13 @@ every 10 minutes, everything is sent again; the scoreboard ignores entities
 that did not change. Metrics: `cms_dispatcher_ranking_up{ranking}` and
 `cms_dispatcher_ranking_requests_total{ranking,result}`.
 
-As in CMS, nothing is ever deleted from a ranking: to remove a user, task
-or contest use the REST API (it deletes what depends on it):
+Unlike CMS, the scoreboard mirrors the database: at each refresh
+(`ranking_refresh`, 30 s by default) the dispatcher deletes from the ranking
+the contests, tasks, teams and users it no longer sends (removed in the
+admin site, or users whose participations are all hidden); ranking-web also
+deletes what depends on them. For a ranking fed by several installations,
+set `prune: false` in its `dispatcher.rankings` entry: then nothing is
+deleted automatically and, as in CMS, deletions are made with the REST API:
 
 ```sh
 curl -u cms:PASSWORD -X DELETE http://127.0.0.1:8890/users/USERNAME

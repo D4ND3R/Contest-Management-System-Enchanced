@@ -57,8 +57,10 @@ import (
 // Like CMS, hidden participations and unofficial submissions are never
 // sent, scores are sent once a submission is scored on the active dataset
 // (an invalidated one keeps its old score on the scoreboard until scored
-// again) and nothing is deleted from the rankings (delete with the REST
-// API, docs/*/scoreboard.md).
+// again). Unlike CMS, what is no longer sent (removed contests, tasks,
+// teams and users, users with only hidden participations) is deleted from
+// the rankings at each refresh, unless the ranking's prune is false
+// (docs/*/scoreboard.md).
 type RankingSink struct {
 	pool    *pgxpool.Pool
 	log     *slog.Logger
@@ -85,6 +87,7 @@ type rankingTarget struct {
 	pass     string
 	contests []string // names; empty: all
 	freeze   time.Duration
+	prune    bool
 	client   *http.Client
 
 	mu    sync.Mutex
@@ -142,7 +145,7 @@ func NewRankingSink(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger, re
 		}
 		s.targets = append(s.targets, &rankingTarget{
 			name: u.String(), base: u, user: user, pass: pass,
-			contests: tc.Contests, freeze: tc.Freeze.D(),
+			contests: tc.Contests, freeze: tc.Freeze.D(), prune: tc.PruneEnabled(),
 			client: &http.Client{Timeout: time.Minute},
 			subs:   map[int32]struct{}{}, tasks: map[int32]struct{}{},
 			wake: make(chan struct{}, 1),
@@ -519,8 +522,69 @@ ORDER BY u.username, p.contest_id DESC`, ids)
 			return err
 		}
 	}
+	if t.prune {
+		// Users before teams and tasks before contests: what depends on
+		// an entity goes first (ranking-web would delete it anyway).
+		for _, part := range []struct {
+			path string
+			want map[string]any
+		}{{"tasks", tasks}, {"users", users}, {"teams", teams}, {"contests", contests}} {
+			if err := s.prune(ctx, t, part.path, part.want); err != nil {
+				return err
+			}
+		}
+	}
 	t.contestIDs = ids
 	return nil
+}
+
+// prune deletes from the ranking the entities of path it holds that are
+// not in want: removed from the database, or no longer shown (a contest
+// without times, a user with only hidden participations). ranking-web
+// deletes what depends on them (CMS delete).
+func (s *RankingSink) prune(ctx context.Context, t *rankingTarget, path string, want map[string]any) error {
+	have, err := s.list(ctx, t, path)
+	if err != nil {
+		return err
+	}
+	for _, k := range have {
+		if _, ok := want[k]; ok {
+			continue
+		}
+		if err := s.request(ctx, t, http.MethodDelete, path+"/"+k, nil); err != nil {
+			s.pushes.WithLabelValues(t.name, "error").Inc()
+			return fmt.Errorf("deleting %s/%s from ranking %s: %w", path, k, t.name, err)
+		}
+		s.pushes.WithLabelValues(t.name, "ok").Inc()
+		delete(t.sent[path], k)
+		s.log.Info("deleted from the ranking: no longer in the database or hidden", "ranking", t.name, "what", path, "key", k)
+	}
+	return nil
+}
+
+// list returns the keys of the entities of path the ranking holds.
+func (s *RankingSink) list(ctx context.Context, t *rankingTarget, path string) ([]string, error) {
+	u := t.base.JoinPath(path)
+	u.Path += "/"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.SetBasicAuth(t.user, t.pass)
+	res, err := t.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("listing %s of ranking %s: %w", path, t.name, err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode >= 400 {
+		_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, 1<<16))
+		return nil, fmt.Errorf("listing %s of ranking %s: status %s", path, t.name, res.Status)
+	}
+	var items map[string]json.RawMessage
+	if err := json.NewDecoder(io.LimitReader(res.Body, 64<<20)).Decode(&items); err != nil {
+		return nil, fmt.Errorf("listing %s of ranking %s: %w", path, t.name, err)
+	}
+	return slices.Sorted(maps.Keys(items)), nil
 }
 
 func derefString(s *string) string {
@@ -657,13 +721,26 @@ func (s *RankingSink) putOnce(ctx context.Context, t *rankingTarget, path string
 	if err != nil {
 		return err
 	}
-	u := t.base.JoinPath(path) // JoinPath drops the trailing slash
-	u.Path += "/"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u.String(), bytes.NewReader(body))
+	return s.request(ctx, t, http.MethodPut, path+"/", body)
+}
+
+// request sends method to <ranking>/<path> (a collection ends with "/")
+// with the credentials of the ranking; a 404 of a DELETE is success (the
+// entity is already gone).
+func (s *RankingSink) request(ctx context.Context, t *rankingTarget, method, path string, body []byte) error {
+	u := *t.base
+	u.Path += path
+	var rd io.Reader
+	if body != nil {
+		rd = bytes.NewReader(body)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), rd)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	req.SetBasicAuth(t.user, t.pass)
 	res, err := t.client.Do(req)
 	if err != nil {
@@ -671,6 +748,9 @@ func (s *RankingSink) putOnce(ctx context.Context, t *rankingTarget, path string
 	}
 	defer res.Body.Close()
 	_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, 1<<16))
+	if res.StatusCode == http.StatusNotFound && method == http.MethodDelete {
+		return nil
+	}
 	if res.StatusCode >= 400 {
 		return fmt.Errorf("status %s", res.Status)
 	}

@@ -38,6 +38,7 @@ dispatcher:
       username: ""                  # vacío: cms
       password: ""                  # vacío: derivada de secret_key
       contests: [ioi2026_dia1]      # vacío: todos los concursos
+      prune: true                   # borrar lo que ya no se envía; false: ranking compartido
       freeze: 1h                    # 0: sin congelamiento
   ranking_refresh: 30s
 ```
@@ -64,9 +65,14 @@ y cada 10 minutos se envía todo de nuevo; el scoreboard ignora lo que no
 cambió. Métricas: `cms_dispatcher_ranking_up{ranking}` y
 `cms_dispatcher_ranking_requests_total{ranking,result}`.
 
-Como en CMS, nunca se borra nada de un ranking: para quitar un usuario,
-problema o concurso se usa la API REST (borra también lo que depende de
-él):
+A diferencia de CMS, el scoreboard refleja la base de datos: en cada
+actualización (`ranking_refresh`, 30 s por defecto) el dispatcher borra del
+ranking los concursos, problemas, equipos y usuarios que ya no envía
+(borrados en la administración, o usuarios cuyas participaciones están
+todas ocultas); ranking-web borra también lo que depende de ellos. Para un
+ranking que alimentan varias instalaciones, poner `prune: false` en su
+entrada de `dispatcher.rankings`: entonces nada se borra solo y, como en
+CMS, se borra a mano con la API REST:
 
 ```sh
 curl -u cms:CONTRASEÑA -X DELETE http://127.0.0.1:8890/users/USUARIO
