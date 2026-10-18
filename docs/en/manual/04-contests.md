@@ -652,3 +652,390 @@ with consecutive submissions (on a 2 vCPU server with 30 contestants, a
 few submissions per second already form a queue); the grace period
 prevents that wait from costing someone their last submission in the final
 minutes.
+
+---
+
+## 9. Groups
+
+### What a group is
+
+A **group** is a set of participations that share a **schedule**: start,
+end, personal window length and analysis mode. Each participation belongs
+to a single group of its contest. The tasks, the login rules, the tokens
+and the limits are the same for all groups: the only thing that changes is
+the schedule.
+
+When to use them:
+
+- **Two shifts**: one site takes the exam from 09:00 to 14:00 and another
+  from 15:00 to 20:00.
+- **A site that starts later** because of a transport problem.
+- **A different time zone**: CMS times are absolute, so a site in another
+  zone that must start "at 9 o'clock its time" needs its own group with
+  the schedule converted.
+
+### The main group
+
+Every contest has a **main group**. When the contest is created it is
+`default`. It is special because:
+
+- it is the group proposed when adding a user to the contest, the one that
+  users imported by CSV with *Also add them to contest* receive and the
+  one for those who register themselves;
+- its schedules are the ones used by the administration's ranking and the
+  scoreboard, and the ones visitors who have not logged in yet see;
+- its schedule is also edited from the contest's page.
+
+### Groups list
+
+Contest menu → **Groups**. The **Groups list** page shows each group with
+its **Start (in *zone*)**, **End (in *zone*)**, **Max. contest length (in
+seconds)**, **Analysis**, **Analysis start** and **Analysis end**. The
+main one carries the **(main group)** mark. The name column says
+**Name**, as on the contest page.
+
+### Creating a group with another schedule
+
+Example: OI 2026 has a site, "Sur", that starts an hour later.
+
+1. Contest menu → **Groups**.
+2. In **Add a new group named** type `sede-sur` and click **Add group**.
+   The new group is created with a **copy of the main group's schedules**
+   and its page opens.
+3. On the **Group sede-sur in oi2026** page, **Group information**
+   section, change **Start time** to `2026-11-14 10:00:00` and **End
+   time** to `2026-11-14 15:00:00`. The fields are the same as those of
+   the contest schedule ([section 7](#7-contest-schedule-and-analysis-mode)),
+   plus the name.
+4. Click **Update**.
+
+The group's name is free, but it cannot be repeated within the contest.
+
+> **If the group has analysis mode**, remember that its start cannot be
+> earlier than the end **of that group**: when pushing back `sede-sur`'s
+> end, also check its analysis times.
+
+### Putting contestants in a group
+
+**One by one:**
+
+1. Contest menu → **Users**.
+2. For a user who is not yet in the contest: in **Add a new user:** choose
+   the user in **Select a new user**, choose the group in the list next to
+   it (the main one comes selected) and click **Add user**.
+3. To **move** someone who is already in: click their username in the
+   **Users list**. On their participation's page, **Participation
+   information** section, change **Group** and click **Update**.
+
+**Many at once** (CSV import always uses the main group):
+
+1. In **Groups**, select `sede-sur` and click **Make main group**.
+2. On the global **Users** page, **Import users** section, upload the Sur
+   site's CSV with **Also add them to contest** = `oi2026` and click
+   **Import** ([chapter 8](08-users-and-teams.md)).
+3. Go back to **Groups**, select `default` and click **Make main group**.
+
+> Users who already had a participation in the contest are not moved when
+> importing: they stay in their group.
+
+Each group's page lists its users (**Users**, with username, first name
+and last name; up to 1000).
+
+### Changing the main group
+
+In **Groups**, select the group and click **Make main group**. It does not
+move any contestant: it only changes which group is proposed by default
+and which schedule the ranking and the scoreboard use.
+
+### Deleting a group
+
+In **Groups**, select the group and click **Delete selected group**. You
+cannot:
+
+- if it has participations: **Cannot delete group containing users**. Move
+  its contestants first;
+- if it is the main one: **Cannot delete a contest's main group.** Make
+  another group the main one first.
+
+If you click a button without selecting a group, **Invalid field(s)**
+appears with `Please select a valid group`.
+
+---
+
+## 10. The tasks of a contest
+
+Contest menu → **Tasks**. The page is titled **Tasks list of oi2026**.
+
+> In this table the first column is the task's short **Name** and the
+> second its **Title**.
+
+### Adding tasks
+
+A task belongs to **a single contest** at a time. The **Add a new task:**
+list only offers the tasks that are **in no contest**.
+
+1. Create or import the tasks ([chapter 5](05-tasks.md) and
+   [chapter 7](07-importing.md)). When importing a package you can choose
+   the contest directly and skip this step.
+2. In **Add a new task:** choose the task in **Select a new task** and
+   click **Add task**.
+3. The task is added **at the end** of the list. Repeat for each one.
+
+If the task you are looking for does not appear, it is in another contest:
+remove it from that contest first (below).
+
+### Ordering
+
+The list's order is the order in which the contestants see the tasks on
+the site and the order of the rankings' columns. To move one:
+
+1. Select the task with the round button on its row.
+2. In **Move selected task:** click **to the top**, **up by 1**, **down by
+   1** or **to the bottom**.
+
+Example for OI 2026: add `suma`, `grafos` and `dp` in that order; if you
+want `dp` to be first, select it and click **to the top**.
+
+### Removing a task from the contest
+
+Select the task and click **Remove from contest** (under **Remove selected
+task from the contest:**). The task is **not deleted**: it is left without
+a contest, with all its data, and can be added to this or another contest.
+To delete a task completely, use the task's page
+([chapter 5](05-tasks.md)).
+
+Adding, removing and reordering tasks is recorded in the **Audit log**. Do
+it **before** the contest: during the contest the contestants would see
+the list change.
+
+---
+
+## 11. Deleting a contest
+
+1. On the contest page (**General**), click **Remove**, on the right, at
+   the bottom. You can also do it from the **Contests list**: select the
+   contest and click **Remove** next to **Edit selected contest:**.
+2. **Remove Contest** opens, saying how much will be deleted, for example:
+
+   > Are you sure you want to remove contest oi2026 from CMS, including
+   > all related data?
+   > This will remove 30 participation(s) and 412 submission(s).
+   > This operation cannot be undone.
+
+3. Click **Yes, remove** to confirm or **No** to go back.
+
+What is deleted and what is not:
+
+| Deleted | Not deleted |
+|---|---|
+| the contest and its groups | the **users** (they keep existing for other contests) |
+| all its participations, with their submissions, user tests, tokens, questions and messages | the **teams** |
+| its announcements | the tasks you **removed from the contest earlier** |
+| **the tasks still in the contest**, with statements, attachments, datasets and testcases | the administrators |
+| | the **Audit log** entries (they stay, without the link to the contest) |
+
+> **Tasks are deleted with the contest.** If you want to keep a task (to
+> reuse it next year, for example), remove it from the contest **before**
+> deleting it ([section 10](#10-the-tasks-of-a-contest)). There is no
+> recycle bin: make a backup before deleting anything important
+> ([chapter 13](13-maintenance.md)).
+
+Only an administrator with **All permissions** can delete; for the others
+the page says **You do not have permission to remove a contest.**
+
+---
+
+## 12. Ready-to-use configurations
+
+Values not mentioned stay as they come by default. The schedules assume
+the server's zone is that of the contest's location.
+
+### 5-hour olympiad (OI 2026: 3 tasks, 30 contestants)
+
+Modern IOI style: no tokens, best result per subtask, lab with fixed
+computers and analysis at the end.
+
+| Block | Field | Value | Why |
+|---|---|---|---|
+| Information | Name | `oi2026` | short address |
+| Information | Description | `Olimpiada de Informática 2026` | what everyone sees |
+| Information | Allowed localizations | `es` | the whole interface in Spanish |
+| Information | Allowed programming languages | C11 / gcc, C++20 / g++, Python 3 / CPython | the ones taught; **untick Pascal / fpc** if it is not installed |
+| Information | Submissions download allowed | ticked | |
+| Information | Allow questions | ticked | |
+| Information | Allow user tests | ticked | |
+| Information | Score decimal places | `0` | integer scores |
+| Information | Allow unofficial submission before analysis mode | unticked | |
+| Information | Timezone | empty | has no effect |
+| Logging in | Block hidden participations | ticked | the test accounts are not used on contest day |
+| Logging in | Allow password authentication | ticked | |
+| Logging in | Allow registration | unticked | closed list of contestants |
+| Logging in | IP based login restriction | ticked | with each seat's IP on their participation |
+| Logging in | IP based autologin | unticked | |
+| Tokens | Token mode | Disabled | |
+| Schedule | Start time | `2026-11-14 09:00:00` | |
+| Schedule | End time | `2026-11-14 14:00:00` | 5 hours |
+| Schedule | Length of the contest | empty | everyone at the same time |
+| Analysis mode | Enabled | ticked | practice after the contest |
+| Analysis mode | Start | `2026-11-14 16:00:00` | 2-hour margin in case of extra time |
+| Analysis mode | End | `2026-11-21 23:59:59` | one week |
+| Limits | Maximum number of submissions | empty | |
+| Limits | Maximum number of user tests | empty | |
+| Limits | Minimum interval between submissions | `30` | protects the judge |
+| Limits | Grace period | `300` | no wait in the last 5 minutes |
+| Limits | Minimum interval between user tests | `30` | |
+
+In addition, in **each task**: *Token mode* = Disabled and *Score mode* =
+*Use the sum over each subtask of the best result for that subtask across
+all submissions (IOI 2017-)* ([chapter 5](05-tasks.md)).
+
+### 3-hour school tournament
+
+One school, 3 easy tasks, students who use Python or C++. No fixed IPs, no
+analysis mode.
+
+| Block | Field | Value | Why |
+|---|---|---|---|
+| Information | Name | `escolar2026` | |
+| Information | Description | `Torneo Escolar de Programación 2026` | |
+| Information | Allowed localizations | `es` | |
+| Information | Allowed programming languages | C++20 / g++, Python 3 / CPython | **untick** C11 / gcc and Pascal / fpc |
+| Information | Submissions download allowed | ticked | |
+| Information | Allow questions | ticked | |
+| Information | Allow user tests | unticked | less load and one less screen to explain |
+| Information | Score decimal places | `0` | |
+| Logging in | Block hidden participations | unticked | |
+| Logging in | Allow password authentication | ticked | |
+| Logging in | Allow registration | unticked | load the students by CSV |
+| Logging in | IP based login restriction | ticked | with no IPs on the participations it restricts nothing |
+| Logging in | IP based autologin | unticked | |
+| Tokens | Token mode | Disabled | |
+| Schedule | Start time | `2026-11-20 15:00:00` | |
+| Schedule | End time | `2026-11-20 18:00:00` | 3 hours |
+| Schedule | Length of the contest | empty | |
+| Analysis mode | Enabled | unticked | |
+| Limits | Maximum number of submissions | `60` | 20 per task on average |
+| Limits | Minimum interval between submissions | `20` | |
+| Limits | Grace period | `120` | |
+| Limits | The others | empty | |
+
+In each task: *Token mode* = Disabled and *Score mode* = *Use best among
+all submissions (IOI 2013-2016)*, which is easy to explain to the
+students.
+
+If you prefer the students to register themselves: tick **Allow
+registration** and, after the start time, untick it so nobody else joins.
+
+---
+
+## 13. Common mistakes
+
+| Mistake | Consequence | How to avoid it |
+|---|---|---|
+| Not setting the schedule when creating the contest | it stays open (2000–2100): contestants see the tasks ahead of time | type start and end as soon as you create it |
+| Typing the schedules with the wrong server zone | the contest starts hours earlier or later | look at the zone in the label (*in America/…*); change it on **Server** beforehand |
+| Name with spaces or accents | **Operation failed.** (`contests_name_check`) | only letters without accents, numbers, `_`, `-` |
+| Date without seconds or in another format | **Invalid field(s).** (`Can't cast … to datetime.`) | `YYYY-MM-DD HH:MM:SS` |
+| `0` in a limit to mean "no limit" | **Operation failed.** | leave the field empty |
+| Leaving a token field or the decimals empty | **Invalid field(s).** (`Can't cast  to int.` or `to timedelta.`) | type `0` or another number |
+| Mixing up units | intervals 60 times longer or shorter | *Token generation period* in **minutes**; everything else in **seconds** |
+| Leaving a language without a compiler ticked (Pascal / fpc by default) | submissions in that language fail | tick only languages installed on the judges |
+| Contest tokens in *Infinite* expecting tokens to exist | they do not appear: the tasks come in *Disabled* | configure the tasks too |
+| Default score mode without tokens | the **last** submission counts, not the best | choose the score mode on each task |
+| Clicking **Reset** thinking it deletes something | it only discards what is unsaved | |
+| Relying on the contest's *Timezone* field | it changes nothing | use the **Server** page |
+| Renaming an already published contest | the address changes, sessions are closed, the scoreboard's secret link changes | do not rename it; change the *Description* |
+| Deleting a contest with tasks you wanted to keep | the tasks are deleted | remove them from the contest first |
+
+---
+
+## 14. What if…
+
+### …"Operation failed." appears when saving
+
+The English text names the rule that was not met:
+
+| Message (`…constraint "X"`) | Cause | Solution |
+|---|---|---|
+| `contests_name_check` | the name has disallowed characters | use only `A-Z`, `a-z`, `0-9`, `_`, `-` |
+| `duplicate key … "contests_name_key"` | a contest with that name already exists | choose another |
+| `contests_max_submission_number_check`, `contests_max_user_test_number_check` | maximum number `0` or negative | empty or a positive number |
+| `contests_min_submission_interval_check`, `contests_min_submission_interval_grace_period_check`, `contests_min_user_test_interval_check` | interval or grace period `0` or negative | empty or a positive number |
+| `contests_token_max_number_check`, `contests_token_gen_max_check` | *Maximum number of tokens* or *Maximum accumulated tokens* at `0` | empty or positive |
+| `contests_check` | *Maximum accumulated tokens* less than the *Initial number of tokens* | raise the maximum or lower the initial |
+| `contests_token_gen_interval_check` | *Token generation period* `0` | a positive number |
+| `contests_token_gen_initial_check`, `contests_token_gen_number_check`, `contests_token_min_interval_check`, `contests_score_precision_check` | negative number | `0` or more |
+| `groups_check` | the start time is later than the end time | fix the times |
+| `groups_check1` | the end time is later than the analysis mode start (even if it is disabled) | move the analysis start and end after the contest's end |
+| `groups_check2` | the analysis end is earlier than its start | fix the analysis times |
+| `groups_per_user_time_check` | negative *Length of the contest* | empty or positive |
+| `duplicate key … "groups_contest_id_name_key"` | there is already a group with that name in the contest | choose another name |
+
+Nothing was saved: fix the field and click **Update** again. The rest of
+what you typed is still in the form.
+
+### …"Invalid field(s)." appears
+
+| Message | Cause |
+|---|---|
+| `Can't cast X to datetime.` | date in another format or without seconds |
+| `Can't cast  to datetime.` / `No main group start time specified.` / `No main group stop time specified.` | start or end empty |
+| `Can't cast X to int.` | number with letters, dots, or empty in a mandatory field |
+| `Can't cast X to timedelta.` | non-numeric duration, or empty in *Minimum interval between tokens* or *Token generation period* |
+| `Unknown time zone X.` | invalid contest *Timezone*: leave it empty |
+| `No contest name specified.` | empty name |
+
+### …the contestants see "The contest hasn't started yet." and it should have started already
+
+1. Check **Start time** on the contest page and the zone the label
+   indicates.
+2. Check in **Groups** which group the contestant belongs to and that
+   group's start.
+3. If the contest has a **Length of the contest**, the contestant must
+   press **Start!** on the *Overview*.
+4. Check that their participation has no **Delay**.
+
+### …a contestant cannot log in ("Failed to log in.")
+
+Check, in this order: that they have a participation in the contest (the
+contest's **Users** menu); that **Allow password authentication** is
+ticked; if **IP based login restriction** is ticked, the *IP address or
+subnet* of their participation; if **Block hidden participations** is
+ticked, that their participation is not hidden. More causes in
+[chapter 14](14-troubleshooting.md).
+
+### …tokens do not appear
+
+The contest and the tasks must be in *Finite* or *Infinite*; with either
+one in *Disabled* there are no tokens. Remember that new tasks come in
+*Disabled*.
+
+### …the task I want to add does not appear in "Select a new task"
+
+It is in another contest. Open it in that contest's **Tasks list**, click
+**Remove from contest** and try again.
+
+### …I cannot delete a group
+
+It has participations (move them to another group from each
+participation's page) or it is the main group (make another one the main
+group first).
+
+### …the contestants cannot submit in a language
+
+Check that it is ticked in **Allowed programming languages** and in the
+task's list, and that the compiler is installed on the judges
+([Judges](../judges.md)). If submissions are accepted but fail to compile,
+see [chapter 14](14-troubleshooting.md).
+
+### …the contestant site appears in English
+
+Check **Allowed localizations**: empty lets the browser choose; a
+misspelled code (`es_CL`, `sp`) leaves the site in English. Use `es` or
+`es-CL`.
+
+---
+
+**Next:** [5. Tasks](05-tasks.md) ·
+**Previous:** [3. First access and admin accounts](03-first-steps.md) ·
+[Index](README.md)
