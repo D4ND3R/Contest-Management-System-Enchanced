@@ -46,15 +46,11 @@ permission always remains: the site does not let you disable, demote or
 delete the last one. Everybody can change their own name, username and
 password on the **Admins** page.
 
-Until the installer exists (F9), create the first admin in the database:
-
-```sql
-INSERT INTO admins (name, username, authentication, enabled, permission_all)
-VALUES ('Admin', 'admin', 'plaintext:a-long-password', true, true);
-```
-
-and then set a new password on the admin's page (it is stored with
-bcrypt).
+The installer creates the first admin and prints its password once. From
+the command line, `sudo cmsctl add-admin USERNAME` creates another and
+`sudo cmsctl admin-password USERNAME` sets a new password for an existing
+one (for example when the first one's was lost); both generate it and
+print it once.
 
 ## Sessions and login
 

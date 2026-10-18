@@ -46,16 +46,11 @@ administrador habilitado con todos los permisos: el sitio no deja
 deshabilitarlo, quitarle el permiso ni borrarlo. Cualquiera puede cambiar
 su propio nombre, usuario y contraseña en la página **Admins**.
 
-Mientras no exista el instalador (F9), el primer administrador se crea en
-la base de datos:
-
-```sql
-INSERT INTO admins (name, username, authentication, enabled, permission_all)
-VALUES ('Admin', 'admin', 'plaintext:una-contraseña-larga', true, true);
-```
-
-y después se le pone una contraseña nueva desde la página del
-administrador (queda guardada con bcrypt).
+El instalador crea el primer administrador y muestra su contraseña una
+sola vez. Desde la consola, `sudo cmsctl add-admin USUARIO` crea otro y
+`sudo cmsctl admin-password USUARIO` le pone una contraseña nueva a uno
+existente (por ejemplo, si se perdió la del primero); ambos la generan y
+la muestran una sola vez.
 
 ## Sesiones y entrada
 
