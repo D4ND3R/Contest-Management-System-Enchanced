@@ -3,7 +3,7 @@ https://github.com/cms-dev/cms) that rewrites its backend in Go. It is a
 derivative work of CMS and is distributed under the same license, the GNU
 Affero General Public License version 3 or later (see LICENSE.txt).
 
-GO REWRITE (this fork)
+This is a rewrite in GO (This fork)
 
 D4ND3R and the Contest-Management-System-Enchanced contributors
 (https://github.com/D4ND3R/Contest-Management-System-Enchanced)
